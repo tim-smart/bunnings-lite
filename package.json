@@ -1,0 +1,46 @@
+{
+  "name": "receipts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "w-deploy": "pnpm dlx wrangler deploy --config ./cloudflare/wrangler.toml",
+    "w-dev": "pnpm dlx wrangler dev --config ./cloudflare/wrangler.toml",
+    "w-start": "pnpm dlx wrangler dev --config ./cloudflare/wrangler.toml"
+  },
+  "dependencies": {
+    "@effect-rx/rx-react": "^0.31.17",
+    "@effect/experimental": "^0.44.11",
+    "@effect/platform": "^0.80.11",
+    "@effect/platform-browser": "^0.60.2",
+    "@effect/rpc": "^0.55.16",
+    "@tanstack/react-router": "^1.116.0",
+    "effect": "^3.14.11",
+    "lucide-react": "^0.501.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@tanstack/router-devtools": "^1.116.0",
+    "@tanstack/router-plugin": "^1.116.1",
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vite-pwa/assets-generator": "^1.0.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.1.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.2",
+    "vite-plugin-pwa": "^1.0.0",
+    "workbox-core": "^7.3.0",
+    "workbox-window": "^7.3.0"
+  },
+  "packageManager": "pnpm@10.8.1+sha512.c50088ba998c67b8ca8c99df8a5e02fd2ae2e2b29aaf238feaa9e124248d3f48f9fb6db2424949ff901cffbb5e0f0cc1ad6aedb602cd29450751d11c35023677"
+}
