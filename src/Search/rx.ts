@@ -22,12 +22,16 @@ export const resultsRx = runtimeRx.pull(
     return get.stream(queryRx).pipe(
       Stream.changes,
       Stream.debounce(150),
-      Stream.flatMap((query) => {
-        if (query.trim() === "") {
-          return Stream.empty
-        }
-        return client.search({ query: get(queryRx) })
-      }),
+      Stream.flatMap(
+        (query) => {
+          if (query.trim() === "") {
+            get.refreshSelfSync()
+            return Stream.empty
+          }
+          return client.search({ query: get(queryRx) })
+        },
+        { switch: true },
+      ),
     )
   }, Stream.unwrap),
 )
