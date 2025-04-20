@@ -41,12 +41,11 @@ function ResultCard({ result }: { readonly result: SearchResult }) {
   const preload = useRxSet(preloadRx)
 
   const onTouchStart = useCallback(() => {
-    console.log("Preloading product", result.permanentid)
     preload(new BaseInfoKey({ id: result.permanentid, result }))
   }, [result])
 
   return (
-    <Link to={`/product/${result.permanentid}`} onTouchStart={onTouchStart}>
+    <Link to={`/product/${result.permanentid}`} onMouseDown={onTouchStart}>
       <Card>
         <div className="h-32 sm:h-48">
           <img

@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router"
+import { createRootRoute, Outlet, useRouter } from "@tanstack/react-router"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useRxValue, useRx } from "@effect-rx/rx-react"
@@ -40,6 +40,7 @@ function Logo() {
 }
 
 function SearchInput() {
+  const router = useRouter()
   const [query, setQuery] = useRx(queryRx)
   const queryIsSet = query.trim() !== ""
   return (
@@ -50,7 +51,12 @@ function SearchInput() {
         placeholder="Search for products..."
         className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-18"}`}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          if (router.state.location.pathname !== "/") {
+            router.navigate({ to: "/", search: { query: e.target.value } })
+          }
+        }}
       />
     </div>
   )
