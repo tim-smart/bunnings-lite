@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@effect/experimental':
+        specifier: ^0.44.11
+        version: 0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11)
       '@effect/opentelemetry':
         specifier: ^0.46.7
         version: 0.46.7(@effect/platform@0.80.11(effect@3.14.11))(@opentelemetry/semantic-conventions@1.32.0)(effect@3.14.11)

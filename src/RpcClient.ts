@@ -1,8 +1,9 @@
 import { RpcClient, RpcMiddleware, RpcSerialization } from "@effect/rpc"
-import { Effect, Layer } from "effect"
+import { Cache, Data, Effect, Equal, Hash, Layer } from "effect"
 import { Rpcs } from "../api/src/domain/Rpc"
 import { Socket } from "@effect/platform"
 import { AuthMiddleware } from "../api/src/domain/Auth"
+import { SearchResult } from "api/src/domain/Bunnings"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -37,3 +38,50 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
     ],
   },
 ) {}
+
+export class BaseInfoKey extends Data.Class<{
+  id: string
+  result?: SearchResult
+}> {
+  [Equal.symbol](that: BaseInfoKey) {
+    return this.id === that.id
+  }
+  [Hash.symbol]() {
+    return Hash.string(this.id)
+  }
+}
+
+export class SearchQuery extends Data.Class<{
+  query: string
+  offset: number
+}> {}
+
+export class Products extends Effect.Service<Products>()("app/Products", {
+  dependencies: [BunningsClient.Default],
+  effect: Effect.gen(function* () {
+    const client = yield* BunningsClient
+
+    const baseInfoCache = yield* Cache.make({
+      lookup: Effect.fnUntraced(function* (key: BaseInfoKey) {
+        console.log("Cache miss", key)
+        return yield* Effect.fromNullable(key.result)
+      }),
+      capacity: 1024,
+      timeToLive: "15 minutes",
+    })
+
+    const searchCache = yield* Cache.make({
+      lookup: Effect.fnUntraced(function* (query: SearchQuery) {
+        return yield* client.search(query)
+      }),
+      capacity: 32,
+      timeToLive: "10 minutes",
+    })
+
+    return {
+      getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
+      search: (query: string, offset: number) =>
+        searchCache.get(new SearchQuery({ query, offset })),
+    }
+  }),
+}) {}

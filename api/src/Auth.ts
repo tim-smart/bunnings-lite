@@ -18,6 +18,7 @@ export const AuthLayer = Layer.effect(
       if (!session || session.expired) {
         session = yield* Effect.orDie(bunnings.makeSession)
       }
+      sessions.set(sessionId, session)
       return session
     }, semaphore.withPermits(1))
   }),

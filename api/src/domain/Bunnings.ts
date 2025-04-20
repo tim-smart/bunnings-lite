@@ -39,12 +39,12 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   colorcount: S.Number,
   trustedseller: S.String,
   unitofprice: S.String,
-  productranges_9454: S.Array(S.String),
+  productranges_9454: S.optional(S.Array(S.String)),
   rating: S.Number,
   size: S.Number,
-  brandcode: S.Array(S.String),
+  brandcode: S.optional(S.Array(S.String)),
   categories: S.Array(S.String),
-  brandname: S.String,
+  brandname: S.optional(S.String),
   name: S.String,
   itemnumber: S.String,
   basecolor: S.optional(S.Union(S.Null, S.String)),
@@ -62,6 +62,6 @@ export class SearchResultWrap extends S.Class<SearchResultWrap>(
 export const SearchResponse = S.Struct({
   data: S.Struct({
     totalCount: S.Number,
-    results: S.Array(SearchResultWrap),
+    results: S.Chunk(SearchResultWrap),
   }),
 })

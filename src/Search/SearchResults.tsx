@@ -1,4 +1,4 @@
-import { useRxValue } from "@effect-rx/rx-react"
+import { useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { queryIsSetRx, resultsRx } from "./rx"
 import { Cause } from "effect"
 import { SearchResult } from "../../api/src/domain/Bunnings"
@@ -9,6 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Link } from "@tanstack/react-router"
+import { preloadRx } from "@/Product/rx"
+import { useCallback } from "react"
+import { BaseInfoKey } from "@/RpcClient"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -34,20 +38,29 @@ export function SearchResults() {
 }
 
 function ResultCard({ result }: { readonly result: SearchResult }) {
+  const preload = useRxSet(preloadRx)
+
+  const onTouchStart = useCallback(() => {
+    console.log("Preloading product", result.permanentid)
+    preload(new BaseInfoKey({ id: result.permanentid, result }))
+  }, [result])
+
   return (
-    <Card className="cursor-pointer">
-      <div className="h-32 sm:h-48">
-        <img
-          src={result.thumbnailimageurl}
-          alt={result.title}
-          className="h-full mx-auto"
-        />
-      </div>
-      <CardHeader className="px-4">
-        <CardTitle>{result.title}</CardTitle>
-        <CardDescription>${result.price_9454}</CardDescription>
-      </CardHeader>
-    </Card>
+    <Link to={`/product/${result.permanentid}`} onTouchStart={onTouchStart}>
+      <Card>
+        <div className="h-32 sm:h-48">
+          <img
+            src={result.thumbnailimageurl}
+            alt={result.title}
+            className="h-full mx-auto"
+          />
+        </div>
+        <CardHeader className="px-4">
+          <CardTitle>{result.title}</CardTitle>
+          <CardDescription>${result.price_9454}</CardDescription>
+        </CardHeader>
+      </Card>
+    </Link>
   )
 }
 

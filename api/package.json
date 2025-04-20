@@ -11,6 +11,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.8.1",
   "dependencies": {
+    "@effect/experimental": "^0.44.11",
     "@effect/opentelemetry": "^0.46.7",
     "@effect/platform": "^0.80.11",
     "@effect/platform-node": "^0.76.21",

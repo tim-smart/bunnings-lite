@@ -1,9 +1,14 @@
 import { Rx } from "@effect-rx/rx-react"
 import { makeSearchParamRx } from "@/lib/searchParamRx"
-import { BunningsClient } from "@/RpcClient"
-import { Effect, Stream } from "effect"
+import { BunningsClient, Products } from "@/RpcClient"
+import { Chunk, Effect, Layer, Option, Stream } from "effect"
+import { DevTools } from "@effect/experimental"
 
-const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
+const runtimeRx = Rx.runtime(
+  Layer.mergeAll(Products.Default, BunningsClient.Default).pipe(
+    Layer.provideMerge(DevTools.layer()),
+  ),
+).pipe(Rx.keepAlive)
 
 export const queryRx = makeSearchParamRx("query")
 
@@ -18,7 +23,7 @@ export const loginRx = runtimeRx.rx(
 
 export const resultsRx = runtimeRx.pull(
   Effect.fnUntraced(function* (get: Rx.Context) {
-    const client = yield* BunningsClient
+    const client = yield* Products
     return get.stream(queryRx).pipe(
       Stream.changes,
       Stream.debounce(150),
@@ -28,9 +33,23 @@ export const resultsRx = runtimeRx.pull(
             get.refreshSelfSync()
             return Stream.empty
           }
-          return client.search({ query: get(queryRx) })
+          return Stream.paginateChunkEffect(0, (offset) =>
+            client
+              .search(query, offset)
+              .pipe(
+                Effect.map(
+                  (res) =>
+                    [
+                      Chunk.map(res.data.results, (_) => _.raw),
+                      Option.some(offset + res.data.results.length).pipe(
+                        Option.filter((count) => count < res.data.totalCount),
+                      ),
+                    ] as const,
+                ),
+              ),
+          )
         },
-        { switch: true },
+        { switch: true, bufferSize: 0 },
       ),
     )
   }, Stream.unwrap),
