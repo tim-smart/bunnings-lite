@@ -26,7 +26,7 @@ export const Route = createRootRoute({
       </header>
 
       <main className="flex-1 bg-white px-4">
-        <div className="max-w-5xl mx-auto w-full">
+        <div className="container mx-auto max-w-5xl">
           <Outlet />
         </div>
       </main>

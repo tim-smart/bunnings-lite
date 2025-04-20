@@ -57,14 +57,25 @@ export class SearchQuery extends Data.Class<{
 }> {}
 
 export class Products extends Effect.Service<Products>()("app/Products", {
-  // dependencies: [BunningsClient.Default],
+  dependencies: [BunningsClient.Default],
   effect: Effect.gen(function* () {
-    // const client = yield* BunningsClient
+    const client = yield* BunningsClient
 
     const baseInfoCache = yield* Cache.make({
       lookup: Effect.fnUntraced(function* (key: BaseInfoKey) {
-        console.log("Cache miss", key)
-        return yield* Effect.fromNullable(key.result)
+        if (key.result) {
+          return key.result.asBaseInfo
+        }
+        const result = yield* fullInfoCache.get(key.id)
+        return result.asBaseInfo
+      }),
+      capacity: 1024,
+      timeToLive: "15 minutes",
+    })
+
+    const fullInfoCache = yield* Cache.make({
+      lookup: Effect.fnUntraced(function* (id: string) {
+        return yield* client.productInfo({ id })
       }),
       capacity: 1024,
       timeToLive: "15 minutes",
@@ -72,6 +83,7 @@ export class Products extends Effect.Service<Products>()("app/Products", {
 
     return {
       getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
+      getFullInfo: (id: string) => fullInfoCache.get(id),
     }
   }),
 }) {}

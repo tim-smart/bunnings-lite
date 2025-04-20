@@ -1,5 +1,12 @@
 import { Chunk, Effect, Ref, Option, Stream } from "effect"
-import { CurrentSession, SearchResponse, Session } from "./domain/Bunnings"
+import {
+  CurrentSession,
+  PriceResponse,
+  ProductPriceInfo,
+  ProductResponse,
+  SearchResponse,
+  Session,
+} from "./domain/Bunnings"
 import {
   Cookies,
   HttpBody,
@@ -25,11 +32,13 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
       return yield* Session.fromJson(token)
     })
 
-    const apiClient = Effect.gen(function* () {
+    const apiClient = Effect.fnUntraced(function* (version = "v1") {
       const session = yield* CurrentSession
       return defaultClient.pipe(
         HttpClient.mapRequest(
-          HttpClientRequest.prependUrl("https://api.prod.bunnings.com.au/v1"),
+          HttpClientRequest.prependUrl(
+            `https://api.prod.bunnings.com.au/${version}`,
+          ),
         ),
         HttpClient.mapRequest(HttpClientRequest.bearerToken(session.token)),
         HttpClient.mapRequest(
@@ -61,7 +70,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
 
     const search = Effect.fnUntraced(
       function* (query: string) {
-        const client = yield* apiClient
+        const client = yield* apiClient()
         const getOffset = Effect.fn("Bunnings.search.getOffset")(function* (
           offset: number,
         ) {
@@ -93,7 +102,41 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         Stream.withSpan(stream, "Bunnings.search", { attributes: { query } }),
     )
 
-    return { makeSession, search } as const
+    const productInfo = Effect.fn("Bunnings.productInfo")(function* (
+      id: string,
+    ) {
+      const client = yield* apiClient()
+      const res = yield* client.get(`/products/${id}`)
+      const result =
+        yield* HttpClientResponse.schemaBodyJson(ProductResponse)(res)
+      return result.data
+    })
+
+    const priceInfo = Effect.fn("Bunnings.priceInfo")(function* (id: string) {
+      const client = yield* apiClient("v2")
+      const res = yield* client.get(`/products/${id}/priceInfo`)
+      const result =
+        yield* HttpClientResponse.schemaBodyJson(PriceResponse)(res)
+      return result.data
+    })
+
+    const productInfoWithPrice = Effect.fn("Bunnings.productInfoWithPrice")(
+      function* (id: string) {
+        const [info, price] = yield* Effect.all(
+          [productInfo(id), priceInfo(id)],
+          { concurrency: 2 },
+        )
+        return new ProductPriceInfo({ info, price })
+      },
+    )
+
+    return {
+      makeSession,
+      search,
+      productInfo,
+      priceInfo,
+      productInfoWithPrice,
+    } as const
   }),
 }) {}
 

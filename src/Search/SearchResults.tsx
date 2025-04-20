@@ -14,6 +14,7 @@ import { Link } from "@tanstack/react-router"
 import { preloadRx } from "@/Product/rx"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { BaseInfoKey } from "@/RpcClient"
+import { StarRating } from "@/components/ui/star-rating"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -60,9 +61,12 @@ function ResultCard({ result }: { readonly result: SearchResult }) {
         </div>
         <CardHeader className="px-4">
           <CardTitle>{result.title}</CardTitle>
-          <CardDescription>${result.price_9454}</CardDescription>
+          <CardDescription>
+            ${result.price_9454}
+            <div className="h-1" />
+            <StarRating rating={result.rating} />
+          </CardDescription>
         </CardHeader>
-        <CardContent>{result.rating}</CardContent>
       </Card>
     </Link>
   )

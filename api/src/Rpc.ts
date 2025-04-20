@@ -13,6 +13,8 @@ const Handlers = Rpcs.toLayer(
     return {
       login: () => Effect.void,
       search: ({ query }) => bunnings.search(query).pipe(Stream.orDie),
+      productInfo: ({ id }) =>
+        bunnings.productInfoWithPrice(id).pipe(Effect.orDie),
     }
   }),
 ).pipe(Layer.provide(Bunnings.Default))
