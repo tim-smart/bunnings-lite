@@ -1,9 +1,10 @@
-import { useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { queryIsSetRx, resultsRx } from "./rx"
 import { Cause } from "effect"
 import { SearchResult } from "../../api/src/domain/Bunnings"
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -11,12 +12,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link } from "@tanstack/react-router"
 import { preloadRx } from "@/Product/rx"
-import { useCallback } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
-  const result = useRxValue(resultsRx)
+  const [result, pull] = useRx(resultsRx)
+  useScrollBottom(() => {
+    pull()
+  })
 
   if (!queryIsSet) {
     return null
@@ -27,11 +31,11 @@ export function SearchResults() {
   }
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto w-full p-4 sm:p-10">
+    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 py-4 sm:py-10">
       {result._tag === "Initial" || result.waiting
         ? Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)
-        : result.value.items.map((result) => (
-            <ResultCard key={result.permanentid} result={result} />
+        : result.value.items.map((result, i) => (
+            <ResultCard key={i} result={result} />
           ))}
     </div>
   )
@@ -58,6 +62,7 @@ function ResultCard({ result }: { readonly result: SearchResult }) {
           <CardTitle>{result.title}</CardTitle>
           <CardDescription>${result.price_9454}</CardDescription>
         </CardHeader>
+        <CardContent>{result.rating}</CardContent>
       </Card>
     </Link>
   )
@@ -73,4 +78,27 @@ function SkeletonCard() {
       </div>
     </div>
   )
+}
+
+function useScrollBottom(f: () => void) {
+  const bottomRef = useRef(false)
+  const fn = useMemo(() => f, [])
+
+  useEffect(() => {
+    const onscroll = () => {
+      const scrolledTo = window.scrollY + window.innerHeight
+      const threshold = 300
+      const isReachBottom = document.body.scrollHeight - threshold <= scrolledTo
+      if (isReachBottom && !bottomRef.current) {
+        bottomRef.current = true
+        fn()
+      } else if (!isReachBottom) {
+        bottomRef.current = false
+      }
+    }
+    window.addEventListener("scroll", onscroll)
+    return () => {
+      window.removeEventListener("scroll", onscroll)
+    }
+  }, [bottomRef, fn])
 }

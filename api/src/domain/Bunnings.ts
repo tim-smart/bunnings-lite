@@ -62,6 +62,6 @@ export class SearchResultWrap extends S.Class<SearchResultWrap>(
 export const SearchResponse = S.Struct({
   data: S.Struct({
     totalCount: S.Number,
-    results: S.Chunk(SearchResultWrap),
+    results: S.Array(SearchResultWrap),
   }),
 })

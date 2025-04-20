@@ -1,4 +1,4 @@
-import { Effect, Ref, Option } from "effect"
+import { Chunk, Effect, Ref, Option, Stream } from "effect"
 import { CurrentSession, SearchResponse, Session } from "./domain/Bunnings"
 import {
   Cookies,
@@ -59,20 +59,39 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
       )
     })
 
-    const search = Effect.fn("Bunnings.search")(function* (
-      query: string,
-      offset: number,
-    ) {
-      yield* Effect.annotateCurrentSpan({
-        query,
-        offset,
-      })
-      const client = yield* apiClient
-      const res = yield* client.post("/coveo/search", {
-        body: HttpBody.unsafeJson(searchPayload(query, offset)),
-      })
-      return yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
-    })
+    const search = Effect.fnUntraced(
+      function* (query: string) {
+        const client = yield* apiClient
+        const getOffset = Effect.fn("Bunnings.search.getOffset")(function* (
+          offset: number,
+        ) {
+          const res = yield* client.post("/coveo/search", {
+            body: HttpBody.unsafeJson(searchPayload(query, offset)),
+          })
+          const results =
+            yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
+          return [
+            results.data.results.map((_) => _.raw),
+            results.data.totalCount,
+          ] as const
+        })
+
+        return Stream.paginateChunkEffect(0, (offset) =>
+          Effect.map(getOffset(offset), ([results, totalCount]) => {
+            const currentTotal = offset + results.length
+            return [
+              Chunk.unsafeFromArray(results),
+              currentTotal < totalCount
+                ? Option.some(currentTotal)
+                : Option.none<number>(),
+            ] as const
+          }),
+        )
+      },
+      Stream.unwrap,
+      (stream, query) =>
+        Stream.withSpan(stream, "Bunnings.search", { attributes: { query } }),
+    )
 
     return { makeSession, search } as const
   }),

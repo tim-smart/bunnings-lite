@@ -1,6 +1,6 @@
 import { RpcServer, RpcSerialization } from "@effect/rpc"
 import { Rpcs } from "./domain/Rpc"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Stream } from "effect"
 import { AuthLayer } from "./Auth"
 import { HttpMiddleware, HttpRouter, HttpServer } from "@effect/platform"
 import { NodeHttpServer } from "@effect/platform-node"
@@ -12,8 +12,7 @@ const Handlers = Rpcs.toLayer(
     const bunnings = yield* Bunnings
     return {
       login: () => Effect.void,
-      search: ({ query, offset }) =>
-        bunnings.search(query, offset).pipe(Effect.orDie),
+      search: ({ query }) => bunnings.search(query).pipe(Stream.orDie),
     }
   }),
 ).pipe(Layer.provide(Bunnings.Default))
