@@ -25,6 +25,7 @@ export default defineConfig({
         short_name: "Bunnings Lite",
         description: "A lightweight version of Bunnings",
         theme_color: "#0d5257",
+        background_color: "#0d5257",
         shortcuts: [],
       },
 
