@@ -40,7 +40,11 @@ const RpcLayer = RpcServer.layer(Rpcs).pipe(
   Layer.provide(RpcSerialization.layerJson),
 )
 
-export const HttpLayer = HttpRouter.Default.serve(HttpMiddleware.logger).pipe(
+export const HttpLayer = HttpRouter.Default.unwrap((router) =>
+  HttpRouter.use(router, HttpMiddleware.cors()).pipe(
+    HttpServer.serve(HttpMiddleware.logger),
+  ),
+).pipe(
   HttpServer.withLogAddress,
   Layer.provide(RpcLayer),
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
