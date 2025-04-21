@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { ProductReview, ReviewsWithStats } from "api/src/domain/Bazaar"
+import Markdown from "react-markdown"
 
 const imageIndexRx = Rx.make(0)
 
@@ -57,14 +58,9 @@ export function ProductListing({
           <div className="flex flex-col gap-4 my-2 text-sm">
             {fullInfo.pipe(
               Option.map((info) => (
-                <div
-                  className="prose"
-                  {...{
-                    dangerouslySetInnerHTML: {
-                      __html: info.info.feature.description,
-                    },
-                  }}
-                ></div>
+                <div className="prose">
+                  <Markdown>{info.info.feature.description}</Markdown>
+                </div>
               )),
               Option.getOrElse(() => <SkeletonDescription />),
             )}
@@ -186,7 +182,9 @@ function ReviewCard({ review }: { readonly review: ProductReview }) {
             })}
           </span>
         </div>
-        <p className="mt-2 prose prose-sm">{review.ReviewText}</p>
+        <div className="mt-2 prose prose-sm">
+          <Markdown>{review.ReviewText}</Markdown>
+        </div>
       </CardContent>
     </Card>
   )

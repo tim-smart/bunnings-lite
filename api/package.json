@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "tsx --watch src/main.ts",
     "build": "tsup"
   },
   "keywords": [],
