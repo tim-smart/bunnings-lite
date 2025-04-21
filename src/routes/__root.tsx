@@ -58,6 +58,7 @@ function SearchInput() {
   const navigate = useNavigate()
   const [query, setQuery] = useRx(queryRx)
   const queryIsSet = query.trim() !== ""
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,9 +76,11 @@ function SearchInput() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          inputRef.current?.blur()
         }}
       >
         <Input
+          ref={inputRef}
           type="search"
           placeholder="Search for products..."
           className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-20"}`}
