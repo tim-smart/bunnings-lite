@@ -19,28 +19,14 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
 }
 
 export class SearchResult extends S.Class<SearchResult>("SearchResult")({
-  systitle: S.String,
-  stockindicator: S.String,
   thumbnailimageurl: S.String,
-  supercategoriescode: S.Array(S.String),
-  sysuri: S.String,
   isactive: S.String,
-  systransactionid: S.Number,
-  supercategoriesurl: S.Array(S.String),
-  supercategories: S.Array(S.String),
   ratingcount: S.Number,
   permanentid: S.String,
-  variantcount: S.Number,
-  brandiconurl: S.optional(S.String),
   title: S.String,
-  currency: S.String,
-  unitofprice: S.String,
-  productranges_9454: S.optional(S.Array(S.String)),
+  productroutingurl: S.String,
   rating: S.Number,
   size: S.Number,
-  brandcode: S.optional(S.Array(S.String)),
-  categories: S.Array(S.String),
-  brandname: S.optional(S.String),
   name: S.String,
   price_9454: S.Number,
   imageurl: S.String,
@@ -49,6 +35,7 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   get asBaseInfo() {
     return new ProductBaseInfo({
       id: this.permanentid,
+      url: "https://bunnings.co.nz" + this.productroutingurl,
       title: this.title,
       images: [
         new ImageElement({
@@ -59,7 +46,6 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
         }),
       ],
       price: this.price_9454,
-      currency: this.currency,
       numberOfReviews: this.ratingcount,
       rating: this.rating,
     })
@@ -91,7 +77,7 @@ export class ImageElement extends S.Class<ImageElement>("ImageElement")({
 }) {}
 
 export class GuideDocument extends S.Class<GuideDocument>("GuideDocument")({
-  altText: S.String,
+  altText: S.optionalWith(S.String, { nullable: true }),
   docType: S.String,
   mime: S.String,
   sequence: S.String,
@@ -196,9 +182,9 @@ export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
 )({
   id: S.String,
   title: S.String,
+  url: S.String,
   images: S.NonEmptyArray(ImageElement),
   price: S.Number,
-  currency: S.String,
   numberOfReviews: S.Number,
   rating: S.Number,
 }) {}
@@ -208,7 +194,6 @@ export class ProductInfo extends S.Class<ProductInfo>("ProductInfo")({
   availableForDelivery: S.Boolean,
   averageRating: S.optionalWith(S.Number, { default: () => 0 }),
   baseOptions: S.Array(BaseOption),
-  baseProduct: S.String,
   bestSeller: S.Boolean,
   brand: Brand,
   classifications: S.Array(Classification),
@@ -277,10 +262,11 @@ export class ProductPriceInfo extends S.Class<ProductPriceInfo>(
   get asBaseInfo() {
     return new ProductBaseInfo({
       id: this.info.itemNumber,
+      url:
+        "https://bunnings.co.nz" + this.info.baseOptions[0].selected.routingUrl,
       title: this.info.name,
       images: this.info.images,
       price: this.price.value,
-      currency: this.price.currencyIso,
       numberOfReviews: this.info.numberOfReviews,
       rating: this.info.averageRating,
     })

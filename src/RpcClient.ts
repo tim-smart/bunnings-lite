@@ -1,5 +1,14 @@
 import { RpcClient, RpcMiddleware, RpcSerialization } from "@effect/rpc"
-import { Cache, Data, Effect, Equal, Hash, Layer } from "effect"
+import {
+  Cache,
+  Config,
+  ConfigProvider,
+  Data,
+  Effect,
+  Equal,
+  Hash,
+  Layer,
+} from "effect"
 import { Rpcs } from "../api/src/domain/Rpc"
 import { Socket } from "@effect/platform"
 import { AuthMiddleware } from "../api/src/domain/Auth"
@@ -24,6 +33,13 @@ const AuthLayer = RpcMiddleware.layerClient(
   }),
 )
 
+const SocketLayer = Layer.unwrapEffect(
+  Effect.gen(function* () {
+    const url = yield* Config.string("VITE_API_URL")
+    return Socket.layerWebSocket(url)
+  }).pipe(Effect.withConfigProvider(ConfigProvider.fromJson(import.meta.env))),
+)
+
 export class BunningsClient extends Effect.Service<BunningsClient>()(
   "app/BunningsClient",
   {
@@ -31,7 +47,7 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
     dependencies: [
       RpcClient.layerProtocolSocket.pipe(
         Layer.provide(RpcSerialization.layerJson),
-        Layer.provide(Socket.layerWebSocket("ws://localhost:3000/rpc")),
+        Layer.provide(SocketLayer),
         Layer.provide(Socket.layerWebSocketConstructorGlobal),
       ),
       AuthLayer,
@@ -81,9 +97,18 @@ export class Products extends Effect.Service<Products>()("app/Products", {
       timeToLive: "15 minutes",
     })
 
+    const reviewCache = yield* Cache.make({
+      lookup: Effect.fnUntraced(function* (id: string) {
+        return yield* client.productReviews({ id })
+      }),
+      capacity: 1024,
+      timeToLive: "15 minutes",
+    })
+
     return {
       getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
       getFullInfo: (id: string) => fullInfoCache.get(id),
+      getReviews: (id: string) => reviewCache.get(id),
     }
   }),
 }) {}

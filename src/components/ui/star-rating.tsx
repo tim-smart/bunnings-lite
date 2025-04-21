@@ -5,12 +5,14 @@ interface StarRatingProps {
   rating: number
   maxRating?: number
   className?: string
+  size?: "sm" | "md"
 }
 
 export function StarRating({
   rating,
   maxRating = 5,
   className,
+  size = "md",
 }: StarRatingProps) {
   return (
     <div
@@ -21,7 +23,8 @@ export function StarRating({
         <Star
           key={index}
           className={cn(
-            "h-5 w-5 transition-colors",
+            size === "sm" ? "h-4 w-4" : "h-5 w-5",
+            "transition-colors",
             index < rating
               ? "fill-[#db2a1c] text-[#db2a1c]"
               : "fill-none text-gray-300",

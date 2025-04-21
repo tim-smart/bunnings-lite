@@ -3,3 +3,4 @@ node_modules/
 .direnv/
 dist/
 .wrangler/
+.env

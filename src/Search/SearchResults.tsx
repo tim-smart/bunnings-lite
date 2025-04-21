@@ -26,17 +26,13 @@ export function SearchResults() {
     return null
   }
 
-  if (result._tag === "Failure") {
-    const error = Cause.failureOption(result.cause)
-    if (Option.isSome(error) && error.value._tag === "NoSuchElementException") {
-      return null
-    }
+  if (result._tag === "Failure" && Cause.isDie(result.cause)) {
     throw Cause.squash(result.cause)
   }
 
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 py-4 sm:py-10">
-      {result._tag === "Initial" || result.waiting
+      {result._tag !== "Success" || result.waiting
         ? Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)
         : result.value.items.map((result, i) => (
             <ResultCard key={i} result={result} />

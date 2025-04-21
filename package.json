@@ -1,15 +1,12 @@
 {
-  "name": "receipts",
+  "name": "bunnings-lite",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "w-deploy": "pnpm dlx wrangler deploy --config ./cloudflare/wrangler.toml",
-    "w-dev": "pnpm dlx wrangler dev --config ./cloudflare/wrangler.toml",
-    "w-start": "pnpm dlx wrangler dev --config ./cloudflare/wrangler.toml"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@effect-rx/rx-react": "^0.31.17",

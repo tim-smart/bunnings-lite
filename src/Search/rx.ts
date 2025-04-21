@@ -2,12 +2,9 @@ import { Rx } from "@effect-rx/rx-react"
 import { makeSearchParamRx } from "@/lib/searchParamRx"
 import { BunningsClient, Products } from "@/RpcClient"
 import { Effect, Layer, Stream } from "effect"
-import { DevTools } from "@effect/experimental"
 
 const runtimeRx = Rx.runtime(
-  Layer.mergeAll(Products.Default, BunningsClient.Default).pipe(
-    Layer.provideMerge(DevTools.layer()),
-  ),
+  Layer.mergeAll(Products.Default, BunningsClient.Default),
 ).pipe(Rx.keepAlive)
 
 export const queryRx = makeSearchParamRx("query")
