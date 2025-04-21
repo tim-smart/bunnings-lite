@@ -1,4 +1,5 @@
 import {
+  combinePresetAndAppleSplashScreens,
   defineConfig,
   minimal2023Preset as preset,
 } from "@vite-pwa/assets-generator/config"
@@ -7,6 +8,19 @@ export default defineConfig({
   headLinkOptions: {
     preset: "2023",
   },
-  preset,
+  preset: {
+    ...combinePresetAndAppleSplashScreens(preset, {
+      resizeOptions: {
+        background: "#0d5257",
+      },
+    }),
+    maskable: {
+      ...preset.maskable,
+      resizeOptions: {
+        ...preset.maskable.resizeOptions,
+        background: "#0d5257",
+      },
+    },
+  },
   images: ["public/icon.svg"],
 })
