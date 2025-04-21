@@ -21,7 +21,7 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
 export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   thumbnailimageurl: S.String,
   isactive: S.String,
-  ratingcount: S.Number,
+  ratingcount: S.optionalWith(S.Number, { default: () => 0 }),
   permanentid: S.String,
   title: S.String,
   productroutingurl: S.String,
