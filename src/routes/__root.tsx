@@ -42,7 +42,7 @@ function Logo() {
       alt="Bunnings Logo"
       width={150}
       height={50}
-      className={`block transition-all ${queryIsSet ? "mt-5 h-[30px]" : "mt-10 h-[50px]"} w-auto`}
+      className={`block transition-all ${queryIsSet ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto`}
     />
   )
 }
@@ -69,7 +69,7 @@ function SearchInput() {
       <Input
         type="search"
         placeholder="Search for products..."
-        className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-18"}`}
+        className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-20"}`}
         value={query}
         onChange={onChange}
       />
