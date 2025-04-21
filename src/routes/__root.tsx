@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { useRxValue, useRx } from "@effect-rx/rx-react"
+import { useRxValue, useRx, useRxSet } from "@effect-rx/rx-react"
 import { queryIsSetRx, queryRx } from "@/Search/rx"
 import React, { useCallback } from "react"
 
@@ -36,13 +36,19 @@ export const Route = createRootRoute({
 
 function Logo() {
   const queryIsSet = useRxValue(queryIsSetRx)
+  const setQuery = useRxSet(queryRx)
+  const navigate = useNavigate()
   return (
     <img
       src="/logo.svg"
       alt="Bunnings Logo"
       width={150}
       height={50}
-      className={`block transition-all ${queryIsSet ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto`}
+      className={`block transition-all ${queryIsSet ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto cursor-pointer`}
+      onClick={() => {
+        setQuery("")
+        navigate({ to: "/" })
+      }}
     />
   )
 }
@@ -66,13 +72,19 @@ function SearchInput() {
   return (
     <div className="relative w-full max-w-lg mx-auto">
       <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        type="search"
-        placeholder="Search for products..."
-        className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-20"}`}
-        value={query}
-        onChange={onChange}
-      />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+        }}
+      >
+        <Input
+          type="search"
+          placeholder="Search for products..."
+          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-20"}`}
+          value={query}
+          onChange={onChange}
+        />
+      </form>
     </div>
   )
 }
