@@ -18,19 +18,6 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   }
 }
 
-export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
-  "ProductBaseInfo",
-)({
-  id: S.String,
-  title: S.String,
-  imageUrl: S.String,
-  thumbnailImageUrl: S.String,
-  price: S.Number,
-  currency: S.String,
-  numberOfReviews: S.Number,
-  rating: S.Number,
-}) {}
-
 export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   systitle: S.String,
   stockindicator: S.String,
@@ -63,8 +50,14 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
     return new ProductBaseInfo({
       id: this.permanentid,
       title: this.title,
-      imageUrl: this.imageurl,
-      thumbnailImageUrl: this.thumbnailimageurl,
+      images: [
+        new ImageElement({
+          url: this.imageurl,
+          thumbnailUrl: this.thumbnailimageurl,
+          mime: "image/jpeg",
+          sequence: "0",
+        }),
+      ],
       price: this.price_9454,
       currency: this.currency,
       numberOfReviews: this.ratingcount,
@@ -198,6 +191,18 @@ export class AllCategory extends S.Class<AllCategory>("AllCategory")({
   workShopCategory: S.optional(S.Union(S.Null, S.String)),
 }) {}
 
+export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
+  "ProductBaseInfo",
+)({
+  id: S.String,
+  title: S.String,
+  images: S.NonEmptyArray(ImageElement),
+  price: S.Number,
+  currency: S.String,
+  numberOfReviews: S.Number,
+  rating: S.Number,
+}) {}
+
 export class ProductInfo extends S.Class<ProductInfo>("ProductInfo")({
   allCategories: S.Array(AllCategory),
   availableForDelivery: S.Boolean,
@@ -217,7 +222,7 @@ export class ProductInfo extends S.Class<ProductInfo>("ProductInfo")({
   feature: DataFeature,
   forHire: S.Boolean,
   fsc: S.Boolean,
-  images: S.Array(ImageElement),
+  images: S.NonEmptyArray(ImageElement),
   instorePickup: S.Boolean,
   isAREnabled: S.Boolean,
   isActive: S.Boolean,
@@ -273,8 +278,7 @@ export class ProductPriceInfo extends S.Class<ProductPriceInfo>(
     return new ProductBaseInfo({
       id: this.info.itemNumber,
       title: this.info.name,
-      imageUrl: this.info.images[0]?.url ?? "",
-      thumbnailImageUrl: this.info.images[0]?.thumbnailUrl ?? "",
+      images: this.info.images,
       price: this.price.value,
       currency: this.price.currencyIso,
       numberOfReviews: this.info.numberOfReviews,

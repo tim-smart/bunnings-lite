@@ -1,10 +1,9 @@
 import { useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { queryIsSetRx, resultsRx } from "./rx"
-import { Cause } from "effect"
+import { Cause, Option } from "effect"
 import { SearchResult } from "../../api/src/domain/Bunnings"
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -28,6 +27,10 @@ export function SearchResults() {
   }
 
   if (result._tag === "Failure") {
+    const error = Cause.failureOption(result.cause)
+    if (Option.isSome(error) && error.value._tag === "NoSuchElementException") {
+      return null
+    }
     throw Cause.squash(result.cause)
   }
 

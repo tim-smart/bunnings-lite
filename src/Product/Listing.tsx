@@ -3,6 +3,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { Option } from "effect"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Rx, useRx, useRxValue } from "@effect-rx/rx-react"
+import { cn } from "@/lib/utils"
+
+const imageIndexRx = Rx.make(0)
 
 export function ProductListing({
   product,
@@ -16,31 +21,8 @@ export function ProductListing({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Images */}
         <div className="flex flex-col gap-4">
-          <div className="border rounded-lg bg-white p-8 flex items-center justify-center">
-            <img
-              src={product.imageUrl}
-              alt={product.title}
-              width={400}
-              height={400}
-              className="object-contain"
-            />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map((i) => (
-              <button
-                key={i}
-                className="border rounded-md p-2 hover:border-[#0D5257]"
-              >
-                <img
-                  src="/placeholder.svg?height=80&width=80"
-                  alt={`Product image ${i}`}
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-              </button>
-            ))}
-          </div>
+          <SelectedImage product={product} />
+          <ThumbnailImages product={product} />
         </div>
 
         <div className="flex flex-col gap-6">
@@ -61,13 +43,20 @@ export function ProductListing({
             <span className="ml-2 text-sm text-gray-500">inc. GST</span>
           </div>
 
-          <div className="flex flex-col gap-4 my-2">
-            <p className="text-sm">
-              {fullInfo.pipe(
-                Option.map((info) => info.info.feature.description),
-                Option.getOrElse(() => ""),
-              )}
-            </p>
+          <div className="flex flex-col gap-4 my-2 text-sm">
+            {fullInfo.pipe(
+              Option.map((info) => (
+                <div
+                  className="prose"
+                  {...{
+                    dangerouslySetInnerHTML: {
+                      __html: info.info.feature.description,
+                    },
+                  }}
+                ></div>
+              )),
+              Option.getOrElse(() => <SkeletonDescription />),
+            )}
           </div>
         </div>
       </div>
@@ -178,5 +167,57 @@ function ReviewCard() {
         </p>
       </CardContent>
     </Card>
+  )
+}
+
+function SkeletonDescription() {
+  return (
+    <div className="flex flex-col space-y-2">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-full" />
+    </div>
+  )
+}
+
+function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
+  const index = useRxValue(imageIndexRx)
+  const image = product.images[index]
+  return (
+    <div className="border rounded-lg bg-white p-8 flex items-center justify-center">
+      <img
+        src={image.url}
+        alt={product.title}
+        width={400}
+        height={400}
+        className="object-contain"
+      />
+    </div>
+  )
+}
+
+function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
+  const [index, setIndex] = useRx(imageIndexRx)
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {product.images.map((image, i) => (
+        <button
+          key={i}
+          className={cn(
+            "border rounded-md p-2 hover:border-[#0D5257]",
+            i === index ? "border-[#0D5257]" : undefined,
+          )}
+          onClick={() => setIndex(i)}
+        >
+          <img
+            src={image.thumbnailUrl}
+            alt={product.title}
+            width={80}
+            height={80}
+            className="object-contain"
+          />
+        </button>
+      ))}
+    </div>
   )
 }
