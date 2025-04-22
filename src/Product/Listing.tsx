@@ -222,14 +222,8 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
   const index = useRxValue(imageIndexRx)
   const image = product.images[index]
   return (
-    <div className="border rounded-lg bg-white p-8 flex items-center justify-center">
-      <img
-        src={image.url}
-        alt={product.title}
-        width={400}
-        height={400}
-        className="object-contain"
-      />
+    <div className="border rounded-lg bg-white flex items-center justify-center aspect-square overflow-hidden">
+      <img src={image.url} alt={product.title} />
     </div>
   )
 }
@@ -247,13 +241,7 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
           )}
           onClick={() => setIndex(i)}
         >
-          <img
-            src={image.thumbnailUrl}
-            alt={product.title}
-            width={80}
-            height={80}
-            className="object-contain"
-          />
+          <img src={image.thumbnailUrl} alt={product.title} />
         </button>
       ))}
     </div>
