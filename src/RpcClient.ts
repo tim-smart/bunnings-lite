@@ -12,7 +12,7 @@ import {
 import { Rpcs } from "../api/src/domain/Rpc"
 import { Socket } from "@effect/platform"
 import { AuthMiddleware } from "../api/src/domain/Auth"
-import { SearchResult } from "api/src/domain/Bunnings"
+import { ProductBaseInfo } from "api/src/domain/Bunnings"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -57,7 +57,7 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
 
 export class BaseInfoKey extends Data.Class<{
   id: string
-  result?: SearchResult
+  result?: ProductBaseInfo
 }> {
   [Equal.symbol](that: BaseInfoKey) {
     return this.id === that.id
@@ -80,7 +80,7 @@ export class Products extends Effect.Service<Products>()("app/Products", {
     const baseInfoCache = yield* Cache.make({
       lookup: Effect.fnUntraced(function* (key: BaseInfoKey) {
         if (key.result) {
-          return key.result.asBaseInfo
+          return key.result
         }
         const result = yield* fullInfoCache.get(key.id)
         return result.asBaseInfo
@@ -109,6 +109,7 @@ export class Products extends Effect.Service<Products>()("app/Products", {
       getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
       getFullInfo: (id: string) => fullInfoCache.get(id),
       getReviews: (id: string) => reviewCache.get(id),
+      getFulfillment: (id: string) => client.fulfillment({ id }),
     }
   }),
 }) {}

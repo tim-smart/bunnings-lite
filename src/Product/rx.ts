@@ -1,6 +1,7 @@
 import { Rx } from "@effect-rx/rx-react"
 import { BaseInfoKey, Products } from "@/RpcClient"
 import { Effect } from "effect"
+import { currentLocationRx } from "@/Stores/rx"
 
 const runtimeRx = Rx.runtime(Products.Default).pipe(Rx.keepAlive)
 
@@ -38,4 +39,15 @@ export const productReviewsRx = Rx.family((id: string) =>
       return yield* products.getReviews(id)
     }),
   ),
+)
+
+export const productFulfillmentRx = Rx.family((id: string) =>
+  runtimeRx
+    .rx(
+      Effect.fnUntraced(function* (_get: Rx.Context) {
+        const products = yield* Products
+        return yield* products.getFulfillment(id)
+      }),
+    )
+    .pipe(Rx.setIdleTTL("5 minutes")),
 )

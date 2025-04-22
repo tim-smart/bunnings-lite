@@ -4,12 +4,15 @@ import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Rx, useRx, useRxValue } from "@effect-rx/rx-react"
+import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { ProductReview, ReviewsWithStats } from "api/src/domain/Bazaar"
 import Markdown from "react-markdown"
+import { productFulfillmentRx } from "./rx"
+import { Badge } from "@/components/ui/badge"
+import { FavoriteButton } from "@/Favorites/Button"
 
 const imageIndexRx = Rx.make(0)
 
@@ -41,18 +44,22 @@ export function ProductListing({
             <span className="text-sm text-gray-500">
               ({product.numberOfReviews} reviews)
             </span>
-            <div className="w-1" />
+            <FulfillmentBadge product={product} />
+          </div>
+
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold">${product.price}</span>
+            <span className="text-sm text-gray-500">inc. GST</span>
+          </div>
+
+          <div className="flex gap-2 items-center flex-wrap">
+            <FavoriteButton product={product} />
             <Button className="bg-[#0D5257] hover:bg-[#0D5257]/90" asChild>
               <a href={product.url} target="_blank" rel="noopener noreferrer">
                 Open in Bunnings
                 <ArrowRight />
               </a>
             </Button>
-          </div>
-
-          <div className="flex items-baseline">
-            <span className="text-3xl font-bold">${product.price}</span>
-            <span className="ml-2 text-sm text-gray-500">inc. GST</span>
           </div>
 
           <div className="flex flex-col gap-4 my-2 text-sm">
@@ -258,4 +265,29 @@ function SkeletonRatings() {
       </div>
     </div>
   )
+}
+
+function FulfillmentBadge({ product }: { readonly product: ProductBaseInfo }) {
+  const maybeResult = Result.getOrElse(
+    useRxValue(productFulfillmentRx(product.id)),
+    Option.none,
+  )
+
+  if (Option.isNone(maybeResult)) {
+    return null
+  }
+
+  const fullfillment = maybeResult.value
+  if (!fullfillment.isAvailable) {
+    return <Badge className="bg-orange-500 text-white">Out of stock</Badge>
+  } else if (Option.isSome(fullfillment.location)) {
+    const { aisle, bay } = fullfillment.location.value
+    return (
+      <Badge className="bg-green-500 text-white">
+        Aisle {aisle}/{bay}
+      </Badge>
+    )
+  }
+
+  return <Badge className="bg-green-500 text-white">Available</Badge>
 }

@@ -16,5 +16,5 @@
     "plugins": [{ "name": "@effect/language-service" }],
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
-  "include": ["src/**/*", "../domain/"]
+  "include": ["src/**/*"]
 }

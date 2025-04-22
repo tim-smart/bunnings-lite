@@ -1,20 +1,119 @@
-import { Context, DateTime, Schema, Schema as S } from "effect"
+import {
+  Context,
+  DateTime,
+  Effect,
+  Schema,
+  Schema as S,
+  ParseResult,
+  Data,
+  Array,
+} from "effect"
 
 export class CurrentSession extends Context.Tag(
   "domain/Bunnings/CurrentSession",
 )<CurrentSession, Session>() {}
 
-export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
+export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
+  "domain/Bunnings/SessionLocation",
+)("Set", {
+  region: S.String,
+  code: S.String,
+  city: S.String,
+  country: S.String,
+  state: S.String,
+  website: S.String,
+}) {
+  static fromStore(store: Store) {
+    return new SessionLocation({
+      region: store.pricingRegion,
+      code: store.name,
+      city: store.displayName,
+      country: store.address.country.name,
+      state: store.storeRegion,
+      website: store.address.country.isocode,
+    })
+  }
+
+  get lowerRegion() {
+    return this.region.toLowerCase()
+  }
+
+  httpHeaders = {
+    locationcode: this.code,
+    "x-region": this.region,
+    country: this.website,
+    currency: "NZD",
+    locale: "en_NZ",
+  }
+
+  searchContext = {
+    city: this.city,
+    country: this.country,
+    region: this.region,
+    state: this.state,
+    website: this.website,
+  }
+}
+
+export class SessionUnsetLocation extends Schema.TaggedClass<SessionUnsetLocation>(
+  "domain/Bunnings/SessionUnsetLocation",
+)("Unset", {
+  country: S.String,
+  website: S.String,
+  code: S.String,
+  region: S.String,
+  state: S.String,
+}) {
+  static default = new SessionUnsetLocation({
+    country: "New Zealand",
+    website: "NZ",
+    code: "9489",
+    region: "NI_Zone_9",
+    state: "NI",
+  })
+
+  get lowerRegion() {
+    return this.region.toLowerCase()
+  }
+
+  httpHeaders = {
+    country: this.website,
+    currency: "NZD",
+    locale: "en_NZ",
+  }
+
+  searchContext = {
+    country: this.country,
+    website: this.website,
+  }
+}
+
+export class SessionToken extends Schema.Class<SessionToken>(
+  "domain/Bunnings/SessionToken",
+)({
   expires: Schema.DateTimeUtcFromNumber,
   token: Schema.String,
 }) {
-  static fromJson = Schema.decode(Schema.parseJson(Session))
+  static fromJson = Schema.decode(Schema.parseJson(SessionToken))
+}
 
+export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
+  id: S.String,
+  token: SessionToken,
+  location: Schema.Union(SessionLocation, SessionUnsetLocation),
+}) {
   get expired() {
-    return this.expires.pipe(
+    return this.token.expires.pipe(
       DateTime.subtract({ hours: 1 }),
       DateTime.lessThan(DateTime.unsafeNow()),
     )
+  }
+
+  withLocation(location: SessionLocation) {
+    return new Session({
+      ...this,
+      location,
+    })
   }
 }
 
@@ -28,7 +127,7 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   rating: S.Number,
   size: S.Number,
   name: S.String,
-  price_9454: S.Number,
+  price: S.Number,
   imageurl: S.String,
   uri: S.String,
 }) {
@@ -45,7 +144,7 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
           sequence: "0",
         }),
       ],
-      price: this.price_9454,
+      price: this.price,
       numberOfReviews: this.ratingcount,
       rating: this.rating,
     })
@@ -64,6 +163,29 @@ export const SearchResponse = S.Struct({
     results: S.Array(SearchResultWrap),
   }),
 })
+
+export const SearchResponseRemapped = S.transformOrFail(
+  S.Object,
+  SearchResponse,
+  {
+    decode(fromA, options, ast, fromI) {
+      return Effect.map(CurrentSession, (session) => ({
+        data: {
+          totalCount: fromA.data.totalCount,
+          results: fromA.data.results.map((result) => ({
+            raw: {
+              ...result.raw,
+              price: result.raw[`price_${session.location.code}`],
+            },
+          })),
+        },
+      }))
+    },
+    encode(toI) {
+      return ParseResult.succeed(toI)
+    },
+  },
+)
 
 export class ImageElement extends S.Class<ImageElement>("ImageElement")({
   altText: S.optional(S.Union(S.Null, S.String)),
@@ -262,5 +384,139 @@ export class ProductPriceInfo extends S.Class<ProductPriceInfo>(
       numberOfReviews: this.info.numberOfReviews,
       rating: this.info.averageRating,
     })
+  }
+}
+
+class GeoPoint extends S.Class<GeoPoint>("GeoPoint")({
+  latitude: S.Number,
+  longitude: S.Number,
+}) {}
+
+class Country extends S.Class<Country>("Country")({
+  isocode: S.String,
+  name: S.String,
+}) {}
+
+class Address extends S.Class<Address>("Address")({
+  billingAddress: S.Boolean,
+  country: Country,
+  creationtime: S.String,
+  defaultAddress: S.Boolean,
+  email: S.String,
+  fax: S.optional(S.Union(S.Null, S.String)),
+  firstName: S.String,
+  formattedAddress: S.String,
+  id: S.String,
+  isPoBoxAddress: S.Boolean,
+  line1: S.String,
+  line2: S.optional(S.Union(S.Null, S.String)),
+  phone: S.String,
+  postalCode: S.String,
+  shippingAddress: S.Boolean,
+  town: S.String,
+  visibleInAddressBook: S.Boolean,
+}) {}
+
+export class Store extends S.Class<Store>("Store")({
+  address: Address,
+  description: S.String,
+  displayName: S.String,
+  driveNCollect: S.String,
+  formattedDistance: S.String,
+  geoPoint: GeoPoint,
+  isActiveLocation: S.Boolean,
+  mapUrl: S.String,
+  name: S.String,
+  pricingRegion: S.String,
+  storeRegion: S.String,
+  storeZone: S.String,
+  timeZone: S.String,
+  type: S.String,
+  underOMSTrial: S.Boolean,
+  url: S.String,
+  urlRegion: S.String,
+}) {}
+
+class Pagination extends S.Class<Pagination>("Pagination")({
+  currentPage: S.Number,
+  pageSize: S.Number,
+  totalPages: S.Number,
+  totalResults: S.Number,
+}) {}
+
+export class StoresData extends S.Class<StoresData>("StoresData")({
+  boundEastLongitude: S.Number,
+  boundNorthLatitude: S.Number,
+  boundSouthLatitude: S.Number,
+  boundWestLongitude: S.Number,
+  pagination: Pagination,
+  sourceLatitude: S.Number,
+  sourceLongitude: S.Number,
+  stores: S.Chunk(Store),
+}) {}
+
+export class StoresResponse extends S.Class<StoresResponse>("StoresResponse")({
+  data: StoresData,
+}) {}
+
+// fullfillment
+
+export class InStorePickUpData extends S.Class<InStorePickUpData>(
+  "InStorePickUpData",
+)({
+  inStoreStockMsg: S.String,
+  stock: S.optionalWith(S.Number, { default: () => 0 }),
+}) {}
+
+export class FulfillmentInfo extends S.Class<FulfillmentInfo>(
+  "FulfillmentInfo",
+)({
+  addToCartEnabled: S.Boolean,
+  availableInStore: S.Boolean,
+  disableStockVisibility: S.Boolean,
+  driveNCollect: S.String,
+  inStorePickUpData: InStorePickUpData,
+  isActive: S.Boolean,
+  isSpecialProduct: S.Boolean,
+  poa: S.Boolean,
+}) {}
+
+export class FulfillmentResponse extends S.Class<FulfillmentResponse>(
+  "FulfillmentResponse",
+)({
+  data: FulfillmentInfo,
+}) {}
+
+// item location
+
+export class InStoreLocation extends S.Class<InStoreLocation>(
+  "InStoreLocation",
+)({
+  aisle: S.String,
+  bay: S.String,
+  sequence: S.String,
+}) {}
+
+export class ItemLocations extends S.Class<ItemLocations>("ItemLocations")({
+  inStoreLocations: S.Array(InStoreLocation),
+}) {}
+
+export class ItemLocationResponse extends S.Class<ItemLocationResponse>(
+  "ItemLocationResponse",
+)({
+  data: S.Array(ItemLocations),
+}) {}
+
+export class FulfillmentInfoWithLocation extends S.Class<FulfillmentInfoWithLocation>(
+  "FulfillmentInfoWithLocation",
+)({
+  fulfillment: FulfillmentInfo,
+  location: S.Option(InStoreLocation),
+}) {
+  get isAvailable() {
+    return (
+      this.fulfillment.inStorePickUpData.inStoreStockMsg ===
+      "itemsAvailableInStock"
+    )
   }
 }

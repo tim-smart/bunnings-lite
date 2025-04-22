@@ -21,6 +21,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
+    "plugins": [{ "name": "@effect/language-service" }],
+
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
