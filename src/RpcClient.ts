@@ -98,9 +98,7 @@ export class Products extends Effect.Service<Products>()("app/Products", {
     })
 
     const reviewCache = yield* Cache.make({
-      lookup: Effect.fnUntraced(function* (id: string) {
-        return yield* client.productReviews({ id })
-      }),
+      lookup: (id: string) => client.productReviewStats({ id }),
       capacity: 1024,
       timeToLive: "15 minutes",
     })
@@ -108,7 +106,8 @@ export class Products extends Effect.Service<Products>()("app/Products", {
     return {
       getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
       getFullInfo: (id: string) => fullInfoCache.get(id),
-      getReviews: (id: string) => reviewCache.get(id),
+      getReviewStats: (id: string) => reviewCache.get(id),
+      getReviews: (id: string) => client.productReviews({ id }),
       getFulfillment: (id: string) => client.fulfillment({ id }),
     }
   }),

@@ -4,15 +4,17 @@ import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
+import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { ProductReview, ReviewsWithStats } from "api/src/domain/Bazaar"
+import { ProductReview, ReviewStats } from "api/src/domain/Bazaar"
 import Markdown from "react-markdown"
-import { productFulfillmentRx } from "./rx"
+import { productFulfillmentRx, productReviewsRx } from "./rx"
 import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
+import rehypeRaw from "rehype-raw"
+import { useScrollBottom } from "@/lib/useScrollBottom"
 
 const imageIndexRx = Rx.make(0)
 
@@ -20,11 +22,19 @@ export function ProductListing({
   product,
   fullInfo,
   reviews,
+  reviewStats,
 }: {
   readonly product: ProductBaseInfo
   readonly fullInfo: Option.Option<ProductPriceInfo>
-  readonly reviews: Option.Option<ReviewsWithStats>
+  readonly reviewStats: Option.Option<ReviewStats>
+  readonly reviews: ReadonlyArray<ProductReview>
 }) {
+  const pullReviews = useRxSet(productReviewsRx(product.id))
+
+  useScrollBottom(() => {
+    pullReviews()
+  })
+
   return (
     <div className="pb-8 pt-1">
       <div className="py-2">
@@ -77,7 +87,9 @@ export function ProductListing({
             {fullInfo.pipe(
               Option.map((info) => (
                 <div className="prose">
-                  <Markdown>{info.info.feature.description}</Markdown>
+                  <Markdown rehypePlugins={[rehypeRaw]}>
+                    {info.info.feature.description}
+                  </Markdown>
                 </div>
               )),
               Option.getOrElse(() => <SkeletonDescription />),
@@ -108,18 +120,14 @@ export function ProductListing({
           <TabsContent value="reviews" className="p-6 border rounded-b">
             <h3 className="text-lg font-bold mb-4">Customer Reviews</h3>
 
-            {Option.match(reviews, {
+            {Option.match(reviewStats, {
               onNone: () => <SkeletonRatings />,
-              onSome: (reviews) => (
-                <>
-                  <ReviewStats reviews={reviews} />
-
-                  {reviews.reviews.map((review, i) => (
-                    <ReviewCard key={i} review={review} />
-                  ))}
-                </>
-              ),
+              onSome: (reviews) => <ReviewsOverview reviews={reviews} />,
             })}
+
+            {reviews.map((review, i) => (
+              <ReviewCard key={i} review={review} />
+            ))}
           </TabsContent>
 
           {fullInfo.pipe(
@@ -141,8 +149,8 @@ export function ProductListing({
   )
 }
 
-function ReviewStats({ reviews }: { readonly reviews: ReviewsWithStats }) {
-  const stats = reviews.stats.ReviewStatistics
+function ReviewsOverview({ reviews }: { readonly reviews: ReviewStats }) {
+  const stats = reviews.ReviewStatistics
   return (
     <div className="flex items-center gap-4 mb-6 max-w-lg">
       <div className="flex flex-col items-center">

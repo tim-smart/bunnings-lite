@@ -11,7 +11,7 @@ import {
   SessionLocation,
   Store,
 } from "./Bunnings"
-import { ReviewsWithStats } from "./Bazaar"
+import { ProductReview, ReviewStats, ReviewsWithStats } from "./Bazaar"
 
 export class Rpcs extends RpcGroup.make(
   Rpc.make("login", {
@@ -33,11 +33,18 @@ export class Rpcs extends RpcGroup.make(
     },
     success: ProductPriceInfo,
   }),
+  Rpc.make("productReviewStats", {
+    payload: {
+      id: Schema.String,
+    },
+    success: ReviewStats,
+  }),
   Rpc.make("productReviews", {
     payload: {
       id: Schema.String,
     },
-    success: ReviewsWithStats,
+    stream: true,
+    success: ProductReview,
   }),
   Rpc.make("fulfillment", {
     payload: {

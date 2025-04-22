@@ -7,7 +7,6 @@ import { NodeHttpServer } from "@effect/platform-node"
 import { createServer } from "node:http"
 import { Bunnings } from "./Bunnings"
 import { Bazaar } from "./Bazaar"
-import { ReviewsWithStats } from "./domain/Bazaar"
 import { CurrentSession, FulfillmentInfoWithLocation } from "./domain/Bunnings"
 import { Sessions } from "./Sessions"
 
@@ -27,17 +26,8 @@ const Handlers = Rpcs.toLayer(
       search: ({ query }) => bunnings.search(query).pipe(Stream.orDie),
       productInfo: ({ id }) =>
         bunnings.productInfoWithPrice(id).pipe(Effect.orDie),
-      productReviews: ({ id }) =>
-        Effect.all(
-          {
-            reviews: bazaar.allReviews(id),
-            stats: bazaar.overview(id),
-          },
-          { concurrency: 2 },
-        ).pipe(
-          Effect.orDie,
-          Effect.map((_) => new ReviewsWithStats(_)),
-        ),
+      productReviews: ({ id }) => bazaar.reviews(id).pipe(Stream.orDie),
+      productReviewStats: ({ id }) => bazaar.overview(id).pipe(Effect.orDie),
       fulfillment: Effect.fnUntraced(function* ({ id }) {
         const [fulfillment, location] = yield* Effect.all(
           [bunnings.fulfillment(id), bunnings.productLocation(id)],

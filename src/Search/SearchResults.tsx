@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
 import { useFavoritesRef } from "@/Favorites/rx"
 import { Button } from "@/components/ui/button"
+import { useScrollBottom } from "@/lib/useScrollBottom"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -128,29 +129,6 @@ function FulfillmentBadge({ product }: { readonly product: ProductBaseInfo }) {
   }
 
   return null
-}
-
-function useScrollBottom(f: () => void) {
-  const bottomRef = useRef(false)
-  const fn = useMemo(() => f, [])
-
-  useEffect(() => {
-    const onscroll = () => {
-      const scrolledTo = window.scrollY + window.innerHeight
-      const threshold = 300
-      const isReachBottom = document.body.scrollHeight - threshold <= scrolledTo
-      if (isReachBottom && !bottomRef.current) {
-        bottomRef.current = true
-        fn()
-      } else if (!isReachBottom) {
-        bottomRef.current = false
-      }
-    }
-    window.addEventListener("scroll", onscroll)
-    return () => {
-      window.removeEventListener("scroll", onscroll)
-    }
-  }, [bottomRef, fn])
 }
 
 function NoResults() {

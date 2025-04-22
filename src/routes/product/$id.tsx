@@ -1,5 +1,10 @@
 import { ProductListing } from "@/Product/Listing"
-import { productFullInfoRx, productReviewsRx, productRx } from "@/Product/rx"
+import {
+  productFullInfoRx,
+  productReviewsRx,
+  productReviewStatsRx,
+  productRx,
+} from "@/Product/rx"
 import { resultsRx } from "@/Search/rx"
 import { Result, useRxMount, useRxValue } from "@effect-rx/rx-react"
 import { createFileRoute } from "@tanstack/react-router"
@@ -16,7 +21,14 @@ export function ProductScreen() {
   const { id } = Route.useParams()
   const product = useRxValue(productRx(id))
   const fullInfo = Result.value(useRxValue(productFullInfoRx(id)))
-  const reviews = Result.value(useRxValue(productReviewsRx(id)))
+  const reviewStats = Result.value(useRxValue(productReviewStatsRx(id)))
+  const reviews = Result.getOrElse(
+    useRxValue(
+      productReviewsRx(id),
+      Result.map((_) => _.items),
+    ),
+    () => [],
+  )
   if (product._tag !== "Success") {
     return null
   }
@@ -27,6 +39,7 @@ export function ProductScreen() {
         Option.getOrElse(() => product.value),
       )}
       fullInfo={fullInfo}
+      reviewStats={reviewStats}
       reviews={reviews}
     />
   )
