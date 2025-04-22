@@ -58,8 +58,11 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
   const navigate = useNavigate()
   const preload = useRxSet(preloadRx)
 
-  const onTouchStart = useCallback(() => {
+  const onPointerDown = useCallback(() => {
     preload(new BaseInfoKey({ id: product.id, result: product }))
+  }, [product])
+
+  const onPointerUp = useCallback(() => {
     navigate({
       to: `/product/$id`,
       params: { id: product.id },
@@ -72,7 +75,9 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       to={`/product/$id`}
       params={{ id: product.id }}
       search={(current) => current}
-      onMouseDown={onTouchStart}
+      onPointerDown={onPointerDown}
+      onMouseDown={onPointerUp}
+      onPointerUp={onPointerUp}
     >
       <Card className="relative">
         <div className="absolute top-2 left-2 right-2 flex">
