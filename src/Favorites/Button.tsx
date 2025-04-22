@@ -34,7 +34,7 @@ export function FavoriteButton({
   return (
     <button
       type="button"
-      onClick={(e) => {
+      onMouseDown={(e) => {
         e.preventDefault()
         toggleFavorite(product)
       }}
