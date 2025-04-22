@@ -20,11 +20,13 @@ export const loginRx = runtimeRx.rx(
   }),
 )
 
+const queryTrimmedRx = Rx.map(queryRx, (query) => query.trim())
+
 export const resultsRx = runtimeRx.pull(
   Effect.fnUntraced(function* (get: Rx.Context) {
     const client = yield* BunningsClient
-    const query = get(queryRx)
-    if (query.trim() === "") {
+    const query = get(queryTrimmedRx)
+    if (query === "") {
       return Stream.empty
     }
     yield* Effect.sleep(150)
