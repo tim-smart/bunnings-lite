@@ -4,7 +4,11 @@ import { useRegisterSW } from "virtual:pwa-register/react"
 import { useRxMount } from "@effect-rx/rx-react"
 import { loginRx } from "./Search/rx"
 
-const router = createRouter({ routeTree, scrollRestoration: true })
+const router = createRouter({
+  routeTree,
+  defaultPreload: "intent",
+  scrollRestoration: true,
+})
 
 declare module "@tanstack/react-router" {
   interface Register {
