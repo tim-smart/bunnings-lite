@@ -24,7 +24,7 @@ import { StoreSelector } from "@/Stores/Selector"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
-import { useFavorites, useFavoritesRef } from "@/Favorites/rx"
+import { useFavoritesRef } from "@/Favorites/rx"
 import { Button } from "@/components/ui/button"
 
 export function SearchResults() {
@@ -64,6 +64,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
     <Link
       to={`/product/$id`}
       params={{ id: product.id }}
+      search={(current) => current}
       onMouseDown={onTouchStart}
     >
       <Card className="relative">

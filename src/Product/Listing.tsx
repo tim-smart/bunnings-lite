@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 import { ProductReview, ReviewsWithStats } from "api/src/domain/Bazaar"
 import Markdown from "react-markdown"
 import { productFulfillmentRx } from "./rx"
@@ -26,7 +26,18 @@ export function ProductListing({
   readonly reviews: Option.Option<ReviewsWithStats>
 }) {
   return (
-    <div className="py-8">
+    <div className="pb-8 pt-1">
+      <div className="py-2">
+        <Button
+          variant="link"
+          className="cursor-pointer"
+          onClick={() => history.back()}
+        >
+          <ArrowLeft />
+          Back
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Images */}
         <div className="flex flex-col gap-4">
@@ -62,7 +73,7 @@ export function ProductListing({
             </Button>
           </div>
 
-          <div className="flex flex-col gap-4 my-2 text-sm">
+          <div className="flex flex-col gap-4 text-sm">
             {fullInfo.pipe(
               Option.map((info) => (
                 <div className="prose">
