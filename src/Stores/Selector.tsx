@@ -82,12 +82,21 @@ function StoreItems({
     return Option.match(currentLocation, {
       onNone: () => null,
       onSome: (location) => (
-        <SelectItem
-          value={location.code}
-          className="py-3 cursor-pointer hover:bg-gray-100"
-        >
-          {location.city}
-        </SelectItem>
+        <>
+          <SelectItem
+            value={location.code}
+            className="py-3 cursor-pointer hover:bg-gray-100"
+          >
+            {location.city}
+          </SelectItem>
+          <SelectItem
+            value="loading"
+            className="py-3 cursor-pointer hover:bg-gray-100"
+            disabled
+          >
+            Loading stores...
+          </SelectItem>
+        </>
       ),
     })
   }
