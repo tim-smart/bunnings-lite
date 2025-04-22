@@ -34,7 +34,6 @@ export const localStorageRx = <A, I>(options: {
       }),
     ).read,
     (ctx, value: A) => {
-      console.log("set", value)
       ctx.set(setRx, value as any)
       ctx.setSelf(Result.success(value))
     },
