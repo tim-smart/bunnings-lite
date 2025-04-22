@@ -1,4 +1,10 @@
-import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import {
+  Result,
+  useRx,
+  useRxRef,
+  useRxSet,
+  useRxValue,
+} from "@effect-rx/rx-react"
 import { queryIsSetRx, resultsRx } from "./rx"
 import { Cause, Option } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
@@ -18,7 +24,8 @@ import { StoreSelector } from "@/Stores/Selector"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
-import { useFavorites } from "@/Favorites/rx"
+import { useFavorites, useFavoritesRef } from "@/Favorites/rx"
+import { Button } from "@/components/ui/button"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -160,7 +167,8 @@ function NoResults() {
 }
 
 function FavoritesList() {
-  const favorites = useFavorites()
+  const ref = useFavoritesRef()
+  const favorites = useRxRef(ref)
 
   if (favorites.length === 0) {
     return null
@@ -168,7 +176,12 @@ function FavoritesList() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <Label className="text-[#0D5257]">Favourites:</Label>
+      <Label className="text-[#0D5257]">
+        Favourites:
+        <Button variant="link" className="p-0 m-0" onClick={() => ref.set([])}>
+          (clear all)
+        </Button>
+      </Label>
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         {favorites.map((result, i) => (
           <ResultCard key={i} product={result} />
