@@ -7,6 +7,7 @@ import { loginRx } from "./Search/rx"
 const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  defaultPendingMinMs: 0,
   scrollRestoration: true,
 })
 
