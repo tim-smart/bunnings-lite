@@ -45,7 +45,7 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
   {
     scoped: RpcClient.make(Rpcs),
     dependencies: [
-      RpcClient.layerProtocolSocket.pipe(
+      RpcClient.layerProtocolSocket({ retryTransientErrors: true }).pipe(
         Layer.provide(RpcSerialization.layerJson),
         Layer.provide(SocketLayer),
         Layer.provide(Socket.layerWebSocketConstructorGlobal),
