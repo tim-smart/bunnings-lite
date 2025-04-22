@@ -7,7 +7,7 @@ export function useScrollBottom(f: () => void) {
   useEffect(() => {
     const onscroll = () => {
       const scrolledTo = window.scrollY + window.innerHeight
-      const threshold = 500
+      const threshold = 300
       const isReachBottom = document.body.scrollHeight - threshold <= scrolledTo
       if (isReachBottom && !bottomRef.current) {
         bottomRef.current = true

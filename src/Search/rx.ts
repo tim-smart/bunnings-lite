@@ -30,6 +30,6 @@ export const resultsRx = runtimeRx.pull(
       return Stream.empty
     }
     yield* Effect.sleep(150)
-    return client.search({ query })
+    return client.search({ query }).pipe(Stream.bufferChunks({ capacity: 1 }))
   }, Stream.unwrap),
 )

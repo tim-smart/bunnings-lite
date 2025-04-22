@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect-rx/rx-react':
-        specifier: ^0.31.17
-        version: 0.31.17(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)
+        specifier: ^0.31.18
+        version: 0.31.18(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)
       '@effect/experimental':
         specifier: ^0.44.12
         version: 0.44.12(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)
@@ -663,15 +663,15 @@ packages:
   '@canvas/image-data@1.0.0':
     resolution: {integrity: sha512-BxOqI5LgsIQP1odU5KMwV9yoijleOPzHL18/YvNqF9KFSGF2K/DLlYAbDQsWqd/1nbaFuSkYD/191dpMtNh4vw==}
 
-  '@effect-rx/rx-react@0.31.17':
-    resolution: {integrity: sha512-TW7TrhBpPCh79+x+AE1nKFvy3HKxltI1ft1aZkjbpLFmPTIBuGyU/5KdRftvOXWKT5HRK8IOS+tChG6tywv2uA==}
+  '@effect-rx/rx-react@0.31.18':
+    resolution: {integrity: sha512-I6A+X9pKN5XFXW9h02UsmrXzaw6e4n1UW0qbLjmiMfPSr0upkG63wPajySXju8JADHCYUAOLrRCsR1WSRMxspA==}
     peerDependencies:
       effect: ^3.14.0
       react: '>=18 <20'
       scheduler: '*'
 
-  '@effect-rx/rx@0.34.14':
-    resolution: {integrity: sha512-NA/nmPXInOH+Cl6h69K6BwGAZtMqcm69hed9JM7cPeQ0pZHWQ+FIhgEpFGBzyDK2yHKR0Snq4wSpBubcaMb1/Q==}
+  '@effect-rx/rx@0.34.15':
+    resolution: {integrity: sha512-iDavCqwBeWhRODEPWp5pxcaumQNxYJLaI4yqP8VRo32B0GaZcvTAFUM+Ew/MsUBJ8xf2huULZXus9zc18c0FdA==}
     peerDependencies:
       effect: ^3.14.0
 
@@ -4123,14 +4123,14 @@ snapshots:
 
   '@canvas/image-data@1.0.0': {}
 
-  '@effect-rx/rx-react@0.31.17(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)':
+  '@effect-rx/rx-react@0.31.18(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)':
     dependencies:
-      '@effect-rx/rx': 0.34.14(effect@3.14.12)
+      '@effect-rx/rx': 0.34.15(effect@3.14.12)
       effect: 3.14.12
       react: 19.1.0
       scheduler: 0.26.0
 
-  '@effect-rx/rx@0.34.14(effect@3.14.12)':
+  '@effect-rx/rx@0.34.15(effect@3.14.12)':
     dependencies:
       effect: 3.14.12
 

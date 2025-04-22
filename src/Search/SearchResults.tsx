@@ -15,9 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { preloadRx, productFulfillmentRx } from "@/Product/rx"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
@@ -55,10 +55,16 @@ export function SearchResults() {
 }
 
 function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
+  const navigate = useNavigate()
   const preload = useRxSet(preloadRx)
 
   const onTouchStart = useCallback(() => {
     preload(new BaseInfoKey({ id: product.id, result: product }))
+    navigate({
+      to: `/product/$id`,
+      params: { id: product.id },
+      search: (current) => current,
+    })
   }, [product])
 
   return (
