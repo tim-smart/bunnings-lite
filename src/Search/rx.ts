@@ -33,3 +33,6 @@ export const resultsRx = runtimeRx.pull(
     return client.search({ query }).pipe(Stream.bufferChunks({ capacity: 1 }))
   }, Stream.unwrap),
 )
+
+let count = 0
+export const focusRx = Rx.fnSync((_: void) => count++)

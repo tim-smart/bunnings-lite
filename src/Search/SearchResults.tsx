@@ -5,7 +5,7 @@ import {
   useRxSet,
   useRxValue,
 } from "@effect-rx/rx-react"
-import { queryIsSetRx, resultsRx } from "./rx"
+import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { Cause, Option } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
 import {
@@ -17,7 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { preloadRx, productFulfillmentRx } from "@/Product/rx"
-import { useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
@@ -27,6 +27,7 @@ import { FavoriteButton } from "@/Favorites/Button"
 import { useFavoritesRef } from "@/Favorites/rx"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
+import { ArrowUp } from "lucide-react"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -50,6 +51,9 @@ export function SearchResults() {
         : result.value.items.map((result, i) => (
             <ResultCard key={i} product={result} />
           ))}
+      <div className="fixed bottom-0 right-0 p-4">
+        <BackToTop />
+      </div>
     </div>
   )
 }
@@ -178,5 +182,34 @@ function FavoritesList() {
         ))}
       </div>
     </div>
+  )
+}
+
+function BackToTop() {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setVisible(window.scrollY > 200)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
+  const scrollToTop = useRxSet(focusRx)
+
+  if (!visible) {
+    return null
+  }
+
+  return (
+    <Button
+      onClick={() => scrollToTop()}
+      className="bg-[#0D5257] text-white cursor-pointer hover:bg-[#0D5257]/90"
+    >
+      <ArrowUp />
+    </Button>
   )
 }

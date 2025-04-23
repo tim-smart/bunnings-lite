@@ -6,8 +6,13 @@ import {
 } from "@tanstack/react-router"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { useRxValue, useRx, useRxSet } from "@effect-rx/rx-react"
-import { queryIsSetRx, queryRx } from "@/Search/rx"
+import {
+  useRxValue,
+  useRx,
+  useRxSet,
+  useRxSubscribe,
+} from "@effect-rx/rx-react"
+import { focusRx, queryIsSetRx, queryRx } from "@/Search/rx"
 import React, { useCallback } from "react"
 
 export const Route = createRootRoute({
@@ -69,6 +74,16 @@ function SearchInput() {
     },
     [setQuery, router, navigate],
   )
+
+  useRxSubscribe(focusRx, () => {
+    if (!inputRef.current) return
+    inputRef.current.focus({ preventScroll: true })
+    inputRef.current.select()
+    inputRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+  })
 
   return (
     <div className="relative w-full max-w-lg mx-auto">
