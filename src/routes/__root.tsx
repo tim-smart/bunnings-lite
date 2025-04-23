@@ -80,7 +80,6 @@ function SearchInput() {
   useRxSubscribe(focusRx, (o) => {
     if (!inputRef.current || Option.isNone(o)) return
     inputRef.current.focus({ preventScroll: true })
-    inputRef.current.select()
     inputRef.current.scrollIntoView({
       behavior: "smooth",
       block: "center",
