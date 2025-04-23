@@ -55,22 +55,25 @@ export function ProductListing({
           <ThumbnailImages product={product} />
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <h1 className="text-2xl md:text-3xl font-bold">{product.title}</h1>
 
-          <div className="flex items-center gap-2">
-            <div className="flex">
-              <StarRating rating={product.rating} />
-            </div>
-            <span className="text-sm text-gray-500">
-              ({product.numberOfReviews} reviews)
-            </span>
+          <div className="flex gap-4 items-center">
             <FulfillmentBadge product={product} />
+            <span className="text-sm text-gray-500">I/N: {product.id}</span>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold">${product.price}</span>
-            <span className="text-sm text-gray-500">inc. GST</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">${product.price}</span>
+              <span className="text-sm text-gray-500">inc. GST</span>
+            </div>
+            <div className="flex gap-2">
+              <StarRating rating={product.rating} />
+              <span className="text-sm text-gray-500">
+                ({product.numberOfReviews} reviews)
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-2 items-center flex-wrap">
