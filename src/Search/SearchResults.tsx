@@ -98,7 +98,10 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
           <CardDescription>
             ${product.price}
             <div className="h-1" />
-            <StarRating rating={product.rating} /> ({product.numberOfReviews})
+            <div className="flex gap-2">
+              <StarRating rating={product.rating} />
+              <span>({product.numberOfReviews})</span>
+            </div>
           </CardDescription>
         </CardHeader>
       </Card>
