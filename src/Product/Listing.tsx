@@ -69,9 +69,23 @@ export function ProductListing({
               <span className="text-sm text-gray-500">inc. GST</span>
             </div>
             <div className="flex gap-2">
-              <StarRating rating={product.rating} />
+              <StarRating
+                rating={reviewStats.pipe(
+                  Option.map(
+                    (stats) => stats.ReviewStatistics.AverageOverallRating,
+                  ),
+                  Option.getOrElse(() => product.rating),
+                )}
+              />
               <span className="text-sm text-gray-500">
-                ({product.numberOfReviews} reviews)
+                (
+                {reviewStats.pipe(
+                  Option.map(
+                    (stats) => stats.ReviewStatistics.TotalReviewCount,
+                  ),
+                  Option.getOrElse(() => product.numberOfReviews),
+                )}{" "}
+                reviews)
               </span>
             </div>
           </div>

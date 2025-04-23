@@ -98,7 +98,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
           <CardDescription>
             ${product.price}
             <div className="h-1" />
-            <StarRating rating={product.rating} />
+            <StarRating rating={product.rating} /> ({product.numberOfReviews})
           </CardDescription>
         </CardHeader>
       </Card>
