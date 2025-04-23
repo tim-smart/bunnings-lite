@@ -81,7 +81,6 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       search={(current) => current}
       onPointerDown={onPointerDown}
       onMouseDown={onPointerUp}
-      onPointerUp={onPointerUp}
     >
       <Card className="relative">
         <div className="absolute top-2 left-2 right-2 flex">
