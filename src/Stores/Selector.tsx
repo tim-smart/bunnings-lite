@@ -1,4 +1,9 @@
-import { Result, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import {
+  RegistryContext,
+  Result,
+  useRxSet,
+  useRxValue,
+} from "@effect-rx/rx-react"
 import { currentLocationRx, storesRx } from "./rx"
 import { Chunk, Option } from "effect"
 import { MapPin } from "lucide-react"
@@ -11,17 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useState } from "react"
-import { SessionLocation, Store } from "../../api/src/domain/Bunnings"
+import { useContext, useState } from "react"
+import { SessionLocation } from "../../api/src/domain/Bunnings"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function StoreSelector() {
+  const registry = useContext(RegistryContext)
   const [open, setOpen] = useState(false)
   const currentLocation = Result.getOrElse(
     useRxValue(currentLocationRx),
     Option.none,
   )
-  const stores = Result.value(useRxValue(storesRx))
   const setLocation = useRxSet(currentLocationRx)
   return (
     <div className="w-full">
@@ -33,6 +38,7 @@ export function StoreSelector() {
           onSome: (location) => String(location.code),
         })}
         onValueChange={(value) => {
+          const stores = Result.value(registry.get(storesRx))
           stores.pipe(
             Option.flatMap(Chunk.findFirst((store) => store.name === value)),
             Option.map((store) => {
@@ -51,7 +57,7 @@ export function StoreSelector() {
           <SelectGroup>
             <SelectLabel className="font-bold">Select your store</SelectLabel>
             {open ? (
-              <StoreItems currentLocation={currentLocation} stores={stores} />
+              <StoreItems currentLocation={currentLocation} />
             ) : (
               Option.match(currentLocation, {
                 onNone: () => null,
@@ -74,11 +80,10 @@ export function StoreSelector() {
 
 function StoreItems({
   currentLocation,
-  stores,
 }: {
   readonly currentLocation: Option.Option<SessionLocation>
-  readonly stores: Option.Option<Chunk.Chunk<Store>>
 }) {
+  const stores = Result.value(useRxValue(storesRx))
   if (Option.isNone(stores)) {
     return (
       <>
