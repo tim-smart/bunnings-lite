@@ -16,7 +16,7 @@ import { SessionLocation, Store } from "../../api/src/domain/Bunnings"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function StoreSelector() {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const currentLocation = Result.getOrElse(
     useRxValue(currentLocationRx),
     Option.none,

@@ -169,12 +169,15 @@ function FavoritesList() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <Label className="text-[#0D5257]">
+      <div className="text-[#0D5257] font-medium text-sm flex gap-2">
         Favourites:
-        <Button variant="link" className="p-0 m-0" onClick={() => ref.set([])}>
+        <span
+          onClick={() => ref.set([])}
+          className="text-gray-600 cursor-pointer"
+        >
           (clear all)
-        </Button>
-      </Label>
+        </span>
+      </div>
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         {favorites.map((result, i) => (
           <ResultCard key={i} product={result} />
