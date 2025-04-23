@@ -22,17 +22,19 @@ export const loginRx = runtimeRx.rx(
 
 const queryTrimmedRx = Rx.map(queryRx, (query) => query.trim())
 
-export const resultsRx = runtimeRx.pull(
-  Effect.fnUntraced(function* (get: Rx.Context) {
-    const client = yield* BunningsClient
-    const query = get(queryTrimmedRx)
-    if (query === "") {
-      return Stream.empty
-    }
-    yield* Effect.sleep(150)
-    return client.search({ query }).pipe(Stream.bufferChunks({ capacity: 1 }))
-  }, Stream.unwrap),
-)
+export const resultsRx = runtimeRx
+  .pull(
+    Effect.fnUntraced(function* (get: Rx.Context) {
+      const client = yield* BunningsClient
+      const query = get(queryTrimmedRx)
+      if (query === "") {
+        return Stream.empty
+      }
+      yield* Effect.sleep(150)
+      return client.search({ query }).pipe(Stream.bufferChunks({ capacity: 1 }))
+    }, Stream.unwrap),
+  )
+  .pipe(Rx.keepAlive)
 
 let count = 0
 export const focusRx = Rx.fnSync((_: void) => count++)
