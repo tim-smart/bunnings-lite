@@ -1,5 +1,4 @@
-import { Rx } from "@effect-rx/rx-react"
-import { makeSearchParamRx } from "@/lib/searchParamRx"
+import { Result, Rx } from "@effect-rx/rx-react"
 import { BunningsClient, Products } from "@/RpcClient"
 import { Effect, Layer, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
@@ -8,14 +7,14 @@ const runtimeRx = Rx.runtime(
   Layer.mergeAll(Products.Default, BunningsClient.Default),
 ).pipe(Rx.keepAlive)
 
-export const queryRx = makeSearchParamRx("query")
+export const queryRx = Rx.searchParam("query")
 
 export const queryIsSetRx = Rx.map(queryRx, (query) => query.trim() !== "")
 
 export const loginRx = runtimeRx.rx(
   Effect.fnUntraced(function* (get: Rx.Context) {
     const client = yield* BunningsClient
-    const location = yield* get.result(currentLocationRx)
+    const location = get(currentLocationRx)
     yield* client.login({ location })
   }),
 )
@@ -35,6 +34,8 @@ export const resultsRx = runtimeRx
     }, Stream.unwrap),
   )
   .pipe(Rx.keepAlive)
+
+export const loadingRx = Rx.map(resultsRx, (_) => _.waiting)
 
 let count = 0
 export const focusRx = Rx.fnSync((_: void) => count++)

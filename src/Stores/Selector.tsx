@@ -23,10 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function StoreSelector() {
   const registry = useContext(RegistryContext)
   const [open, setOpen] = useState(false)
-  const currentLocation = Result.getOrElse(
-    useRxValue(currentLocationRx),
-    Option.none,
-  )
+  const currentLocation = useRxValue(currentLocationRx)
   const setLocation = useRxSet(currentLocationRx)
   return (
     <div className="w-full">

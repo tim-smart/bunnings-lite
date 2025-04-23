@@ -1,8 +1,9 @@
 import { ProductBaseInfo } from "api/src/domain/Bunnings"
-import { useFavoritesToggle, useIsFavorite } from "./rx"
+import { isFavoriteRx, useFavoritesToggle } from "../Favorites"
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useRxValue } from "@effect-rx/rx-react"
 
 export function FavoriteButton({
   product,
@@ -11,7 +12,7 @@ export function FavoriteButton({
   readonly product: ProductBaseInfo
   readonly variant?: "full" | "icon"
 }) {
-  const isFavorite = useIsFavorite(product)
+  const isFavorite = useRxValue(isFavoriteRx(product))
   const toggleFavorite = useFavoritesToggle()
 
   if (variant === "full") {

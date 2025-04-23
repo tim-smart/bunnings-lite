@@ -1,10 +1,4 @@
-import {
-  Result,
-  useRx,
-  useRxRef,
-  useRxSet,
-  useRxValue,
-} from "@effect-rx/rx-react"
+import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { Cause, Option } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
@@ -24,10 +18,10 @@ import { StoreSelector } from "@/Stores/Selector"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
-import { useFavoritesRef } from "@/Favorites/rx"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { ArrowUp } from "lucide-react"
+import { favoritesRx } from "@/Favorites"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -40,17 +34,19 @@ export function SearchResults() {
     return <NoResults />
   }
 
-  if (result._tag === "Failure" && Cause.isDie(result.cause)) {
+  if (result._tag === "Failure") {
     throw Cause.squash(result.cause)
   }
 
+  const hasResults = Result.isSuccess(result) && result.value.items.length > 0
+
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 py-4 sm:py-10">
-      {result._tag !== "Success" || result.waiting
-        ? Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)
-        : result.value.items.map((result, i) => (
-            <ResultCard key={i} product={result} />
-          ))}
+      {hasResults
+        ? result.value.items.map((result) => (
+            <ResultCard key={result.id} product={result} />
+          ))
+        : Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)}
       <div className="fixed bottom-0 right-0 p-4">
         <BackToTop />
       </div>
@@ -160,8 +156,7 @@ function NoResults() {
 }
 
 function FavoritesList() {
-  const ref = useFavoritesRef()
-  const favorites = useRxRef(ref)
+  const [favorites, setFavorites] = useRx(favoritesRx)
 
   if (favorites.length === 0) {
     return null
@@ -172,7 +167,7 @@ function FavoritesList() {
       <div className="text-[#0D5257] font-medium text-sm flex gap-2">
         Favourites:
         <span
-          onClick={() => ref.set([])}
+          onClick={() => setFavorites([])}
           className="text-gray-600 cursor-pointer"
         >
           (clear all)

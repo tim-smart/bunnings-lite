@@ -1,23 +1,34 @@
-import { RxRef } from "@effect-rx/rx-react"
-import { KeyValueStore } from "@effect/platform"
+import { Rx, useRxSet } from "@effect-rx/rx-react"
 import { BrowserKeyValueStore } from "@effect/platform-browser"
 import { ProductBaseInfo } from "../api/src/domain/Bunnings"
-import { Effect, Option, Schema } from "effect"
+import { Schema } from "effect"
+import { useCallback } from "react"
 
-export class Favorites extends Effect.Service<Favorites>()("app/Favorites", {
-  dependencies: [BrowserKeyValueStore.layerLocalStorage],
-  effect: Effect.gen(function* () {
-    const store = (yield* KeyValueStore.KeyValueStore).forSchema(
-      Schema.Array(ProductBaseInfo),
-    )
-    const ref = RxRef.make<ReadonlyArray<ProductBaseInfo>>(
-      Option.getOrElse(yield* store.get("favorites"), () => []),
-    )
+export const favoritesRx = Rx.kvs({
+  runtime: Rx.runtime(BrowserKeyValueStore.layerLocalStorage),
+  key: "favorites",
+  schema: Schema.Array(ProductBaseInfo),
+  defaultValue: () => [],
+})
 
-    ref.subscribe((products) => {
-      Effect.runFork(store.set("favorites", products))
-    })
+export const isFavoriteRx = Rx.family((product: ProductBaseInfo) =>
+  Rx.map(favoritesRx, (favorites) =>
+    favorites.some((p) => p.id === product.id),
+  ),
+)
 
-    return { ref } as const
-  }),
-}) {}
+export const useFavoritesToggle = () => {
+  const setFavorites = useRxSet(favoritesRx)
+
+  return useCallback(
+    (product: ProductBaseInfo) => {
+      setFavorites((products) => {
+        if (products.find((p) => p.id === product.id)) {
+          return products.filter((p) => p.id !== product.id)
+        }
+        return [...products, product]
+      })
+    },
+    [setFavorites],
+  )
+}

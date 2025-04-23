@@ -1,8 +1,7 @@
-import { localStorageRx } from "@/lib/localStorageRx"
 import { SessionLocation } from "../../api/src/domain/Bunnings"
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { Rx } from "@effect-rx/rx-react"
-import { Geolocation } from "@effect/platform-browser"
+import { BrowserKeyValueStore, Geolocation } from "@effect/platform-browser"
 import { BunningsClient } from "@/RpcClient"
 
 const runtime = Rx.runtime(
@@ -31,8 +30,9 @@ export const storesRx = runtime
   )
   .pipe(Rx.keepAlive)
 
-export const currentLocationRx = localStorageRx({
+export const currentLocationRx = Rx.kvs<Option.Option<SessionLocation>>({
+  runtime: Rx.runtime(BrowserKeyValueStore.layerLocalStorage),
   key: "currentLocation",
   schema: Schema.Option(SessionLocation),
-  defaultValue: Option.none(),
+  defaultValue: Option.none,
 }).pipe(Rx.keepAlive)

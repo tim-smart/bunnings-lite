@@ -4,7 +4,7 @@ import {
   useRouter,
   useNavigate,
 } from "@tanstack/react-router"
-import { Search } from "lucide-react"
+import { LoaderCircle, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   useRxValue,
@@ -12,9 +12,10 @@ import {
   useRxSet,
   useRxSubscribe,
 } from "@effect-rx/rx-react"
-import { focusRx, queryIsSetRx, queryRx } from "@/Search/rx"
+import { focusRx, loadingRx, queryIsSetRx, queryRx } from "@/Search/rx"
 import React, { useCallback } from "react"
 import { Option } from "effect"
+import { cn } from "@/lib/utils"
 
 export const Route = createRootRoute({
   component: () => (
@@ -86,9 +87,17 @@ function SearchInput() {
     })
   })
 
+  const loading = useRxValue(loadingRx)
+  const Icon = loading ? LoaderCircle : Search
+
   return (
     <div className="relative w-full max-w-lg mx-auto">
-      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+      <Icon
+        className={cn(
+          "absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground",
+          loading && "animate-spin",
+        )}
+      />
       <form
         onSubmit={(e) => {
           e.preventDefault()

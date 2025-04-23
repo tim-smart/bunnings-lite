@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@effect-rx/rx-react": "^0.31.18",
+    "@effect-rx/rx-react": "^0.31.23",
     "@effect/experimental": "^0.44.12",
     "@effect/opentelemetry": "^0.46.9",
     "@effect/platform": "^0.80.12",
@@ -20,7 +20,7 @@
     "@radix-ui/react-select": "^2.2.2",
     "@radix-ui/react-slot": "^1.2.0",
     "@radix-ui/react-tabs": "^1.1.9",
-    "@tanstack/react-router": "^1.116.0",
+    "@tanstack/react-router": "^1.117.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "effect": "^3.14.12",
@@ -38,8 +38,8 @@
     "@effect/language-service": "^0.7.1",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.4",
-    "@tanstack/router-devtools": "^1.116.0",
-    "@tanstack/router-plugin": "^1.116.1",
+    "@tanstack/router-devtools": "^1.117.0",
+    "@tanstack/router-plugin": "^1.117.0",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
