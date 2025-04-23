@@ -38,7 +38,9 @@ export function SearchResults() {
     throw Cause.squash(result.cause)
   }
 
-  const hasResults = Result.isSuccess(result) && result.value.items.length > 0
+  const hasResults =
+    Result.isSuccess(result) &&
+    (result.value.items.length > 0 || !result.waiting)
 
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 py-4 sm:py-10">
