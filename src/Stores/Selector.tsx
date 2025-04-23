@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import { SessionLocation, Store } from "../../api/src/domain/Bunnings"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function StoreSelector() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const currentLocation = Result.getOrElse(
     useRxValue(currentLocationRx),
     Option.none,
@@ -79,26 +80,24 @@ function StoreItems({
   readonly stores: Option.Option<Chunk.Chunk<Store>>
 }) {
   if (Option.isNone(stores)) {
-    return Option.match(currentLocation, {
-      onNone: () => null,
-      onSome: (location) => (
-        <>
-          <SelectItem
-            value={location.code}
-            className="py-3 cursor-pointer hover:bg-gray-100"
-          >
-            {location.city}
-          </SelectItem>
-          <SelectItem
-            value="loading"
-            className="py-3 cursor-pointer hover:bg-gray-100"
-            disabled
-          >
-            Loading stores...
-          </SelectItem>
-        </>
-      ),
-    })
+    return (
+      <>
+        {Option.match(currentLocation, {
+          onNone: () => null,
+          onSome: (location) => (
+            <SelectItem
+              value={location.code}
+              className="py-3 cursor-pointer hover:bg-gray-100"
+            >
+              {location.city}
+            </SelectItem>
+          ),
+        })}
+        {Array.from({ length: 5 }, (_, i) => (
+          <Skeleton key={i} className="h-8 flex-1 m-2" />
+        ))}
+      </>
+    )
   }
   return (
     <>
