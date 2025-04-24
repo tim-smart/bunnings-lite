@@ -43,14 +43,15 @@ export function SearchResults() {
     (result.value.items.length > 0 || !result.waiting)
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 py-4 sm:py-10">
+    <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-2 sm:py-10">
       {hasResults
         ? result.value.items.map((result) => (
             <ResultCard key={result.id} product={result} />
           ))
         : Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)}
-      <div className="fixed bottom-0 right-0 p-4">
+      <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col">
         <BackToTop />
+        <div className="h-4" />
       </div>
     </div>
   )
@@ -94,7 +95,9 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
           />
         </div>
         <CardHeader className="px-4">
-          <CardTitle>{product.title}</CardTitle>
+          <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh]">
+            {product.title}
+          </CardTitle>
           <CardDescription>
             ${product.price}
             <div className="h-1" />
@@ -112,7 +115,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
 function SkeletonCard() {
   return (
     <div className="flex flex-col space-y-3">
-      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="aspect-square w-full rounded-xl" />
       <div className="space-y-2">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-full" />

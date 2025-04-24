@@ -9,23 +9,23 @@ importers:
   .:
     dependencies:
       '@effect-rx/rx-react':
-        specifier: ^0.31.23
-        version: 0.31.23(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)
+        specifier: ^0.31.25
+        version: 0.31.25(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)
       '@effect/experimental':
-        specifier: ^0.44.12
-        version: 0.44.12(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)
+        specifier: ^0.44.13
+        version: 0.44.13(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
       '@effect/opentelemetry':
-        specifier: ^0.46.9
-        version: 0.46.9(@effect/platform@0.80.12(effect@3.14.12))(@opentelemetry/semantic-conventions@1.32.0)(effect@3.14.12)
+        specifier: ^0.46.10
+        version: 0.46.10(@effect/platform@0.80.13(effect@3.14.13))(@opentelemetry/semantic-conventions@1.32.0)(effect@3.14.13)
       '@effect/platform':
-        specifier: ^0.80.12
-        version: 0.80.12(effect@3.14.12)
+        specifier: ^0.80.13
+        version: 0.80.13(effect@3.14.13)
       '@effect/platform-browser':
-        specifier: ^0.60.3
-        version: 0.60.3(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)
+        specifier: ^0.60.4
+        version: 0.60.4(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
       '@effect/rpc':
-        specifier: ^0.56.0
-        version: 0.56.0(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)
+        specifier: ^0.56.1
+        version: 0.56.1(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.56.1(react@19.1.0))
@@ -51,8 +51,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: ^3.14.12
-        version: 3.14.12
+        specifier: ^3.14.13
+        version: 3.14.13
       lucide-react:
         specifier: ^0.503.0
         version: 0.503.0(react@19.1.0)
@@ -71,6 +71,9 @@ importers:
       react-router-dom:
         specifier: ^7.5.1
         version: 7.5.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-virtuoso:
+        specifier: ^4.12.6
+        version: 4.12.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       rehype-raw:
         specifier: ^7.0.0
         version: 7.0.0
@@ -82,8 +85,8 @@ importers:
         version: 3.24.3
     devDependencies:
       '@effect/language-service':
-        specifier: ^0.7.1
-        version: 0.7.1
+        specifier: ^0.8.1
+        version: 0.8.1
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.4)
@@ -663,24 +666,24 @@ packages:
   '@canvas/image-data@1.0.0':
     resolution: {integrity: sha512-BxOqI5LgsIQP1odU5KMwV9yoijleOPzHL18/YvNqF9KFSGF2K/DLlYAbDQsWqd/1nbaFuSkYD/191dpMtNh4vw==}
 
-  '@effect-rx/rx-react@0.31.23':
-    resolution: {integrity: sha512-x9+ziouawN2Y1/fxjuSfikxPg0fjXPM6Moo0dBazWUQdsrLywr+pKfLpa2QulsNnsUmqJY71YM62Mbp3G+qgTQ==}
+  '@effect-rx/rx-react@0.31.25':
+    resolution: {integrity: sha512-3bSHbmwpz/oidRQCy18J7abpgHIvUNZ+9ZfFjAvpG+T8fm99Nx5dTm7ebUFMAAy/mvSGmrUsFmRZv9LaUFBeBA==}
     peerDependencies:
       effect: ^3.14.12
       react: '>=18 <20'
       scheduler: '*'
 
-  '@effect-rx/rx@0.35.0':
-    resolution: {integrity: sha512-DiMUgtPPpTDHqElfVD3Z23p73tVA+QmRVT1G2KdkTYj4k/HSgccCNq+F9R0pYCwnh6fQorMtaW5+x/ejccxX4Q==}
+  '@effect-rx/rx@0.35.2':
+    resolution: {integrity: sha512-1zcNn9R0TSpAVAp+Gb0Q9RZ4NjEoUna311m/FLc604kf6nrJIXB7jTvM/LFpiFxAsgMpCFiqic/XqzAPseBuAw==}
     peerDependencies:
       '@effect/platform': ^0.80.12
       effect: ^3.14.12
 
-  '@effect/experimental@0.44.12':
-    resolution: {integrity: sha512-s9rjRz00GjuDMsbWqxmkLhXK4/lohBMQn8+SgCsQG0LVtPW/UKa30mFqWb6RWsxa4rOhIilfGu72E4922wA2Pw==}
+  '@effect/experimental@0.44.13':
+    resolution: {integrity: sha512-OJ/lNukjhca7oD1Dcy+Lk8PJFn+6Pz4ILzTB4TltZrvfeKpl4sDmF09EgABgMzZsEdeNtOmy5I0Ckl0nuE2LAQ==}
     peerDependencies:
-      '@effect/platform': ^0.80.12
-      effect: ^3.14.12
+      '@effect/platform': ^0.80.13
+      effect: ^3.14.13
       ioredis: ^5
       lmdb: ^3
     peerDependenciesMeta:
@@ -689,13 +692,13 @@ packages:
       lmdb:
         optional: true
 
-  '@effect/language-service@0.7.1':
-    resolution: {integrity: sha512-Cp5F846sqMmHl3cDNxAi3CKdB3MHbSOek+Dg3PoYYgchN8MUDMG+/qfaPVjNfGfEXdbcjvhPQkTpJEDOKo0iYA==}
+  '@effect/language-service@0.8.1':
+    resolution: {integrity: sha512-/ygWSqB04wSwazhd9APMAbOKkxduMkKQ8CtGC3za2VSh+58CkoUu+7Zme86zCSWLAWENYz5sbm9tz5W2Z+TCyw==}
 
-  '@effect/opentelemetry@0.46.9':
-    resolution: {integrity: sha512-ctvvFsTSzvFa3aMI7dhwPcCCAVfh6+nOeTihkeMrE5JtWtyytRFzTW54qLooiReLa6swzacYXCqVYV6CwBfv0Q==}
+  '@effect/opentelemetry@0.46.10':
+    resolution: {integrity: sha512-cjkugdWUU0qVf3GmMlwYQMNyyU4yblNnF9jybMfp9TVuB1bE1QdVmr01LVVz9UwB4jiKzRDW4CTxFZ1DOnGzYQ==}
     peerDependencies:
-      '@effect/platform': ^0.80.12
+      '@effect/platform': ^0.80.13
       '@opentelemetry/api': ^1.9
       '@opentelemetry/resources': ^2.0.0
       '@opentelemetry/sdk-logs': '*'
@@ -704,7 +707,7 @@ packages:
       '@opentelemetry/sdk-trace-node': ^2.0.0
       '@opentelemetry/sdk-trace-web': ^2.0.0
       '@opentelemetry/semantic-conventions': ^1.30.0
-      effect: ^3.14.12
+      effect: ^3.14.13
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
@@ -721,22 +724,22 @@ packages:
       '@opentelemetry/sdk-trace-web':
         optional: true
 
-  '@effect/platform-browser@0.60.3':
-    resolution: {integrity: sha512-6xf9tKN6ct5/H9eIqPXZckjSAO4UD0FXn742LFKmqM+U7IFiYBy//oOTwI1SNnPSDPKtshPJLSKOK2CVn6zLJA==}
+  '@effect/platform-browser@0.60.4':
+    resolution: {integrity: sha512-sJ5b90qRG+K5vmY0Sgt9MkSYUipP1o3rz4pePbBCS7xKwy+r+4KBOqdJSNmP6HTR5jSMXOcmKQZw9Zc6OFlzwQ==}
     peerDependencies:
-      '@effect/platform': ^0.80.12
-      effect: ^3.14.12
+      '@effect/platform': ^0.80.13
+      effect: ^3.14.13
 
-  '@effect/platform@0.80.12':
-    resolution: {integrity: sha512-JeQSGeUyLrVrgS4vYwLTshFYlU+rsXXKJOzr1tnj6i62qGPz2nIaLxTMhJNmr4Vo9vCzIphyvGr0hy0gtwNKQg==}
+  '@effect/platform@0.80.13':
+    resolution: {integrity: sha512-AZ/cQ7bfpgeuF/T1FRFp/5uBLVp0R0MI15ZPsXlLiluRLz94hZEty36P4O9iDBtNWXsx5OUc3wcU8mmaCLAppQ==}
     peerDependencies:
-      effect: ^3.14.12
+      effect: ^3.14.13
 
-  '@effect/rpc@0.56.0':
-    resolution: {integrity: sha512-7Ymw9WTDsYpbGf4kGxkBTp+ZFyZauUwCnD/mNQ9BbkIQ50jgbjLuYCiYXCk6gMkePIwYQuxensOdvokkiA3wrw==}
+  '@effect/rpc@0.56.1':
+    resolution: {integrity: sha512-jVwd0b42X5N4+m4bGoyEhPjkGH2DTiZBJ9Dp37UtqV3CASnfIvQTNM5iDiy46500HWnNykrkl7Cn01crXKH/qg==}
     peerDependencies:
-      '@effect/platform': ^0.80.12
-      effect: ^3.14.12
+      '@effect/platform': ^0.80.13
+      effect: ^3.14.13
 
   '@emnapi/runtime@1.4.3':
     resolution: {integrity: sha512-pBPWdu6MLKROBX05wSNKcNb++m5Er+KQ9QkB+WVM+pW2Kx9hoSrVTnu3BdkI5eBLZoKu/J6mW/B6i6bJB2ytXQ==}
@@ -2063,8 +2066,8 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
-  effect@3.14.12:
-    resolution: {integrity: sha512-DEHmOGWhAKP1U4jZH9QpV4UusXxYOMvN60AkLjibWqsRo1mh4gItlXlX7Fbjujn6hum68JEXOtm7C5/TGClHdA==}
+  effect@3.14.13:
+    resolution: {integrity: sha512-mQgZx8xgzHK86J5O0J5pmMs23U5ylkX/+JkfzTkRjCK0kK4L0PSYTaNAqlJZV6IA5uUIvysK5D+pCqqoXbAQnQ==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -2874,6 +2877,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-virtuoso@4.12.6:
+    resolution: {integrity: sha512-bfvS6aCL1ehXmq39KRiz/vxznGUbtA27I5I24TYCe1DhMf84O3aVNCIwrSjYQjkJGJGzY46ihdN8WkYlemuhMQ==}
+    peerDependencies:
+      react: '>=16 || >=17 || >= 18 || >= 19'
+      react-dom: '>=16 || >=17 || >= 18 || >=19'
 
   react@19.1.0:
     resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
@@ -4112,51 +4121,51 @@ snapshots:
 
   '@canvas/image-data@1.0.0': {}
 
-  '@effect-rx/rx-react@0.31.23(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)(react@19.1.0)(scheduler@0.26.0)':
+  '@effect-rx/rx-react@0.31.25(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)':
     dependencies:
-      '@effect-rx/rx': 0.35.0(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)
-      effect: 3.14.12
+      '@effect-rx/rx': 0.35.2(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
+      effect: 3.14.13
       react: 19.1.0
       scheduler: 0.26.0
     transitivePeerDependencies:
       - '@effect/platform'
 
-  '@effect-rx/rx@0.35.0(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)':
+  '@effect-rx/rx@0.35.2(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
     dependencies:
-      '@effect/platform': 0.80.12(effect@3.14.12)
-      effect: 3.14.12
+      '@effect/platform': 0.80.13(effect@3.14.13)
+      effect: 3.14.13
 
-  '@effect/experimental@0.44.12(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)':
+  '@effect/experimental@0.44.13(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
     dependencies:
-      '@effect/platform': 0.80.12(effect@3.14.12)
-      effect: 3.14.12
+      '@effect/platform': 0.80.13(effect@3.14.13)
+      effect: 3.14.13
       uuid: 11.1.0
 
-  '@effect/language-service@0.7.1': {}
+  '@effect/language-service@0.8.1': {}
 
-  '@effect/opentelemetry@0.46.9(@effect/platform@0.80.12(effect@3.14.12))(@opentelemetry/semantic-conventions@1.32.0)(effect@3.14.12)':
+  '@effect/opentelemetry@0.46.10(@effect/platform@0.80.13(effect@3.14.13))(@opentelemetry/semantic-conventions@1.32.0)(effect@3.14.13)':
     dependencies:
-      '@effect/platform': 0.80.12(effect@3.14.12)
+      '@effect/platform': 0.80.13(effect@3.14.13)
       '@opentelemetry/semantic-conventions': 1.32.0
-      effect: 3.14.12
+      effect: 3.14.13
 
-  '@effect/platform-browser@0.60.3(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)':
+  '@effect/platform-browser@0.60.4(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
     dependencies:
-      '@effect/platform': 0.80.12(effect@3.14.12)
-      effect: 3.14.12
+      '@effect/platform': 0.80.13(effect@3.14.13)
+      effect: 3.14.13
       multipasta: 0.2.5
 
-  '@effect/platform@0.80.12(effect@3.14.12)':
+  '@effect/platform@0.80.13(effect@3.14.13)':
     dependencies:
-      effect: 3.14.12
+      effect: 3.14.13
       find-my-way-ts: 0.1.5
       msgpackr: 1.11.2
       multipasta: 0.2.5
 
-  '@effect/rpc@0.56.0(@effect/platform@0.80.12(effect@3.14.12))(effect@3.14.12)':
+  '@effect/rpc@0.56.1(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
     dependencies:
-      '@effect/platform': 0.80.12(effect@3.14.12)
-      effect: 3.14.12
+      '@effect/platform': 0.80.13(effect@3.14.13)
+      effect: 3.14.13
 
   '@emnapi/runtime@1.4.3':
     dependencies:
@@ -5314,7 +5323,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  effect@3.14.12:
+  effect@3.14.13:
     dependencies:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
@@ -6329,6 +6338,11 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.1.2
+
+  react-virtuoso@4.12.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   react@19.1.0: {}
 

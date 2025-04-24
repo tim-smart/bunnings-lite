@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@effect-rx/rx-react": "^0.31.23",
-    "@effect/experimental": "^0.44.12",
-    "@effect/opentelemetry": "^0.46.9",
-    "@effect/platform": "^0.80.12",
-    "@effect/platform-browser": "^0.60.3",
-    "@effect/rpc": "^0.56.0",
+    "@effect-rx/rx-react": "^0.31.25",
+    "@effect/experimental": "^0.44.13",
+    "@effect/opentelemetry": "^0.46.10",
+    "@effect/platform": "^0.80.13",
+    "@effect/platform-browser": "^0.60.4",
+    "@effect/rpc": "^0.56.1",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-label": "^2.1.4",
     "@radix-ui/react-select": "^2.2.2",
@@ -23,7 +23,7 @@
     "@tanstack/react-router": "^1.117.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "^3.14.12",
+    "effect": "^3.14.13",
     "lucide-react": "^0.503.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -35,7 +35,7 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.7.1",
+    "@effect/language-service": "^0.8.1",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.4",
     "@tanstack/router-devtools": "^1.117.0",
