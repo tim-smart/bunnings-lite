@@ -1,2 +1,0 @@
-patchedDependencies:
-  '@vite-pwa/assets-generator': patches/@vite-pwa__assets-generator.patch
