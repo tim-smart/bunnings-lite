@@ -75,7 +75,7 @@ export class SearchQuery extends Data.Class<{
 }> {}
 
 export class Products extends Effect.Service<Products>()("app/Products", {
-  dependencies: [BunningsClient.Default],
+  dependencies: [BunningsClient.Default, TracerLayer],
   effect: Effect.gen(function* () {
     const client = yield* BunningsClient
 

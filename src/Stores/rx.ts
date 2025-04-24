@@ -3,9 +3,12 @@ import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { Rx } from "@effect-rx/rx-react"
 import { BrowserKeyValueStore, Geolocation } from "@effect/platform-browser"
 import { BunningsClient } from "@/RpcClient"
+import { TracerLayer } from "@/Tracing"
 
 const runtime = Rx.runtime(
-  Layer.mergeAll(Geolocation.layer, BunningsClient.Default),
+  Layer.mergeAll(Geolocation.layer, BunningsClient.Default).pipe(
+    Layer.provideMerge(TracerLayer),
+  ),
 )
 
 export const geoRx = runtime.rx(
