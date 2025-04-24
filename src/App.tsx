@@ -34,5 +34,3 @@ function Session() {
   useRxMount(loginRx)
   return null
 }
-
-window.addEventListener("beforeinstallprompt", () => {})

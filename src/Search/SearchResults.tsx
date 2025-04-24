@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { ArrowUp } from "lucide-react"
 import { favoritesRx } from "@/Favorites"
+import { InstallButton } from "@/App/InstallButton"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -163,6 +164,11 @@ function NoResults() {
       </div>
 
       <FavoritesList />
+
+      <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col">
+        <InstallButton />
+        <div className="h-4" />
+      </div>
     </div>
   )
 }
