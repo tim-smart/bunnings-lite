@@ -35,8 +35,4 @@ function Session() {
   return null
 }
 
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault()
-  const installPrompt = e as any
-  installPrompt.prompt()
-})
+window.addEventListener("beforeinstallprompt", () => {})
