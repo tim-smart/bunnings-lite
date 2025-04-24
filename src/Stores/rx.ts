@@ -9,15 +9,15 @@ const runtime = Rx.runtime(
 )
 
 export const geoRx = runtime.rx(
-  Effect.fnUntraced(function* (_get: Rx.Context) {
+  Effect.gen(function* () {
     const geo = yield* Geolocation.Geolocation
     return yield* geo.getCurrentPosition()
   }),
 )
 
 export const storesRx = runtime
-  .rx((get) =>
-    Effect.gen(function* () {
+  .rx(
+    Effect.fnUntraced(function* (get: Rx.Context) {
       const client = yield* BunningsClient
       const location = yield* get.result(geoRx)
       return client
@@ -26,7 +26,7 @@ export const storesRx = runtime
           longitude: location.coords.longitude,
         })
         .pipe(Stream.take(10), Stream.accumulate)
-    }).pipe(Stream.unwrap),
+    }, Stream.unwrap),
   )
   .pipe(Rx.keepAlive)
 

@@ -1,4 +1,4 @@
-import { Result, Rx } from "@effect-rx/rx-react"
+import { Rx } from "@effect-rx/rx-react"
 import { BunningsClient, Products } from "@/RpcClient"
 import { Effect, Layer, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"

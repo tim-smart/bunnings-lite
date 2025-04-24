@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect-rx/rx-react':
-        specifier: ^0.31.25
-        version: 0.31.25(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)
+        specifier: ^0.31.26
+        version: 0.31.26(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)
       '@effect/experimental':
         specifier: ^0.44.13
         version: 0.44.13(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
@@ -71,9 +71,6 @@ importers:
       react-router-dom:
         specifier: ^7.5.1
         version: 7.5.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react-virtuoso:
-        specifier: ^4.12.6
-        version: 4.12.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       rehype-raw:
         specifier: ^7.0.0
         version: 7.0.0
@@ -666,15 +663,15 @@ packages:
   '@canvas/image-data@1.0.0':
     resolution: {integrity: sha512-BxOqI5LgsIQP1odU5KMwV9yoijleOPzHL18/YvNqF9KFSGF2K/DLlYAbDQsWqd/1nbaFuSkYD/191dpMtNh4vw==}
 
-  '@effect-rx/rx-react@0.31.25':
-    resolution: {integrity: sha512-3bSHbmwpz/oidRQCy18J7abpgHIvUNZ+9ZfFjAvpG+T8fm99Nx5dTm7ebUFMAAy/mvSGmrUsFmRZv9LaUFBeBA==}
+  '@effect-rx/rx-react@0.31.26':
+    resolution: {integrity: sha512-rw5ANtXqWqNsBAPBAt/QRPiktL6uA28zfmQQZ4cs0FBo1wylQ7cHhTce90hPxrll/HJvfparxt9CkAlgatBejQ==}
     peerDependencies:
       effect: ^3.14.12
       react: '>=18 <20'
       scheduler: '*'
 
-  '@effect-rx/rx@0.35.2':
-    resolution: {integrity: sha512-1zcNn9R0TSpAVAp+Gb0Q9RZ4NjEoUna311m/FLc604kf6nrJIXB7jTvM/LFpiFxAsgMpCFiqic/XqzAPseBuAw==}
+  '@effect-rx/rx@0.36.0':
+    resolution: {integrity: sha512-UKoZKOrWe4Z2uHadW474nOLhCP9Wp8z8SdA4aD73tfAQMZvTYT15EEpaJLHTgq1u4vNW6/o9CPm/h3oEqpK7ow==}
     peerDependencies:
       '@effect/platform': ^0.80.12
       effect: ^3.14.12
@@ -2878,12 +2875,6 @@ packages:
       '@types/react':
         optional: true
 
-  react-virtuoso@4.12.6:
-    resolution: {integrity: sha512-bfvS6aCL1ehXmq39KRiz/vxznGUbtA27I5I24TYCe1DhMf84O3aVNCIwrSjYQjkJGJGzY46ihdN8WkYlemuhMQ==}
-    peerDependencies:
-      react: '>=16 || >=17 || >= 18 || >= 19'
-      react-dom: '>=16 || >=17 || >= 18 || >=19'
-
   react@19.1.0:
     resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
     engines: {node: '>=0.10.0'}
@@ -4121,16 +4112,16 @@ snapshots:
 
   '@canvas/image-data@1.0.0': {}
 
-  '@effect-rx/rx-react@0.31.25(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)':
+  '@effect-rx/rx-react@0.31.26(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)(react@19.1.0)(scheduler@0.26.0)':
     dependencies:
-      '@effect-rx/rx': 0.35.2(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
+      '@effect-rx/rx': 0.36.0(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)
       effect: 3.14.13
       react: 19.1.0
       scheduler: 0.26.0
     transitivePeerDependencies:
       - '@effect/platform'
 
-  '@effect-rx/rx@0.35.2(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
+  '@effect-rx/rx@0.36.0(@effect/platform@0.80.13(effect@3.14.13))(effect@3.14.13)':
     dependencies:
       '@effect/platform': 0.80.13(effect@3.14.13)
       effect: 3.14.13
@@ -6338,11 +6329,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.1.2
-
-  react-virtuoso@4.12.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
 
   react@19.1.0: {}
 

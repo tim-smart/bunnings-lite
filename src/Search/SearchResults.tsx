@@ -79,7 +79,11 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       params={{ id: product.id }}
       search={(current) => current}
       onPointerDown={onPointerDown}
-      onMouseDown={onPointerUp}
+      onMouseDown={(e) => {
+        if (e.button === 1) {
+          onPointerUp()
+        }
+      }}
     >
       <Card className="relative">
         <div className="absolute top-2 left-2 right-2 flex">

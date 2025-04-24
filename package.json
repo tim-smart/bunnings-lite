@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@effect-rx/rx-react": "^0.31.25",
+    "@effect-rx/rx-react": "^0.31.26",
     "@effect/experimental": "^0.44.13",
     "@effect/opentelemetry": "^0.46.10",
     "@effect/platform": "^0.80.13",
