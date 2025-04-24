@@ -115,8 +115,10 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   }
 }
 
+const ImageUrl = S.optionalWith(S.String, { default: () => "https://www.bunnings.co.nz/static/icons/notFoundImage.svg" })
+
 export class SearchResult extends S.Class<SearchResult>("SearchResult")({
-  thumbnailimageurl: S.String,
+  thumbnailimageurl: ImageUrl,
   isactive: S.String,
   ratingcount: S.optionalWith(S.Number, { default: () => 0 }),
   permanentid: S.String,
@@ -126,7 +128,7 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   size: S.Number,
   name: S.String,
   price: S.Number,
-  imageurl: S.String,
+  imageurl: ImageUrl,
   uri: S.String,
 }) {
   get asBaseInfo() {
@@ -191,8 +193,8 @@ export class ImageElement extends S.Class<ImageElement>("ImageElement")({
   imageType: S.optional(S.Union(S.Null, S.String)),
   mime: S.String,
   sequence: S.String,
-  thumbnailUrl: S.String,
-  url: S.String,
+  thumbnailUrl: ImageUrl,
+  url: ImageUrl,
   videoId: S.optional(S.Union(S.Null, S.String)),
 }) {}
 
@@ -202,7 +204,7 @@ export class GuideDocument extends S.Class<GuideDocument>("GuideDocument")({
   mime: S.String,
   sequence: S.String,
   size: S.Number,
-  thumbnailUrl: S.String,
+  thumbnailUrl: ImageUrl,
   url: S.String,
 }) {}
 
@@ -251,8 +253,8 @@ export class Classification extends S.Class<Classification>("Classification")({
 export class BrandImage extends S.Class<BrandImage>("BrandImage")({
   mime: S.String,
   sequence: S.String,
-  thumbnailUrl: S.String,
-  url: S.String,
+  thumbnailUrl: ImageUrl,
+  url: ImageUrl,
   disclaimer: S.optional(S.Union(S.Null, S.String)),
 }) {}
 
