@@ -1,4 +1,4 @@
-import { Result, Rx } from "@effect-rx/rx-react"
+import { Rx } from "@effect-rx/rx-react"
 import { Effect } from "effect"
 
 export const installPromptRx = Rx.make((get) =>
@@ -8,14 +8,14 @@ export const installPromptRx = Rx.make((get) =>
       resume(
         Effect.succeed(async () => {
           await e.prompt()
-          const result = await e.userChoice
-          if (result.outcome === "accepted") {
-            get.setSelf(Result.initial())
-          }
+          await e.userChoice
+          get.refreshSelf()
         }),
       )
     }
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt)
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt, {
+      once: true,
+    })
     return Effect.sync(() => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt)
     })
