@@ -1,6 +1,6 @@
 import * as OtlpTracer from "@effect/opentelemetry/OtlpTracer"
 import { FetchHttpClient } from "@effect/platform"
-import { Config, Effect, Layer, Option, Redacted } from "effect"
+import { Config, ConfigProvider, Effect, Layer, Option, Redacted } from "effect"
 
 export const TracerLayer = Layer.unwrapEffect(
   Effect.gen(function* () {
@@ -20,5 +20,5 @@ export const TracerLayer = Layer.unwrapEffect(
         serviceName: "bunnings-client",
       },
     }).pipe(Layer.provide(FetchHttpClient.layer))
-  }),
+  }).pipe(Effect.withConfigProvider(ConfigProvider.fromJson(import.meta.env))),
 )
