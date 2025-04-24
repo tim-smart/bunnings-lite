@@ -5,8 +5,6 @@ import {
   Schema,
   Schema as S,
   ParseResult,
-  Data,
-  Array,
 } from "effect"
 
 export class CurrentSession extends Context.Tag(
@@ -168,11 +166,11 @@ export const SearchResponseRemapped = S.transformOrFail(
   S.Object,
   SearchResponse,
   {
-    decode(fromA, options, ast, fromI) {
+    decode(fromA: any) {
       return Effect.map(CurrentSession, (session) => ({
         data: {
           totalCount: fromA.data.totalCount,
-          results: fromA.data.results.map((result) => ({
+          results: fromA.data.results.map((result: any) => ({
             raw: {
               ...result.raw,
               price: result.raw[`price_${session.location.code}`],
