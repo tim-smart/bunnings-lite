@@ -32,6 +32,7 @@ export default defineConfig({
           client_mode: "navigate-existing",
         },
         orientation: "any",
+        display_override: ["window-controls-overlay"],
       },
 
       workbox: {
