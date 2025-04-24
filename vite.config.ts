@@ -21,12 +21,17 @@ export default defineConfig({
       },
 
       manifest: {
+        id: "bunnings.timsmart.co",
         name: "Bunnings Lite",
         short_name: "Bunnings Lite",
         description: "A lightweight version of Bunnings",
         theme_color: "#0d5257",
         background_color: "#0d5257",
         shortcuts: [],
+        launch_handler: {
+          client_mode: "navigate-existing",
+        },
+        orientation: "any",
       },
 
       workbox: {
