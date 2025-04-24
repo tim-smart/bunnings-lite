@@ -13,6 +13,7 @@ import { Rpcs } from "../api/src/domain/Rpc"
 import { Socket } from "@effect/platform"
 import { AuthMiddleware } from "../api/src/domain/Auth"
 import { ProductBaseInfo } from "api/src/domain/Bunnings"
+import { TracerLayer } from "./Tracing"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -49,6 +50,7 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
         Layer.provide(RpcSerialization.layerJson),
         Layer.provide(SocketLayer),
         Layer.provide(Socket.layerWebSocketConstructorGlobal),
+        Layer.provideMerge(TracerLayer),
       ),
       AuthLayer,
     ],
