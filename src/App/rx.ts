@@ -8,7 +8,10 @@ export const installPromptRx = Rx.make((get) =>
       resume(
         Effect.succeed(async () => {
           await e.prompt()
-          get.setSelf(Result.initial())
+          const result = await e.userChoice
+          if (result.outcome === "accepted") {
+            get.setSelf(Result.initial())
+          }
         }),
       )
     }
