@@ -34,3 +34,9 @@ function Session() {
   useRxMount(loginRx)
   return null
 }
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault()
+  const installPrompt = e as any
+  installPrompt.prompt()
+})
