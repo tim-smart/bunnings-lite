@@ -81,7 +81,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       search={(current) => current}
       onPointerDown={onPointerDown}
       onMouseDown={(e) => {
-        if (e.button === 1) {
+        if (e.button === 0) {
           onPointerUp()
         }
       }}
