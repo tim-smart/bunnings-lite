@@ -13,7 +13,6 @@ import { Rpcs } from "../api/src/domain/Rpc"
 import { Socket } from "@effect/platform"
 import { AuthMiddleware } from "../api/src/domain/Auth"
 import { ProductBaseInfo } from "api/src/domain/Bunnings"
-import { TracerLayer } from "./Tracing"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -50,7 +49,6 @@ export class BunningsClient extends Effect.Service<BunningsClient>()(
         Layer.provide(RpcSerialization.layerJson),
         Layer.provide(SocketLayer),
         Layer.provide(Socket.layerWebSocketConstructorGlobal),
-        Layer.provideMerge(TracerLayer),
       ),
       AuthLayer,
     ],
@@ -75,7 +73,7 @@ export class SearchQuery extends Data.Class<{
 }> {}
 
 export class Products extends Effect.Service<Products>()("app/Products", {
-  dependencies: [BunningsClient.Default, TracerLayer],
+  dependencies: [BunningsClient.Default],
   effect: Effect.gen(function* () {
     const client = yield* BunningsClient
 

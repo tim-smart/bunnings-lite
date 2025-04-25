@@ -1,11 +1,8 @@
 import { Rx } from "@effect-rx/rx-react"
 import { BaseInfoKey, Products } from "@/RpcClient"
-import { Effect, Layer, Stream } from "effect"
-import { TracerLayer } from "@/Tracing"
+import { Effect, Stream } from "effect"
 
-const runtimeRx = Rx.runtime(
-  Products.Default.pipe(Layer.provideMerge(TracerLayer)),
-).pipe(Rx.keepAlive)
+const runtimeRx = Rx.runtime(Products.Default).pipe(Rx.keepAlive)
 
 export const preloadRx = runtimeRx.fn(
   Effect.fnUntraced(function* (key: BaseInfoKey, get: Rx.Context) {
