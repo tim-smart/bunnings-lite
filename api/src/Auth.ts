@@ -7,7 +7,7 @@ export const AuthLayer = Layer.effect(
   Effect.gen(function* () {
     const sessions = yield* Sessions
 
-    return Effect.fnUntraced(function* ({ headers }) {
+    return Effect.fn("AuthMiddleware")(function* ({ headers }) {
       const sessionId = headers["session-id"]
       if (!sessionId || sessionId.trim() === "") {
         return yield* new Unauthorized()

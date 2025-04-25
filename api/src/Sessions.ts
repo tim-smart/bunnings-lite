@@ -1,6 +1,6 @@
 import { Cache, DateTime, Effect, Exit } from "effect"
 import { Bunnings } from "./Bunnings"
-import { SessionLocation, Store } from "./domain/Bunnings"
+import { SessionLocation } from "./domain/Bunnings"
 
 export class Sessions extends Effect.Service<Sessions>()("api/Sessions", {
   dependencies: [Bunnings.Default],

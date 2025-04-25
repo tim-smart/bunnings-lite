@@ -26,7 +26,9 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
   effect: Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient
 
-    const makeSession = Effect.fnUntraced(function* (id: string) {
+    const makeSession = Effect.fn("Bunnings.makeSession")(function* (
+      id: string,
+    ) {
       const cookies = yield* Ref.make(Cookies.empty)
       const client = HttpClient.withCookiesRef(defaultClient, cookies)
       yield* client.get("https://www.bunnings.co.nz/")
