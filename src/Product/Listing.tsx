@@ -4,17 +4,17 @@ import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { ProductReview, ReviewStats } from "api/src/domain/Bazaar"
 import Markdown from "react-markdown"
-import { productFulfillmentRx, productReviewsRx } from "./rx"
-import { Badge } from "@/components/ui/badge"
+import { productReviewsRx } from "./rx"
 import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
+import { FulfillmentBadge } from "./FulfillmentBadge"
 
 const imageIndexRx = Rx.make(0)
 
@@ -293,29 +293,4 @@ function SkeletonRatings() {
       </div>
     </div>
   )
-}
-
-function FulfillmentBadge({ product }: { readonly product: ProductBaseInfo }) {
-  const maybeResult = Result.getOrElse(
-    useRxValue(productFulfillmentRx(product.id)),
-    Option.none,
-  )
-
-  if (Option.isNone(maybeResult)) {
-    return null
-  }
-
-  const fullfillment = maybeResult.value
-  if (!fullfillment.isAvailable) {
-    return <Badge className="bg-orange-500 text-white">Out of stock</Badge>
-  } else if (Option.isSome(fullfillment.location)) {
-    const { aisle, bay } = fullfillment.location.value
-    return (
-      <Badge className="bg-green-500 text-white">
-        Aisle {aisle}/{bay}
-      </Badge>
-    )
-  }
-
-  return <Badge className="bg-green-500 text-white">Available</Badge>
 }

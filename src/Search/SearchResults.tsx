@@ -1,6 +1,6 @@
 import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
-import { Cause, Option } from "effect"
+import { Cause } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
 import {
   Card,
@@ -10,19 +10,19 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { preloadRx, productFulfillmentRx } from "@/Product/rx"
+import { preloadRx } from "@/Product/rx"
 import { useCallback, useEffect, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
-import { ArrowUp, MapPin } from "lucide-react"
+import { ArrowUp } from "lucide-react"
 import { favoritesRx } from "@/Favorites"
 import { InstallButton } from "@/App/InstallButton"
+import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -127,32 +127,6 @@ function SkeletonCard() {
       </div>
     </div>
   )
-}
-
-function FulfillmentBadge({ product }: { readonly product: ProductBaseInfo }) {
-  const maybeResult = Result.getOrElse(
-    useRxValue(productFulfillmentRx(product.id)),
-    Option.none,
-  )
-
-  if (Option.isNone(maybeResult)) {
-    return null
-  }
-
-  const fullfillment = maybeResult.value
-  if (!fullfillment.isAvailable) {
-    return <Badge className="bg-orange-500 text-white">Out of stock</Badge>
-  } else if (Option.isSome(fullfillment.location)) {
-    const { aisle, bay } = fullfillment.location.value
-    return (
-      <Badge variant="outline" className="">
-        <MapPin />
-        Aisle {aisle}/{bay}
-      </Badge>
-    )
-  }
-
-  return null
 }
 
 function NoResults() {
