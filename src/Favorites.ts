@@ -26,7 +26,7 @@ export const useFavoritesToggle = () => {
         if (products.find((p) => p.id === product.id)) {
           return products.filter((p) => p.id !== product.id)
         }
-        return [...products, product]
+        return [product, ...products]
       })
     },
     [setFavorites],
