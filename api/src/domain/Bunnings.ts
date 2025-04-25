@@ -115,7 +115,9 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   }
 }
 
-const ImageUrl = S.optionalWith(S.String, { default: () => "https://www.bunnings.co.nz/static/icons/notFoundImage.svg" })
+const ImageUrl = S.optionalWith(S.String, {
+  default: () => "https://www.bunnings.co.nz/static/icons/notFoundImage.svg",
+})
 
 export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   thumbnailimageurl: ImageUrl,
@@ -210,7 +212,7 @@ export class GuideDocument extends S.Class<GuideDocument>("GuideDocument")({
 
 export class DataFeature extends S.Class<DataFeature>("DataFeature")({
   description: S.String,
-  pointers: S.Array(S.String),
+  pointers: S.optional(S.Array(S.String)),
 }) {}
 
 export class Product extends S.Class<Product>("Product")({

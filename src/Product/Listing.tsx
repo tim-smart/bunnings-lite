@@ -35,6 +35,10 @@ export function ProductListing({
     pullReviews()
   })
 
+  const pointers = fullInfo.pipe(
+    Option.flatMapNullable((info) => info.info.feature.pointers),
+  )
+
   return (
     <div className="pb-8 pt-1">
       <div className="py-2">
@@ -125,7 +129,7 @@ export function ProductListing({
             >
               Reviews
             </TabsTrigger>
-            {Option.isSome(fullInfo) && (
+            {Option.isSome(pointers) && (
               <TabsTrigger
                 value="details"
                 className="data-[state=active]:bg-[#0D5257] data-[state=active]:text-white"
@@ -147,12 +151,12 @@ export function ProductListing({
             ))}
           </TabsContent>
 
-          {fullInfo.pipe(
-            Option.map((info) => (
+          {pointers.pipe(
+            Option.map((pointers) => (
               <TabsContent value="details" className="p-6 border rounded-b">
                 <h3 className="text-lg font-bold mb-4">Product Details</h3>
                 <ul className="list-disc pl-5 mt-4 space-y-2">
-                  {info.info.feature.pointers.map((pointer, i) => (
+                  {pointers.map((pointer, i) => (
                     <li key={i}>{pointer}</li>
                   ))}
                 </ul>
