@@ -50,7 +50,7 @@ export function SearchResults() {
             <ResultCard key={result.id} product={result} />
           ))
         : Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)}
-      <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col">
+      <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col transform-gpu">
         <BackToTop />
         <div className="h-4" />
       </div>
