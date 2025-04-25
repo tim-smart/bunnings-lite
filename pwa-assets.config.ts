@@ -14,6 +14,13 @@ export default defineConfig({
         background: "#0d5257",
       },
     }),
+    apple: {
+      ...preset.apple,
+      resizeOptions: {
+        ...preset.apple.resizeOptions,
+        background: "#0d5257",
+      },
+    },
     maskable: {
       ...preset.maskable,
       resizeOptions: {
