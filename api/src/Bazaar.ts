@@ -36,6 +36,7 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
         .pipe(
           Effect.flatMap(HttpClientResponse.schemaBodyJson(ProductsResponse)),
           Effect.map((_) => _.Results[0]),
+          Effect.withSpan("Bazaar.overview", { attributes: { id } }),
         )
 
     const reviewsPage = (id: string, offset: number) =>
@@ -63,6 +64,7 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
         })
         .pipe(
           Effect.flatMap(HttpClientResponse.schemaBodyJson(ReviewsResponse)),
+          Effect.withSpan("Bazaar.reviewsPage", { attributes: { id, offset } }),
         )
 
     const reviews = (id: string) =>
@@ -78,10 +80,13 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
               ] as const,
           ),
         ),
-      )
+      ).pipe(Stream.withSpan("Bazaar.reviews", { attributes: { id } }))
 
     const allReviews = (id: string) =>
-      Stream.runCollect(reviews(id)).pipe(Effect.map(Chunk.toReadonlyArray))
+      Stream.runCollect(reviews(id)).pipe(
+        Effect.map(Chunk.toReadonlyArray),
+        Effect.withSpan("Bazaar.allReviews", { attributes: { id } }),
+      )
 
     return { overview, reviews, allReviews } as const
   }),
