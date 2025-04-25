@@ -28,7 +28,7 @@ export class ReviewStats extends S.Class<ReviewStats>("ReviewStats")({
 export class ProductsResponse extends S.Class<ProductsResponse>(
   "ProductsResponse",
 )({
-  Results: S.NonEmptyArray(ReviewStats),
+  Results: S.Array(ReviewStats),
 }) {}
 
 // ratings

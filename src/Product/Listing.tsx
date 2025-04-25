@@ -1,4 +1,3 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
@@ -15,6 +14,7 @@ import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 
 const imageIndexRx = Rx.make(0)
 
@@ -53,7 +53,6 @@ export function ProductListing({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Images */}
         <div className="flex flex-col gap-4">
           <SelectedImage product={product} />
           <ThumbnailImages product={product} />
@@ -108,6 +107,13 @@ export function ProductListing({
             {fullInfo.pipe(
               Option.map((info) => (
                 <div className="prose">
+                  {Option.isSome(pointers) && (
+                    <ul>
+                      {pointers.value.map((pointer, i) => (
+                        <li key={i}>{pointer}</li>
+                      ))}
+                    </ul>
+                  )}
                   <Markdown rehypePlugins={[rehypeRaw]}>
                     {info.info.feature.description}
                   </Markdown>
@@ -119,52 +125,21 @@ export function ProductListing({
         </div>
       </div>
 
-      {/* Product Tabs */}
-      <div className="mt-12">
-        <Tabs defaultValue="reviews">
-          <TabsList className="w-full grid grid-cols-3 bg-gray-100">
-            <TabsTrigger
-              value="reviews"
-              className="data-[state=active]:bg-[#0D5257] data-[state=active]:text-white"
-            >
-              Reviews
-            </TabsTrigger>
-            {Option.isSome(pointers) && (
-              <TabsTrigger
-                value="details"
-                className="data-[state=active]:bg-[#0D5257] data-[state=active]:text-white"
-              >
-                Details
-              </TabsTrigger>
-            )}
-          </TabsList>
-          <TabsContent value="reviews" className="p-6 border rounded-b">
-            <h3 className="text-lg font-bold mb-4">Customer Reviews</h3>
+      <div className="h-8 md:h-12" />
 
-            {Option.match(reviewStats, {
-              onNone: () => <SkeletonRatings />,
-              onSome: (reviews) => <ReviewsOverview reviews={reviews} />,
-            })}
+      <div>
+        <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
 
-            {reviews.map((review, i) => (
-              <ReviewCard key={i} review={review} />
-            ))}
-          </TabsContent>
+        {Option.match(reviewStats, {
+          onNone: () => <SkeletonRatings />,
+          onSome: (reviews) => <ReviewsOverview reviews={reviews} />,
+        })}
 
-          {pointers.pipe(
-            Option.map((pointers) => (
-              <TabsContent value="details" className="p-6 border rounded-b">
-                <h3 className="text-lg font-bold mb-4">Product Details</h3>
-                <ul className="list-disc pl-5 mt-4 space-y-2">
-                  {pointers.map((pointer, i) => (
-                    <li key={i}>{pointer}</li>
-                  ))}
-                </ul>
-              </TabsContent>
-            )),
-            Option.getOrElse(() => null),
-          )}
-        </Tabs>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 grid-template-rows-[masonry]">
+          {reviews.map((review, i) => (
+            <ReviewCard key={i} review={review} />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -214,7 +189,7 @@ function ReviewsOverview({ reviews }: { readonly reviews: ReviewStats }) {
 
 function ReviewCard({ review }: { readonly review: ProductReview }) {
   return (
-    <Card className="mb-4">
+    <Card>
       <CardContent>
         <div className="flex justify-between items-start">
           <div>

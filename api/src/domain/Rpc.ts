@@ -35,7 +35,7 @@ export class Rpcs extends RpcGroup.make(
     payload: {
       id: Schema.String,
     },
-    success: ReviewStats,
+    success: Schema.Option(ReviewStats),
   }),
   Rpc.make("productReviews", {
     payload: {

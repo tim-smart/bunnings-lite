@@ -155,7 +155,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
             HttpClientResponse.schemaBodyJson(FulfillmentResponse),
           ),
           Effect.map((_) => Option.some(_.data)),
-          Effect.catchTag("ParseError", () => Option.none()),
+          Effect.catchTag("ParseError", () => Effect.succeedNone),
         )
     })
 

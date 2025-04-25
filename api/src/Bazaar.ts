@@ -3,7 +3,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform"
-import { Chunk, Effect, Option, Stream } from "effect"
+import { Array, Chunk, Effect, Option, Stream } from "effect"
 import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar"
 import { NodeHttpClient } from "@effect/platform-node"
 
@@ -35,7 +35,7 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
         })
         .pipe(
           Effect.flatMap(HttpClientResponse.schemaBodyJson(ProductsResponse)),
-          Effect.map((_) => _.Results[0]),
+          Effect.map((_) => Array.head(_.Results)),
           Effect.withSpan("Bazaar.overview", { attributes: { id } }),
         )
 

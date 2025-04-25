@@ -21,7 +21,9 @@ export function ProductScreen() {
   const { id } = Route.useParams()
   const product = useRxValue(productRx(id))
   const fullInfo = Result.value(useRxValue(productFullInfoRx(id)))
-  const reviewStats = Result.value(useRxValue(productReviewStatsRx(id)))
+  const reviewStats = Option.flatten(
+    Result.value(useRxValue(productReviewStatsRx(id))),
+  )
   const reviews = Result.getOrElse(
     useRxValue(
       productReviewsRx(id),
