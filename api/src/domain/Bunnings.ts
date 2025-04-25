@@ -126,7 +126,7 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   permanentid: S.String,
   title: S.String,
   productroutingurl: S.String,
-  rating: S.Number,
+  rating: S.optionalWith(S.Number, { default: () => 0 }),
   size: S.Number,
   name: S.String,
   price: S.Number,
