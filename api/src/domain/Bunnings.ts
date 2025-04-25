@@ -229,8 +229,8 @@ export class Package extends S.Class<Package>("Package")({
 }) {}
 
 export class Dimension extends S.Class<Dimension>("Dimension")({
-  packages: S.Array(Package),
-  product: S.Array(Product),
+  packages: S.optionalWith(S.Array(Package), { default: () => [] }),
+  product: S.optionalWith(S.Array(Product), { default: () => [] }),
   dimensionTerm: S.optional(S.Union(S.Null, S.String)),
 }) {}
 
