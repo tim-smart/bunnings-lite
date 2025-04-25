@@ -86,7 +86,7 @@ export class Products extends Effect.Service<Products>()("app/Products", {
         return result.asBaseInfo
       }),
       capacity: 1024,
-      timeToLive: "15 minutes",
+      timeToLive: "30 minutes",
     })
 
     const fullInfoCache = yield* Cache.make({
@@ -94,13 +94,19 @@ export class Products extends Effect.Service<Products>()("app/Products", {
         return yield* client.productInfo({ id })
       }),
       capacity: 1024,
-      timeToLive: "15 minutes",
+      timeToLive: "30 minutes",
     })
 
     const reviewCache = yield* Cache.make({
       lookup: (id: string) => client.productReviewStats({ id }),
       capacity: 1024,
-      timeToLive: "15 minutes",
+      timeToLive: "30 minutes",
+    })
+
+    const fulfillmentCache = yield* Cache.make({
+      lookup: (id: string) => client.fulfillment({ id }),
+      capacity: 1024,
+      timeToLive: "30 minutes",
     })
 
     return {
@@ -108,7 +114,8 @@ export class Products extends Effect.Service<Products>()("app/Products", {
       getFullInfo: (id: string) => fullInfoCache.get(id),
       getReviewStats: (id: string) => reviewCache.get(id),
       getReviews: (id: string) => client.productReviews({ id }),
-      getFulfillment: (id: string) => client.fulfillment({ id }),
+      getFulfillment: (id: string) => fulfillmentCache.get(id),
+      clearFulfillment: fulfillmentCache.invalidateAll,
     }
   }),
 }) {}

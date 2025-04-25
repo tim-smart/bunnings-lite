@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { FavoriteButton } from "@/Favorites/Button"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
-import { ArrowUp } from "lucide-react"
+import { ArrowUp, MapPin } from "lucide-react"
 import { favoritesRx } from "@/Favorites"
 import { InstallButton } from "@/App/InstallButton"
 
@@ -145,7 +145,8 @@ function FulfillmentBadge({ product }: { readonly product: ProductBaseInfo }) {
   } else if (Option.isSome(fullfillment.location)) {
     const { aisle, bay } = fullfillment.location.value
     return (
-      <Badge className="bg-green-500 text-white">
+      <Badge variant="outline" className="">
+        <MapPin />
         Aisle {aisle}/{bay}
       </Badge>
     )
