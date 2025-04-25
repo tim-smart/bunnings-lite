@@ -1,6 +1,5 @@
 import { RpcClient, RpcMiddleware, RpcSerialization } from "@effect/rpc"
 import {
-  Cache,
   Config,
   ConfigProvider,
   Data,
@@ -71,51 +70,3 @@ export class SearchQuery extends Data.Class<{
   query: string
   offset: number
 }> {}
-
-export class Products extends Effect.Service<Products>()("app/Products", {
-  dependencies: [BunningsClient.Default],
-  effect: Effect.gen(function* () {
-    const client = yield* BunningsClient
-
-    const baseInfoCache = yield* Cache.make({
-      lookup: Effect.fnUntraced(function* (key: BaseInfoKey) {
-        if (key.result) {
-          return key.result
-        }
-        const result = yield* fullInfoCache.get(key.id)
-        return result.asBaseInfo
-      }),
-      capacity: 1024,
-      timeToLive: "30 minutes",
-    })
-
-    const fullInfoCache = yield* Cache.make({
-      lookup: Effect.fnUntraced(function* (id: string) {
-        return yield* client.productInfo({ id })
-      }),
-      capacity: 1024,
-      timeToLive: "30 minutes",
-    })
-
-    const reviewCache = yield* Cache.make({
-      lookup: (id: string) => client.productReviewStats({ id }),
-      capacity: 1024,
-      timeToLive: "30 minutes",
-    })
-
-    const fulfillmentCache = yield* Cache.make({
-      lookup: (id: string) => client.fulfillment({ id }),
-      capacity: 1024,
-      timeToLive: "30 minutes",
-    })
-
-    return {
-      getBaseInfo: (key: BaseInfoKey) => baseInfoCache.get(key),
-      getFullInfo: (id: string) => fullInfoCache.get(id),
-      getReviewStats: (id: string) => reviewCache.get(id),
-      getReviews: (id: string) => client.productReviews({ id }),
-      getFulfillment: (id: string) => fulfillmentCache.get(id),
-      clearFulfillment: fulfillmentCache.invalidateAll,
-    }
-  }),
-}) {}

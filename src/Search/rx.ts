@@ -1,11 +1,9 @@
 import { Rx } from "@effect-rx/rx-react"
-import { BunningsClient, Products } from "@/RpcClient"
-import { Effect, Layer, Stream } from "effect"
+import { BunningsClient } from "@/RpcClient"
+import { Effect, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
 
-const runtimeRx = Rx.runtime(
-  Layer.mergeAll(Products.Default, BunningsClient.Default),
-).pipe(Rx.keepAlive)
+const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
 
 export const queryRx = Rx.searchParam("query")
 

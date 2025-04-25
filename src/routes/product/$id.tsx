@@ -5,6 +5,7 @@ import {
   productReviewStatsRx,
   productRx,
 } from "@/Product/rx"
+import { BaseInfoKey } from "@/RpcClient"
 import { resultsRx } from "@/Search/rx"
 import { Result, useRxMount, useRxValue } from "@effect-rx/rx-react"
 import { createFileRoute } from "@tanstack/react-router"
@@ -19,7 +20,7 @@ export function ProductScreen() {
   useRxMount(resultsRx)
 
   const { id } = Route.useParams()
-  const product = useRxValue(productRx(id))
+  const product = useRxValue(productRx(new BaseInfoKey({ id })))
   const fullInfo = Result.value(useRxValue(productFullInfoRx(id)))
   const reviewStats = Option.flatten(
     Result.value(useRxValue(productReviewStatsRx(id))),
