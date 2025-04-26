@@ -31,43 +31,77 @@ const facetsRx = Rx.make<{
 class Filter extends Data.Class<{
   id: string
   name: string
+  valuePrefix: string
+  facetValueOverride?: {
+    readonly start: number
+    readonly end: number
+    readonly endInclusive: boolean
+  }
 }> {}
 
-const filterRx = Rx.family(({ id, name }: Filter) => ({
-  id,
-  name,
-  facet: Rx.make((get) => {
-    const facets = get(facetsRx).facets
-    return Array.findFirst(facets, (g) => g.facetId === id).pipe(
-      Option.flatMapNullable((_) => _.values[0]),
-    )
-  }),
-  min: Rx.writable(
-    () => Option.none<number>(),
-    (ctx, value: number) => {
-      ctx.setSelf(Option.some(value))
-    },
-  ).pipe(Rx.refreshable),
-  max: Rx.writable(
-    () => Option.none<number>(),
-    (ctx, value: number) => {
-      ctx.setSelf(Option.some(value))
-    },
-  ).pipe(Rx.refreshable),
-  value: Rx.make(Option.none<readonly [number, number]>()),
-}))
+const filterRx = Rx.family((filter: Filter) => {
+  const self = {
+    filter,
+    facet: filter.facetValueOverride
+      ? Rx.make(Option.some(filter.facetValueOverride))
+      : Rx.make((get) => {
+          const facets = get(facetsRx).facets
+          return Array.findFirst(facets, (g) => g.facetId === filter.id).pipe(
+            Option.flatMapNullable((_) => _.values[0]),
+          )
+        }),
+    min: Rx.writable(
+      () => Option.none<number>(),
+      (ctx, value: number) => {
+        ctx.setSelf(Option.some(value))
+      },
+    ).pipe(Rx.refreshable),
+    max: Rx.writable(
+      () => Option.none<number>(),
+      (ctx, value: number) => {
+        ctx.setSelf(Option.some(value))
+      },
+    ).pipe(Rx.refreshable),
+    value: Rx.make(Option.none<readonly [number, number]>()),
+    reset: Rx.fnSync((_: void, get) => {
+      get.set(self.value, Option.none())
+      get.refresh(self.min)
+      get.refresh(self.max)
+    }),
+  }
+  return self
+})
 
 export const allFilters = {
-  priceRange: filterRx(new Filter({ id: "@price", name: "Price" })),
+  priceRange: filterRx(
+    new Filter({ id: "@price", name: "Price", valuePrefix: "$" }),
+  ),
+  ratingRange: filterRx(
+    new Filter({
+      id: "@rating",
+      name: "Rating",
+      valuePrefix: "",
+      facetValueOverride: {
+        start: 0,
+        end: 5,
+        endInclusive: true,
+      },
+    }),
+  ),
 }
 
 const resetFilters = (get: Rx.Context) => {
   for (const filter of Object.values(allFilters)) {
     get.set(filter.value, Option.none())
+    if (filter.filter.facetValueOverride) {
+      get.refresh(filter.min)
+      get.refresh(filter.max)
+    }
   }
 }
 const resetFilterUi = (get: Rx.Context) => {
   for (const filter of Object.values(allFilters)) {
+    if (filter.filter.facetValueOverride) continue
     get.refresh(filter.min)
     get.refresh(filter.max)
   }
@@ -91,6 +125,7 @@ export const resultsRx = runtimeRx
             query,
             offset,
             priceRange: get(allFilters.priceRange.value),
+            ratingRange: get(allFilters.ratingRange.value),
           })
           .pipe(
             Effect.map((data) => {

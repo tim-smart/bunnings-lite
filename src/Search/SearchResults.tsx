@@ -137,7 +137,7 @@ function Filters() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-0">
       {Object.values(allFilters).map((filter) => (
-        <FilterSlider key={filter.id} filter={filter} />
+        <FilterSlider key={filter.filter.id} filter={filter} />
       ))}
     </div>
   )
@@ -150,6 +150,7 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
   const [min, setMin] = useRx(filter.min)
   const [max, setMax] = useRx(filter.max)
   const [value, setRange] = useRx(filter.value)
+  const reset = useRxSet(filter.reset)
 
   return Option.match(range, {
     onNone: () => null,
@@ -158,12 +159,12 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
       return (
         <div className="flex flex-col pt-4 sm:pt-10">
           <Label className="text-[#0D5257]">
-            {filter.name}:
+            {filter.filter.name}:
             {Option.match(value, {
               onNone: () => null,
               onSome: () => (
                 <span
-                  onClick={() => setRange(Option.none())}
+                  onClick={() => reset()}
                   className="text-gray-600 cursor-pointer"
                 >
                   (clear)
@@ -190,6 +191,7 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
             onValueCommit={([min, max]) => {
               setRange(Option.some([min, max]))
             }}
+            formatValue={(value) => `${filter.filter.valuePrefix}${value}`}
           />
         </div>
       )

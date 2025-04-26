@@ -74,6 +74,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         readonly query: string
         readonly offset: number
         readonly priceRange: Option.Option<readonly [number, number]>
+        readonly ratingRange: Option.Option<readonly [number, number]>
       }) {
         const client = yield* apiClient()
         const session = yield* CurrentSession
@@ -238,10 +239,12 @@ const searchPayload = (
     query,
     offset,
     priceRange,
+    ratingRange,
   }: {
     readonly query: string
     readonly offset: number
     readonly priceRange: Option.Option<readonly [number, number]>
+    readonly ratingRange: Option.Option<readonly [number, number]>
   },
 ) => {
   const location = session.location
@@ -291,6 +294,28 @@ const searchPayload = (
         freezeCurrentValues: false,
         generateAutomaticRanges: true,
         rangeAlgorithm: "even",
+      },
+      {
+        facetId: "@rating",
+        field: "rating",
+        type: "numericalRange",
+        injectionDepth: 1000,
+        filterFacetCount: true,
+        preventAutoSelect: false,
+        currentValues: Option.match(ratingRange, {
+          onNone: () => [],
+          onSome: ([start, end]) => [
+            {
+              preventAutoSelect: false,
+              endInclusive: true,
+              state: "selected",
+              end,
+              start,
+            },
+          ],
+        }),
+        numberOfValues: 1,
+        freezeCurrentValues: false,
       },
     ],
     fieldsToInclude: [

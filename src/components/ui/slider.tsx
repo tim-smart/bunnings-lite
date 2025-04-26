@@ -15,8 +15,11 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  formatValue = String,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  formatValue?: (value: number) => string
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -65,7 +68,7 @@ function Slider({
                 className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
               />
             </TooltipTrigger>
-            <TooltipContent>${value?.[index]}</TooltipContent>
+            <TooltipContent>{formatValue(value?.[index]!)}</TooltipContent>
           </Tooltip>
         ))}
       </TooltipProvider>

@@ -23,6 +23,7 @@ export class Rpcs extends RpcGroup.make(
       query: Schema.String,
       offset: Schema.Number,
       priceRange: Schema.Option(Schema.Tuple(Schema.Number, Schema.Number)),
+      ratingRange: Schema.Option(Schema.Tuple(Schema.Number, Schema.Number)),
     },
     success: SearchResponseData,
   }),
