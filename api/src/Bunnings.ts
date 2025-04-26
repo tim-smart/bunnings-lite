@@ -80,7 +80,6 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         const res = yield* client.post("/coveo/search", {
           body: HttpBody.unsafeJson(searchPayload(session, options)),
         })
-        console.dir(yield* res.json, { depth: null })
         const results =
           yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
         return results.data

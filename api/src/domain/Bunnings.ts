@@ -213,22 +213,19 @@ export const SearchResponseDataRemapped = S.transformOrFail(
   SearchResponseDataRaw,
   {
     decode(data: any) {
-      return Effect.map(CurrentSession, (session) => {
-        console.log("facets", data.facets)
-        return {
-          totalCount: data.totalCount,
-          facets: data.facets.map((facet: any) => ({
-            ...facet,
-            facetId: facet.facetId.replace(`_${session.location.code}`, ""),
-          })),
-          results: data.results.map((result: any) => ({
-            raw: {
-              ...result.raw,
-              price: result.raw[`price_${session.location.code}`],
-            },
-          })),
-        }
-      })
+      return Effect.map(CurrentSession, (session) => ({
+        totalCount: data.totalCount,
+        facets: data.facets.map((facet: any) => ({
+          ...facet,
+          facetId: facet.facetId.replace(`_${session.location.code}`, ""),
+        })),
+        results: data.results.map((result: any) => ({
+          raw: {
+            ...result.raw,
+            price: result.raw[`price_${session.location.code}`],
+          },
+        })),
+      }))
     },
     encode(toI) {
       return ParseResult.succeed(toI)
