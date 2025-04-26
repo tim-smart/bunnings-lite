@@ -96,4 +96,4 @@ export const maxPriceRx = Rx.writable(
 
 const priceFilterRx = Rx.make((get) =>
   Option.all([get(minPriceRx), get(maxPriceRx)]),
-).pipe(Rx.debounce(300))
+).pipe(Rx.debounce(500))
