@@ -135,7 +135,7 @@ function SkeletonCard() {
 
 function Filters() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 sm:px-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 px-4 sm:px-0">
       {Object.values(allFilters).map((filter) => (
         <FilterSlider key={filter.filter.id} filter={filter} />
       ))}
