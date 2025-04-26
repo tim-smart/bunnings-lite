@@ -1,12 +1,5 @@
 import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
-import {
-  filtersRx,
-  focusRx,
-  maxPriceRx,
-  minPriceRx,
-  queryIsSetRx,
-  resultsRx,
-} from "./rx"
+import { allFilters, focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { Array, Cause, Option } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
 import {
@@ -141,35 +134,67 @@ function SkeletonCard() {
 }
 
 function Filters() {
-  const { priceRange } = useRxValue(filtersRx)
-  const [minPrice, setMinPrice] = useRx(minPriceRx)
-  const [maxPrice, setMaxPrice] = useRx(maxPriceRx)
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Option.match(priceRange, {
-        onNone: () => null,
-        onSome: ({ start, end, endInclusive }) => (
-          <div className="flex flex-col pt-4 sm:pt-10">
-            <Label className="text-[#0D5257]">Price:</Label>
-            <div className="h-3" />
-            <Slider
-              min={endInclusive ? Math.floor(start) : Math.floor(start * 0.75)}
-              max={endInclusive ? Math.ceil(end) : Math.ceil(end * 1.25)}
-              defaultValue={[
-                Option.getOrElse(minPrice, () => Math.floor(start)),
-                Option.getOrElse(maxPrice, () => Math.ceil(end)),
-              ]}
-              onValueCommit={([min, max]) => {
-                setMinPrice(min)
-                setMaxPrice(max)
-              }}
-            />
-          </div>
-        ),
-      })}
+      {Object.values(allFilters).map((filter) => (
+        <FilterSlider key={filter.id} filter={filter} />
+      ))}
     </div>
   )
+}
+
+type AllFilters = typeof allFilters
+
+function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
+  const range = useRxValue(filter.facet)
+  const [min, setMin] = useRx(filter.min)
+  const [max, setMax] = useRx(filter.max)
+  const [value, setRange] = useRx(filter.value)
+
+  return Option.match(range, {
+    onNone: () => null,
+    onSome: ({ start, end, endInclusive }) => {
+      const buffer = (end - start) * 0.35
+      return (
+        <div className="flex flex-col pt-4 sm:pt-10">
+          <Label className="text-[#0D5257]">
+            {filter.name}:
+            {Option.match(value, {
+              onNone: () => null,
+              onSome: () => (
+                <span
+                  onClick={() => setRange(Option.none())}
+                  className="text-gray-600 cursor-pointer"
+                >
+                  (clear)
+                </span>
+              ),
+            })}
+          </Label>
+          <div className="h-3" />
+          <Slider
+            min={
+              endInclusive
+                ? Math.floor(start)
+                : Math.floor(Math.max(start - buffer, 0))
+            }
+            max={endInclusive ? Math.ceil(end) : Math.ceil(end + buffer)}
+            value={[
+              Option.getOrElse(min, () => Math.floor(start)),
+              Option.getOrElse(max, () => Math.ceil(end)),
+            ]}
+            onValueChange={([min, max]) => {
+              setMin(min)
+              setMax(max)
+            }}
+            onValueCommit={([min, max]) => {
+              setRange(Option.some([min, max]))
+            }}
+          />
+        </div>
+      )
+    },
+  })
 }
 
 function NoResults() {

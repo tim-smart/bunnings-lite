@@ -1,6 +1,6 @@
 import { Rx } from "@effect-rx/rx-react"
 import { BunningsClient } from "@/RpcClient"
-import { Array, Chunk, Effect, Option, Stream } from "effect"
+import { Array, Chunk, Data, Effect, Option, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
 import { Facet } from "../../api/src/domain/Bunnings"
 
@@ -28,14 +28,50 @@ const facetsRx = Rx.make<{
   facets: [],
 }).pipe(Rx.keepAlive)
 
-export const filtersRx = Rx.make((get) => {
-  const facets = get(facetsRx).facets
-  const priceRange = Array.findFirst(
-    facets,
-    (g) => g.facetId === "@price",
-  ).pipe(Option.flatMapNullable((_) => _.values[0]))
-  return { priceRange } as const
-})
+class Filter extends Data.Class<{
+  id: string
+  name: string
+}> {}
+
+const filterRx = Rx.family(({ id, name }: Filter) => ({
+  id,
+  name,
+  facet: Rx.make((get) => {
+    const facets = get(facetsRx).facets
+    return Array.findFirst(facets, (g) => g.facetId === id).pipe(
+      Option.flatMapNullable((_) => _.values[0]),
+    )
+  }),
+  min: Rx.writable(
+    () => Option.none<number>(),
+    (ctx, value: number) => {
+      ctx.setSelf(Option.some(value))
+    },
+  ).pipe(Rx.refreshable),
+  max: Rx.writable(
+    () => Option.none<number>(),
+    (ctx, value: number) => {
+      ctx.setSelf(Option.some(value))
+    },
+  ).pipe(Rx.refreshable),
+  value: Rx.make(Option.none<readonly [number, number]>()),
+}))
+
+export const allFilters = {
+  priceRange: filterRx(new Filter({ id: "@price", name: "Price" })),
+}
+
+const resetFilters = (get: Rx.Context) => {
+  for (const filter of Object.values(allFilters)) {
+    get.set(filter.value, Option.none())
+  }
+}
+const resetFilterUi = (get: Rx.Context) => {
+  for (const filter of Object.values(allFilters)) {
+    get.refresh(filter.min)
+    get.refresh(filter.max)
+  }
+}
 
 export const resultsRx = runtimeRx
   .pull(
@@ -47,15 +83,19 @@ export const resultsRx = runtimeRx
       }
       yield* Effect.sleep(150)
       if (query !== get.once(facetsRx).forQuery) {
-        get.refresh(minPriceRx)
-        get.refresh(maxPriceRx)
+        resetFilters(get)
       }
       return Stream.paginateChunkEffect(0, (offset) => {
         return client
-          .search({ query, offset, priceRange: get(priceFilterRx) })
+          .search({
+            query,
+            offset,
+            priceRange: get(allFilters.priceRange.value),
+          })
           .pipe(
             Effect.map((data) => {
               if (offset === 0) {
+                resetFilterUi(get)
                 get.set(facetsRx, { forQuery: query, facets: data.facets })
               }
               return [
@@ -78,22 +118,4 @@ export const focusRx = Rx.writable(
   (ctx, _: void) => {
     ctx.setSelf(ctx.get(focusRx) + 1)
   },
-)
-
-export const minPriceRx = Rx.writable(
-  () => Option.none<number>(),
-  (ctx, value: number) => {
-    ctx.setSelf(Option.some(value))
-  },
-).pipe(Rx.refreshable)
-
-export const maxPriceRx = Rx.writable(
-  () => Option.none<number>(),
-  (ctx, value: number) => {
-    ctx.setSelf(Option.some(value))
-  },
-).pipe(Rx.refreshable)
-
-const priceFilterRx = Rx.make((get) =>
-  Option.all([get(minPriceRx), get(maxPriceRx)]),
 )
