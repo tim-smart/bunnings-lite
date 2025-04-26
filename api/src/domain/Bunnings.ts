@@ -182,20 +182,21 @@ export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
   rating: S.Number,
 }) {}
 
-export class GroupByResult extends S.Class<GroupByResult>("GroupByResult")({
-  field: S.String,
-  values: S.Array(
+export class Facet extends S.Class<Facet>("Facet")({
+  facetId: S.String,
+  domain: S.Data(
     S.Struct({
-      value: S.String,
+      start: S.Number,
+      end: S.Number,
     }),
-  ),
+  ).pipe(S.optional),
 }) {}
 
 export class SearchResponseDataRaw extends S.Class<SearchResponseDataRaw>(
   "SearchResponseDataRaw",
 )({
   totalCount: S.Number,
-  groupByResults: S.Array(GroupByResult),
+  facets: S.Data(S.Array(Facet)),
   results: S.Array(SearchResultWrap),
 }) {}
 
@@ -203,7 +204,7 @@ export class SearchResponseData extends S.Class<SearchResponseData>(
   "SearchResponseData",
 )({
   totalCount: S.Number,
-  groupByResults: S.Array(GroupByResult),
+  facets: S.Data(S.Array(Facet)),
   results: S.Array(ProductBaseInfo),
 }) {}
 
@@ -212,19 +213,22 @@ export const SearchResponseDataRemapped = S.transformOrFail(
   SearchResponseDataRaw,
   {
     decode(data: any) {
-      return Effect.map(CurrentSession, (session) => ({
-        totalCount: data.totalCount,
-        groupByResults: data.groupByResults.map((group: any) => ({
-          ...group,
-          field: group.field.replace(`_${session.location.code}`, ""),
-        })),
-        results: data.results.map((result: any) => ({
-          raw: {
-            ...result.raw,
-            price: result.raw[`price_${session.location.code}`],
-          },
-        })),
-      }))
+      return Effect.map(CurrentSession, (session) => {
+        console.log("facets", data.facets)
+        return {
+          totalCount: data.totalCount,
+          facets: data.facets.map((facet: any) => ({
+            ...facet,
+            facetId: facet.facetId.replace(`_${session.location.code}`, ""),
+          })),
+          results: data.results.map((result: any) => ({
+            raw: {
+              ...result.raw,
+              price: result.raw[`price_${session.location.code}`],
+            },
+          })),
+        }
+      })
     },
     encode(toI) {
       return ParseResult.succeed(toI)

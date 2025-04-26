@@ -70,19 +70,24 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
     })
 
     const search = Effect.fnUntraced(
-      function* (query: string, offset: number) {
+      function* (options: {
+        readonly query: string
+        readonly offset: number
+        readonly priceRange: Option.Option<readonly [number, number]>
+      }) {
         const client = yield* apiClient()
         const session = yield* CurrentSession
         const res = yield* client.post("/coveo/search", {
-          body: HttpBody.unsafeJson(searchPayload(session, query, offset)),
+          body: HttpBody.unsafeJson(searchPayload(session, options)),
         })
+        console.dir(yield* res.json, { depth: null })
         const results =
           yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
         return results.data
       },
-      (effect, query, offset) =>
+      (effect, options) =>
         Effect.withSpan(effect, "Bunnings.search", {
-          attributes: { query, offset },
+          attributes: { ...options },
         }),
     )
 
@@ -228,7 +233,18 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
   }),
 }) {}
 
-const searchPayload = (session: Session, query: string, offset: number) => {
+const searchPayload = (
+  session: Session,
+  {
+    query,
+    offset,
+    priceRange,
+  }: {
+    readonly query: string
+    readonly offset: number
+    readonly priceRange: Option.Option<readonly [number, number]>
+  },
+) => {
   const location = session.location
   return {
     debug: false,
@@ -253,14 +269,39 @@ const searchPayload = (session: Session, query: string, offset: number) => {
     context: session.location.searchContext,
     searchHub: "PRODUCT_SEARCH",
     cq: `@source==(PRODUCT_STREAM_${location.website})`,
+    facets: [
+      {
+        facetId: `@price_${location.code}`,
+        field: `price_${location.code}`,
+        type: "numericalRange",
+        injectionDepth: 1000,
+        filterFacetCount: true,
+        preventAutoSelect: false,
+        currentValues: Option.match(priceRange, {
+          onNone: () => [],
+          onSome: ([start, end]) => [
+            {
+              preventAutoSelect: false,
+              state: "selected",
+              end,
+              start,
+            },
+          ],
+        }),
+        numberOfValues: 1,
+        freezeCurrentValues: false,
+        generateAutomaticRanges: true,
+        rangeAlgorithm: "even",
+      },
+    ],
     groupBy: [
       {
-        // constantQueryOverride: "@source==(PRODUCT_STREAM_NZ)",
+        constantQueryOverride: `@source==(PRODUCT_STREAM_${location.website})`,
         field: `@price_${location.code}`,
         generateAutomaticRanges: true,
         maximumNumberOfValues: 1,
-        // advancedQueryOverride: "@uri",
-        // queryOverride: "ammer",
+        advancedQueryOverride: "@uri",
+        queryOverride: query,
       },
     ],
     fieldsToInclude: [

@@ -22,6 +22,7 @@ export class Rpcs extends RpcGroup.make(
     payload: {
       query: Schema.String,
       offset: Schema.Number,
+      priceRange: Schema.Option(Schema.Tuple(Schema.Number, Schema.Number)),
     },
     success: SearchResponseData,
   }),

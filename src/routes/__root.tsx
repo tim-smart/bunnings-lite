@@ -14,7 +14,6 @@ import {
 } from "@effect-rx/rx-react"
 import { focusRx, loadingRx, queryIsSetRx, queryRx } from "@/Search/rx"
 import React, { useCallback } from "react"
-import { Option } from "effect"
 import { cn } from "@/lib/utils"
 
 export const Route = createRootRoute({
@@ -77,8 +76,8 @@ function SearchInput() {
     [setQuery, router, navigate],
   )
 
-  useRxSubscribe(focusRx, (o) => {
-    if (!inputRef.current || Option.isNone(o)) return
+  useRxSubscribe(focusRx, (i) => {
+    if (!inputRef.current || i === 0) return
     inputRef.current.focus({ preventScroll: true })
     inputRef.current.scrollIntoView({
       behavior: "smooth",

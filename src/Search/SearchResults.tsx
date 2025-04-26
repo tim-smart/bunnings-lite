@@ -1,6 +1,13 @@
 import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
-import { focusRx, queryIsSetRx, resultsRx } from "./rx"
-import { Cause } from "effect"
+import {
+  filtersRx,
+  focusRx,
+  maxPriceRx,
+  minPriceRx,
+  queryIsSetRx,
+  resultsRx,
+} from "./rx"
+import { Array, Cause, Option } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
 import {
   Card,
@@ -23,6 +30,7 @@ import { ArrowUp } from "lucide-react"
 import { favoritesRx } from "@/Favorites"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
+import { Slider } from "@/components/ui/slider"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -44,17 +52,20 @@ export function SearchResults() {
     (result.value.items.length > 0 || !result.waiting)
 
   return (
-    <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-2 sm:py-10">
-      {hasResults
-        ? result.value.items.map((result) => (
-            <ResultCard key={result.id} product={result} />
-          ))
-        : Array.from({ length: 9 }, (_, i) => <SkeletonCard key={String(i)} />)}
-      <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col transform-gpu">
-        <BackToTop />
-        <div className="h-4" />
+    <>
+      {hasResults && <Filters />}
+      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 py-4 sm:py-10">
+        {hasResults
+          ? result.value.items.map((result) => (
+              <ResultCard key={result.id} product={result} />
+            ))
+          : Array.makeBy(9, (i) => <SkeletonCard key={String(i)} />)}
+        <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col transform-gpu">
+          <BackToTop />
+          <div className="h-4" />
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -125,6 +136,39 @@ function SkeletonCard() {
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-full" />
       </div>
+    </div>
+  )
+}
+
+function Filters() {
+  const { priceRange } = useRxValue(filtersRx)
+  const [minPrice, setMinPrice] = useRx(minPriceRx)
+  const [maxPrice, setMaxPrice] = useRx(maxPriceRx)
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Option.match(priceRange, {
+        onNone: () => null,
+        onSome: ({ start, end }) => (
+          <div className="flex flex-col pt-4 sm:pt-10">
+            <Label className="text-[#0D5257]">Price:</Label>
+            <div className="h-3" />
+            <Slider
+              defaultValue={[start, end]}
+              min={start}
+              max={end}
+              value={[
+                Option.getOrElse(minPrice, () => start),
+                Option.getOrElse(maxPrice, () => end),
+              ]}
+              onValueChange={([min, max]) => {
+                setMinPrice(min)
+                setMaxPrice(max)
+              }}
+            />
+          </div>
+        ),
+      })}
     </div>
   )
 }
