@@ -3,8 +3,8 @@ import { AuthMiddleware } from "./Auth"
 import { Schema } from "effect"
 import {
   FulfillmentInfoWithLocation,
-  ProductBaseInfo,
   ProductPriceInfo,
+  SearchResponseData,
   Session,
   SessionLocation,
   Store,
@@ -21,9 +21,9 @@ export class Rpcs extends RpcGroup.make(
   Rpc.make("search", {
     payload: {
       query: Schema.String,
+      offset: Schema.Number,
     },
-    stream: true,
-    success: ProductBaseInfo,
+    success: SearchResponseData,
   }),
   Rpc.make("productInfo", {
     payload: {

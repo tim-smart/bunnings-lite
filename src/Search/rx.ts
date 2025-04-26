@@ -1,7 +1,8 @@
 import { Rx } from "@effect-rx/rx-react"
 import { BunningsClient } from "@/RpcClient"
-import { Effect, Stream } from "effect"
+import { Chunk, Effect, Option, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
+import { GroupByResult } from "../../api/src/domain/Bunnings"
 
 const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
 
@@ -19,6 +20,10 @@ export const loginRx = runtimeRx.rx(
 
 const queryTrimmedRx = Rx.map(queryRx, (query) => query.trim())
 
+export const groupByRx = Rx.make<ReadonlyArray<GroupByResult>>([]).pipe(
+  Rx.keepAlive,
+)
+
 export const resultsRx = runtimeRx
   .pull(
     Effect.fnUntraced(function* (get: Rx.Context) {
@@ -28,7 +33,19 @@ export const resultsRx = runtimeRx
         return Stream.empty
       }
       yield* Effect.sleep(150)
-      return client.search({ query }).pipe(Stream.bufferChunks({ capacity: 1 }))
+      return Stream.paginateChunkEffect(0, (offset) =>
+        client.search({ query, offset }).pipe(
+          Effect.map((data) => {
+            get.set(groupByRx, data.groupByResults)
+            return [
+              Chunk.unsafeFromArray(data.results),
+              Option.some(data.results.length + offset).pipe(
+                Option.filter((len) => len < data.totalCount),
+              ),
+            ] as const
+          }),
+        ),
+      )
     }, Stream.unwrap),
   )
   .pipe(Rx.keepAlive)

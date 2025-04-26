@@ -23,7 +23,8 @@ const Handlers = Rpcs.toLayer(
         }
         return session
       }),
-      search: ({ query }) => bunnings.search(query).pipe(Stream.orDie),
+      search: ({ query, offset }) =>
+        bunnings.search(query, offset).pipe(Effect.orDie),
       productInfo: ({ id }) =>
         bunnings.productInfoWithPrice(id).pipe(Effect.orDie),
       productReviews: ({ id }) => bazaar.reviews(id).pipe(Stream.orDie),

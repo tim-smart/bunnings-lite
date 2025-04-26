@@ -159,36 +159,6 @@ export class SearchResultWrap extends S.Class<SearchResultWrap>(
   raw: SearchResult,
 }) {}
 
-export const SearchResponse = S.Struct({
-  data: S.Struct({
-    totalCount: S.Number,
-    results: S.Array(SearchResultWrap),
-  }),
-})
-
-export const SearchResponseRemapped = S.transformOrFail(
-  S.Object,
-  SearchResponse,
-  {
-    decode(fromA: any) {
-      return Effect.map(CurrentSession, (session) => ({
-        data: {
-          totalCount: fromA.data.totalCount,
-          results: fromA.data.results.map((result: any) => ({
-            raw: {
-              ...result.raw,
-              price: result.raw[`price_${session.location.code}`],
-            },
-          })),
-        },
-      }))
-    },
-    encode(toI) {
-      return ParseResult.succeed(toI)
-    },
-  },
-)
-
 export class ImageElement extends S.Class<ImageElement>("ImageElement")({
   altText: S.optional(S.Union(S.Null, S.String)),
   format: S.optional(S.Union(S.Null, S.String)),
@@ -199,6 +169,84 @@ export class ImageElement extends S.Class<ImageElement>("ImageElement")({
   url: ImageUrl,
   videoId: S.optional(S.Union(S.Null, S.String)),
 }) {}
+
+export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
+  "ProductBaseInfo",
+)({
+  id: S.String,
+  title: S.String,
+  url: S.String,
+  images: S.NonEmptyArray(ImageElement),
+  price: S.Number,
+  numberOfReviews: S.Number,
+  rating: S.Number,
+}) {}
+
+export class GroupByResult extends S.Class<GroupByResult>("GroupByResult")({
+  field: S.String,
+  values: S.Array(
+    S.Struct({
+      value: S.String,
+    }),
+  ),
+}) {}
+
+export class SearchResponseDataRaw extends S.Class<SearchResponseDataRaw>(
+  "SearchResponseDataRaw",
+)({
+  totalCount: S.Number,
+  groupByResults: S.Array(GroupByResult),
+  results: S.Array(SearchResultWrap),
+}) {}
+
+export class SearchResponseData extends S.Class<SearchResponseData>(
+  "SearchResponseData",
+)({
+  totalCount: S.Number,
+  groupByResults: S.Array(GroupByResult),
+  results: S.Array(ProductBaseInfo),
+}) {}
+
+export const SearchResponseDataRemapped = S.transformOrFail(
+  S.Object,
+  SearchResponseDataRaw,
+  {
+    decode(data: any) {
+      return Effect.map(CurrentSession, (session) => ({
+        totalCount: data.totalCount,
+        groupByResults: data.groupByResults.map((group: any) => ({
+          ...group,
+          field: group.field.replace(`_${session.location.code}`, ""),
+        })),
+        results: data.results.map((result: any) => ({
+          raw: {
+            ...result.raw,
+            price: result.raw[`price_${session.location.code}`],
+          },
+        })),
+      }))
+    },
+    encode(toI) {
+      return ParseResult.succeed(toI)
+    },
+  },
+).pipe(
+  S.transform(SearchResponseData, {
+    decode(fromA) {
+      return new SearchResponseData({
+        ...fromA,
+        results: fromA.results.map((_) => _.raw.asBaseInfo),
+      })
+    },
+    encode(_toI) {
+      throw new Error("Not implemented")
+    },
+  }),
+)
+
+export const SearchResponse = S.Struct({
+  data: SearchResponseDataRemapped,
+})
 
 export class GuideDocument extends S.Class<GuideDocument>("GuideDocument")({
   altText: S.optionalWith(S.String, { nullable: true }),
@@ -299,18 +347,6 @@ export class AllCategory extends S.Class<AllCategory>("AllCategory")({
   internalPath: S.String,
   level: S.Number,
   workShopCategory: S.optional(S.Union(S.Null, S.String)),
-}) {}
-
-export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
-  "ProductBaseInfo",
-)({
-  id: S.String,
-  title: S.String,
-  url: S.String,
-  images: S.NonEmptyArray(ImageElement),
-  price: S.Number,
-  numberOfReviews: S.Number,
-  rating: S.Number,
 }) {}
 
 export class ProductInfo extends S.Class<ProductInfo>("ProductInfo")({

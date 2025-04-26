@@ -1,4 +1,4 @@
-import { Array as Arr, Chunk, Effect, Ref, Option, Stream } from "effect"
+import { Array as Arr, Effect, Ref, Option, Stream } from "effect"
 import {
   CurrentSession,
   FulfillmentResponse,
@@ -6,7 +6,7 @@ import {
   PriceResponse,
   ProductPriceInfo,
   ProductResponse,
-  SearchResponseRemapped,
+  SearchResponse,
   Session,
   SessionToken,
   SessionUnsetLocation,
@@ -70,39 +70,20 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
     })
 
     const search = Effect.fnUntraced(
-      function* (query: string) {
+      function* (query: string, offset: number) {
         const client = yield* apiClient()
         const session = yield* CurrentSession
-        const getOffset = Effect.fn("Bunnings.search.getOffset")(function* (
-          offset: number,
-        ) {
-          const res = yield* client.post("/coveo/search", {
-            body: HttpBody.unsafeJson(searchPayload(session, query, offset)),
-          })
-          const results = yield* HttpClientResponse.schemaBodyJson(
-            SearchResponseRemapped,
-          )(res)
-          return [
-            results.data.results.map((_) => _.raw),
-            results.data.totalCount,
-          ] as const
+        const res = yield* client.post("/coveo/search", {
+          body: HttpBody.unsafeJson(searchPayload(session, query, offset)),
         })
-
-        return Stream.paginateChunkEffect(0, (offset) =>
-          Effect.map(getOffset(offset), ([results, totalCount]) => {
-            const currentTotal = offset + results.length
-            return [
-              Chunk.unsafeFromArray(results.map((_) => _.asBaseInfo)),
-              currentTotal < totalCount
-                ? Option.some(currentTotal)
-                : Option.none<number>(),
-            ] as const
-          }),
-        )
+        const results =
+          yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
+        return results.data
       },
-      Stream.unwrap,
-      (stream, query) =>
-        Stream.withSpan(stream, "Bunnings.search", { attributes: { query } }),
+      (effect, query, offset) =>
+        Effect.withSpan(effect, "Bunnings.search", {
+          attributes: { query, offset },
+        }),
     )
 
     const productInfo = Effect.fn("Bunnings.productInfo")(function* (
@@ -272,6 +253,16 @@ const searchPayload = (session: Session, query: string, offset: number) => {
     context: session.location.searchContext,
     searchHub: "PRODUCT_SEARCH",
     cq: `@source==(PRODUCT_STREAM_${location.website})`,
+    groupBy: [
+      {
+        // constantQueryOverride: "@source==(PRODUCT_STREAM_NZ)",
+        field: `@price_${location.code}`,
+        generateAutomaticRanges: true,
+        maximumNumberOfValues: 1,
+        // advancedQueryOverride: "@uri",
+        // queryOverride: "ammer",
+      },
+    ],
     fieldsToInclude: [
       "source",
       "thumbnailimageurl",
