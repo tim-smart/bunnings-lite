@@ -154,14 +154,13 @@ function Filters() {
             <Label className="text-[#0D5257]">Price:</Label>
             <div className="h-3" />
             <Slider
-              defaultValue={[start, end]}
               min={endInclusive ? Math.floor(start) : Math.floor(start * 0.75)}
               max={endInclusive ? Math.ceil(end) : Math.ceil(end * 1.25)}
-              value={[
+              defaultValue={[
                 Option.getOrElse(minPrice, () => Math.floor(start)),
                 Option.getOrElse(maxPrice, () => Math.ceil(end)),
               ]}
-              onValueChange={([min, max]) => {
+              onValueCommit={([min, max]) => {
                 setMinPrice(min)
                 setMaxPrice(max)
               }}
