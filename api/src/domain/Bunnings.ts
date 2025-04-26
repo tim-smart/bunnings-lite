@@ -184,19 +184,20 @@ export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
 
 export class Facet extends S.Class<Facet>("Facet")({
   facetId: S.String,
-  domain: S.Data(
+  values: S.Array(
     S.Struct({
       start: S.Number,
       end: S.Number,
+      endInclusive: S.Boolean,
     }),
-  ).pipe(S.optional),
+  ),
 }) {}
 
 export class SearchResponseDataRaw extends S.Class<SearchResponseDataRaw>(
   "SearchResponseDataRaw",
 )({
   totalCount: S.Number,
-  facets: S.Data(S.Array(Facet)),
+  facets: S.Array(Facet),
   results: S.Array(SearchResultWrap),
 }) {}
 
@@ -204,7 +205,7 @@ export class SearchResponseData extends S.Class<SearchResponseData>(
   "SearchResponseData",
 )({
   totalCount: S.Number,
-  facets: S.Data(S.Array(Facet)),
+  facets: S.Array(Facet),
   results: S.Array(ProductBaseInfo),
 }) {}
 

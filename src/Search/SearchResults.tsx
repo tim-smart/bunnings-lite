@@ -149,17 +149,17 @@ function Filters() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {Option.match(priceRange, {
         onNone: () => null,
-        onSome: ({ start, end }) => (
+        onSome: ({ start, end, endInclusive }) => (
           <div className="flex flex-col pt-4 sm:pt-10">
             <Label className="text-[#0D5257]">Price:</Label>
             <div className="h-3" />
             <Slider
               defaultValue={[start, end]}
-              min={start}
-              max={end}
+              min={endInclusive ? Math.floor(start) : Math.floor(start * 0.75)}
+              max={endInclusive ? Math.ceil(end) : Math.ceil(end * 1.25)}
               value={[
-                Option.getOrElse(minPrice, () => start),
-                Option.getOrElse(maxPrice, () => end),
+                Option.getOrElse(minPrice, () => Math.floor(start)),
+                Option.getOrElse(maxPrice, () => Math.ceil(end)),
               ]}
               onValueChange={([min, max]) => {
                 setMinPrice(min)

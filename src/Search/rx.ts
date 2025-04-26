@@ -33,10 +33,8 @@ export const filtersRx = Rx.make((get) => {
   const priceRange = Array.findFirst(
     facets,
     (g) => g.facetId === "@price",
-  ).pipe(Option.flatMapNullable((_) => _.domain))
-  return {
-    priceRange,
-  } as const
+  ).pipe(Option.flatMapNullable((_) => _.values[0]))
+  return { priceRange } as const
 })
 
 export const resultsRx = runtimeRx
@@ -57,10 +55,8 @@ export const resultsRx = runtimeRx
           .search({ query, offset, priceRange: get(priceFilterRx) })
           .pipe(
             Effect.map((data) => {
-              if (offset === 0 && get.once(facetsRx).forQuery !== query) {
-                Rx.batch(() => {
-                  get.set(facetsRx, { forQuery: query, facets: data.facets })
-                })
+              if (offset === 0) {
+                get.set(facetsRx, { forQuery: query, facets: data.facets })
               }
               return [
                 Chunk.unsafeFromArray(data.results),
@@ -85,20 +81,14 @@ export const focusRx = Rx.writable(
 )
 
 export const minPriceRx = Rx.writable(
-  (get) => {
-    get(filtersRx)
-    return Option.none<number>()
-  },
+  () => Option.none<number>(),
   (ctx, value: number) => {
     ctx.setSelf(Option.some(value))
   },
 ).pipe(Rx.refreshable)
 
 export const maxPriceRx = Rx.writable(
-  (get) => {
-    get(filtersRx)
-    return Option.none<number>()
-  },
+  () => Option.none<number>(),
   (ctx, value: number) => {
     ctx.setSelf(Option.some(value))
   },
