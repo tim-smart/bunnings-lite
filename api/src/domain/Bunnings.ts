@@ -182,15 +182,15 @@ export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
   rating: S.Number,
 }) {}
 
+export class FacetValue extends S.Class<FacetValue>("FacetValue")({
+  start: S.Number,
+  end: S.Number,
+  endInclusive: S.Boolean,
+}) {}
+
 export class Facet extends S.Class<Facet>("Facet")({
   facetId: S.String,
-  values: S.Array(
-    S.Struct({
-      start: S.Number,
-      end: S.Number,
-      endInclusive: S.Boolean,
-    }),
-  ),
+  values: S.Array(FacetValue),
 }) {}
 
 export class SearchResponseDataRaw extends S.Class<SearchResponseDataRaw>(
