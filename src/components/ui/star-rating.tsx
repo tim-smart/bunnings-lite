@@ -33,7 +33,7 @@ export function StarRating({
               size === "sm" ? "h-4 w-4" : "h-5 w-5",
               "transition-colors",
               index < rating
-                ? "fill-[#db2a1c] text-[#db2a1c]"
+                ? "fill-accent text-accent"
                 : "fill-none text-gray-300",
             )}
             aria-hidden="true"

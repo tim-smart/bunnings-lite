@@ -10,10 +10,7 @@ export function InstallButton() {
     return null
   }
   return (
-    <Button
-      onClick={() => result.value()}
-      className="bg-[#0D5257] text-white cursor-pointer hover:bg-[#0D5257]/90"
-    >
+    <Button onClick={() => result.value()} className="cursor-pointer">
       <Home />
       Add to home screen
     </Button>

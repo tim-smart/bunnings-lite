@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils"
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="flex min-h-screen flex-col bg-[#0D5257]">
+    <div className="flex min-h-screen flex-col bg-primary">
       <header>
         <div className="flex">
           <div className="flex-1"></div>
@@ -106,7 +106,7 @@ function SearchInput() {
           ref={inputRef}
           type="search"
           placeholder="Search for products..."
-          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-[#db2a1c] focus-visible:border-[#db2a1c] bg-white ${queryIsSet ? "my-5" : "my-20"}`}
+          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-secondary focus-visible:border-secondary bg-white ${queryIsSet ? "my-5" : "my-20"}`}
           value={query}
           onChange={onChange}
         />

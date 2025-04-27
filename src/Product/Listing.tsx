@@ -14,7 +14,6 @@ import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry"
 
 const imageIndexRx = Rx.make(0)
 
@@ -95,7 +94,7 @@ export function ProductListing({
 
           <div className="flex gap-2 items-center flex-wrap">
             <FavoriteButton product={product} />
-            <Button className="bg-[#0D5257] hover:bg-[#0D5257]/90" asChild>
+            <Button asChild>
               <a href={product.url} target="_blank" rel="noopener noreferrer">
                 Open in Bunnings
                 <ArrowRight />
@@ -173,7 +172,7 @@ function ReviewsOverview({ reviews }: { readonly reviews: ReviewStats }) {
               <span className="w-2">{i}</span>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-[#db2a1c] h-2 rounded-full"
+                  className="bg-secondary h-2 rounded-full"
                   style={{
                     width: `${percentage}%`,
                   }}
@@ -240,8 +239,8 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
         <button
           key={i}
           className={cn(
-            "border rounded-md p-2 hover:border-[#0D5257]",
-            i === index ? "border-[#0D5257]" : undefined,
+            "border rounded-md p-2 hover:border-primary",
+            i === index ? "border-primary" : undefined,
           )}
           onClick={() => setIndex(i)}
         >

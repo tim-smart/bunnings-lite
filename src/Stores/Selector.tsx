@@ -44,9 +44,9 @@ export function StoreSelector() {
           )
         }}
       >
-        <SelectTrigger className="w-full border-2 border-[#0D5257] text-[#0D5257] rounded-md focus:ring-[#0D5257]">
+        <SelectTrigger className="w-full border-2 border-primary text-primary rounded-md focus:ring-primary">
           <div className="flex items-center">
-            <MapPin className="w-5 h-5 mr-2 text-[#db2a1c]" />
+            <MapPin className="w-5 h-5 mr-2 text-secondary" />
             <SelectValue placeholder="Select your store" />
           </div>
         </SelectTrigger>

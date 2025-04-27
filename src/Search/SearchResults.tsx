@@ -53,9 +53,9 @@ export function SearchResults() {
               <ResultCard key={result.id} product={result} />
             ))
           : Array.makeBy(9, (i) => <SkeletonCard key={String(i)} />)}
-        <div className="fixed bottom-0 right-0 p-4 pb-safe flex flex-col transform-gpu">
+        <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
           <BackToTop />
-          <div className="h-4" />
+          <div className="h-6" />
         </div>
       </div>
     </>
@@ -158,7 +158,7 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
       const buffer = (end - start) * 0.35
       return (
         <div className="flex flex-col pt-4 sm:pt-10">
-          <Label className="text-[#0D5257]">
+          <Label className="text-primary">
             {filter.filter.name}:
             {Option.match(value, {
               onNone: () => null,
@@ -203,7 +203,7 @@ function NoResults() {
   return (
     <div className="flex flex-col items-start py-10 gap-10">
       <div className="flex flex-col max-w-sm w-full">
-        <Label className="text-[#0D5257]">Select your store:</Label>
+        <Label className="text-primary">Select your store:</Label>
         <div className="h-2" />
         <StoreSelector />
       </div>
@@ -227,7 +227,7 @@ function FavoritesList() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className="text-[#0D5257] font-medium text-sm flex gap-2">
+      <div className="text-primary font-medium text-sm flex gap-2">
         Favourites:
         <span
           onClick={() => setFavorites([])}
@@ -267,9 +267,10 @@ function BackToTop() {
   return (
     <Button
       onClick={() => scrollToTop()}
-      className="bg-[#0D5257] text-white cursor-pointer hover:bg-[#0D5257]/90"
+      className="bg-primary text-white cursor-pointer hover:bg-primary/90"
+      size="lg"
     >
-      <ArrowUp />
+      <ArrowUp strokeWidth={3} />
     </Button>
   )
 }

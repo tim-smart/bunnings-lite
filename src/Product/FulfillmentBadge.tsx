@@ -27,7 +27,7 @@ export function FulfillmentBadge({
   } else if (Option.isSome(fullfillment.location)) {
     const { aisle, bay } = fullfillment.location.value
     return (
-      <Badge variant="outline" className="">
+      <Badge variant="outline" className="bg-white/20 backdrop-blur-sm">
         <MapPin />
         Aisle {aisle}/{bay}
       </Badge>

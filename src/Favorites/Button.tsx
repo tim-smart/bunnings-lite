@@ -17,10 +17,7 @@ export function FavoriteButton({
 
   if (variant === "full") {
     return (
-      <Button
-        className="bg-[#0D5257] hover:bg-[#0D5257]/90"
-        onClick={() => toggleFavorite(product)}
-      >
+      <Button onClick={() => toggleFavorite(product)}>
         <Star
           className={cn(
             "text-white cursor-pointer",
@@ -48,8 +45,8 @@ export function FavoriteButton({
     >
       <Star
         className={cn(
-          "text-[#db2a1c] cursor-pointer",
-          isFavorite ? "fill-[#db2a1c]" : "fill-none",
+          "text-secondary cursor-pointer",
+          isFavorite ? "fill-secondary" : "fill-none",
         )}
       />
     </button>
