@@ -31,7 +31,6 @@ export default defineConfig({
         launch_handler: {
           client_mode: "navigate-existing",
         },
-        orientation: "portrait-primary",
       },
 
       workbox: {
