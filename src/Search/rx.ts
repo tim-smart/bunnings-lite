@@ -31,6 +31,7 @@ const facetsRx = Rx.make<{
 class Filter extends Data.Class<{
   id: string
   name: string
+  kind: "slider" | "text"
   valuePrefix: string
   facetValueOverride?: {
     readonly start: number
@@ -74,12 +75,18 @@ const filterRx = Rx.family((filter: Filter) => {
 
 export const allFilters = {
   priceRange: filterRx(
-    new Filter({ id: "@price", name: "Price", valuePrefix: "$" }),
+    new Filter({
+      id: "@price",
+      name: "Price",
+      kind: "text",
+      valuePrefix: "$",
+    }),
   ),
   ratingRange: filterRx(
     new Filter({
       id: "@rating",
       name: "Rating",
+      kind: "slider",
       valuePrefix: "",
       facetValueOverride: {
         start: 0,
@@ -93,15 +100,10 @@ export const allFilters = {
 const resetFilters = (get: Rx.Context) => {
   for (const filter of Object.values(allFilters)) {
     get.set(filter.value, Option.none())
-    if (filter.filter.facetValueOverride) {
-      get.refresh(filter.min)
-      get.refresh(filter.max)
-    }
   }
 }
 const resetFilterUi = (get: Rx.Context) => {
   for (const filter of Object.values(allFilters)) {
-    if (filter.filter.facetValueOverride) continue
     get.refresh(filter.min)
     get.refresh(filter.max)
   }
@@ -119,29 +121,28 @@ export const resultsRx = runtimeRx
       if (query !== get.once(facetsRx).forQuery) {
         resetFilters(get)
       }
-      return Stream.paginateChunkEffect(0, (offset) => {
-        return client
-          .search({
+      return Stream.paginateChunkEffect(0, (offset) =>
+        Effect.map(
+          client.search({
             query,
             offset,
             priceRange: get(allFilters.priceRange.value),
             ratingRange: get(allFilters.ratingRange.value),
-          })
-          .pipe(
-            Effect.map((data) => {
-              if (offset === 0) {
-                resetFilterUi(get)
-                get.set(facetsRx, { forQuery: query, facets: data.facets })
-              }
-              return [
-                Chunk.unsafeFromArray(data.results),
-                Option.some(data.results.length + offset).pipe(
-                  Option.filter((len) => len < data.totalCount),
-                ),
-              ] as const
-            }),
-          )
-      })
+          }),
+          (data) => {
+            if (offset === 0 && get.once(facetsRx).forQuery !== query) {
+              resetFilterUi(get)
+              get.set(facetsRx, { forQuery: query, facets: data.facets })
+            }
+            return [
+              Chunk.unsafeFromArray(data.results),
+              Option.some(data.results.length + offset).pipe(
+                Option.filter((len) => len < data.totalCount),
+              ),
+            ] as const
+          },
+        ),
+      )
     }, Stream.unwrap),
   )
   .pipe(Rx.keepAlive)

@@ -11,7 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { preloadRx } from "@/Product/rx"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
@@ -24,6 +24,7 @@ import { favoritesRx } from "@/Favorites"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
@@ -135,7 +136,7 @@ function SkeletonCard() {
 
 function Filters() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 px-4 sm:px-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 sm:gap-4 px-4 sm:px-0">
       {Object.values(allFilters).map((filter) => (
         <FilterSlider key={filter.filter.id} filter={filter} />
       ))}
@@ -152,50 +153,95 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
   const [value, setRange] = useRx(filter.value)
   const reset = useRxSet(filter.reset)
 
+  const minInput = useRef<HTMLInputElement>(null)
+  const maxInput = useRef<HTMLInputElement>(null)
+
   return Option.match(range, {
     onNone: () => null,
-    onSome: ({ start, end, endInclusive }) => {
-      const buffer = (end - start) * 0.35
-      return (
-        <div className="flex flex-col pt-4 sm:pt-10">
-          <Label className="text-primary">
-            {filter.filter.name}:
-            {Option.match(value, {
-              onNone: () => null,
-              onSome: () => (
-                <span
-                  onClick={() => reset()}
-                  className="text-gray-600 cursor-pointer"
-                >
-                  (clear)
-                </span>
-              ),
-            })}
-          </Label>
-          <div className="h-3" />
-          <Slider
-            min={
-              endInclusive
-                ? Math.floor(start)
-                : Math.floor(Math.max(start - buffer, 0))
-            }
-            max={endInclusive ? Math.ceil(end) : Math.ceil(end + buffer)}
-            value={[
-              Option.getOrElse(min, () => Math.floor(start)),
-              Option.getOrElse(max, () => Math.ceil(end)),
-            ]}
-            onValueChange={([min, max]) => {
-              setMin(min)
-              setMax(max)
+    onSome: ({ start, end }) => (
+      <div className="flex flex-col pt-4 sm:pt-10">
+        <Label className="text-primary">
+          {filter.filter.name}:
+          {Option.match(value, {
+            onNone: () => null,
+            onSome: () => (
+              <span
+                onClick={() => reset()}
+                className="text-gray-600 cursor-pointer"
+              >
+                (clear)
+              </span>
+            ),
+          })}
+        </Label>
+        {filter.filter.kind === "slider" ? (
+          <>
+            <div className="h-3 md:h-[18px]" />
+            <Slider
+              min={Math.floor(start)}
+              max={Math.ceil(end)}
+              value={[
+                Option.getOrElse(min, () => Math.floor(start)),
+                Option.getOrElse(max, () => Math.ceil(end)),
+              ]}
+              onValueChange={([min, max]) => {
+                setMin(min)
+                setMax(max)
+              }}
+              onValueCommit={([min, max]) => {
+                setRange(Option.some([min, max]))
+              }}
+              formatValue={(value) => `${filter.filter.valuePrefix}${value}`}
+            />
+          </>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              minInput.current?.blur()
+              maxInput.current?.blur()
+              setRange(
+                Option.some([
+                  Option.getOrElse(min, () => Math.floor(start)),
+                  Option.getOrElse(max, () => Math.ceil(end)),
+                ]),
+              )
             }}
-            onValueCommit={([min, max]) => {
-              setRange(Option.some([min, max]))
-            }}
-            formatValue={(value) => `${filter.filter.valuePrefix}${value}`}
-          />
-        </div>
-      )
-    },
+          >
+            <div className="h-1" />
+            <div className="flex gap-2 items-center">
+              <Input
+                ref={minInput}
+                type="number"
+                onChange={(e) => {
+                  const value = Number(e.target.value)
+                  setMin(isNaN(value) ? Math.floor(start) : value)
+                }}
+                value={Option.getOrElse(min, () => "")}
+                placeholder={`${filter.filter.valuePrefix}${Math.floor(start)}`}
+              />
+              <div className="w-20 flex items-center">
+                <hr className="h-[5px] bg-gray-600 w-full" />
+              </div>
+              <Input
+                ref={maxInput}
+                type="number"
+                onChange={(e) => {
+                  const value = Number(e.target.value)
+                  setMax(isNaN(value) ? Math.ceil(end) : value)
+                }}
+                value={Option.getOrElse(max, () => "")}
+                placeholder={`${filter.filter.valuePrefix}${Math.ceil(end)}`}
+              />
+            </div>
+            <button type="submit" className="hidden">
+              Submit
+            </button>
+          </form>
+        )}
+      </div>
+    ),
   })
 }
 

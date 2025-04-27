@@ -318,6 +318,16 @@ const searchPayload = (
         freezeCurrentValues: false,
       },
     ],
+    groupBy: [
+      {
+        constantQueryOverride: `@source==(PRODUCT_STREAM_${location.website})`,
+        field: `@price_${location.code}`,
+        generateAutomaticRanges: true,
+        maximumNumberOfValues: 1,
+        advancedQueryOverride: "@uri",
+        queryOverride: query,
+      },
+    ],
     fieldsToInclude: [
       "source",
       "thumbnailimageurl",
