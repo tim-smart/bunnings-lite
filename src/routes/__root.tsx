@@ -109,6 +109,7 @@ function SearchInput() {
           className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-secondary focus-visible:border-secondary bg-white ${queryIsSet ? "my-5" : "my-20"}`}
           value={query}
           onChange={onChange}
+          autoFocus
         />
       </form>
     </div>
