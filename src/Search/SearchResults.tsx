@@ -218,6 +218,16 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
                   const value = Number(e.target.value)
                   setMin(isNaN(value) ? Math.floor(start) : value)
                 }}
+                onBlur={(e) => {
+                  const value = Number(e.target.value)
+                  if (isNaN(value)) return
+                  setRange(
+                    Option.some([
+                      value,
+                      Option.getOrElse(max, () => Math.ceil(end)),
+                    ]),
+                  )
+                }}
                 value={Option.getOrElse(min, () => "")}
                 placeholder={`${filter.filter.valuePrefix}${Math.floor(start)}`}
               />
@@ -230,6 +240,16 @@ function FilterSlider({ filter }: { filter: AllFilters[keyof AllFilters] }) {
                 onChange={(e) => {
                   const value = Number(e.target.value)
                   setMax(isNaN(value) ? Math.ceil(end) : value)
+                }}
+                onBlur={(e) => {
+                  const value = Number(e.target.value)
+                  if (isNaN(value)) return
+                  setRange(
+                    Option.some([
+                      Option.getOrElse(min, () => Math.floor(start)),
+                      value,
+                    ]),
+                  )
                 }}
                 value={Option.getOrElse(max, () => "")}
                 placeholder={`${filter.filter.valuePrefix}${Math.ceil(end)}`}
