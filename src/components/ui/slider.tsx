@@ -65,7 +65,7 @@ function Slider({
             <TooltipTrigger asChild className="pointer-events-none">
               <SliderPrimitive.Thumb
                 data-slot="slider-thumb"
-                className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+                className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 w-6 h-6"
               />
             </TooltipTrigger>
             <TooltipContent>{formatValue(value?.[index]!)}</TooltipContent>

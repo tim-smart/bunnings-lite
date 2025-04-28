@@ -24,8 +24,7 @@ export function useScrollBottom(f: () => void) {
       }
     }
 
-    window.addEventListener("scroll", onscroll)
-
+    window.addEventListener("scroll", onscroll, { passive: true })
     return () => {
       window.removeEventListener("scroll", onscroll)
     }

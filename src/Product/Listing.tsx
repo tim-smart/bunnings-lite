@@ -39,7 +39,7 @@ export function ProductListing({
   )
 
   return (
-    <div className="pb-8 pt-1">
+    <div>
       <div className="py-2">
         <Button
           variant="link"
