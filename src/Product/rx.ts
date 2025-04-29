@@ -1,6 +1,6 @@
 import { Result, Rx } from "@effect-rx/rx-react"
 import { BaseInfoKey, BunningsClient } from "@/RpcClient"
-import { Effect, Stream } from "effect"
+import { Effect, Option, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
 import { ProductBaseInfo } from "api/src/domain/Bunnings"
 
@@ -8,7 +8,6 @@ const runtimeRx = Rx.runtime(BunningsClient.Default)
 
 export const preloadRx = Rx.fnSync((key: BaseInfoKey, get) => {
   get(productRx(key))
-  get(productFullInfoRx(key.id))
   get(productFulfillmentRx(key.id))
   get(productReviewStatsRx(key.id))
   get(productReviewsRx(key.id))
@@ -16,10 +15,11 @@ export const preloadRx = Rx.fnSync((key: BaseInfoKey, get) => {
 
 export const productRx = Rx.family((key: BaseInfoKey) =>
   Rx.make((get) => {
-    if (key.result) {
-      return Result.success<ProductBaseInfo, never>(key.result)
+    const fullInfo = get(productFullInfoRx(key.id))
+    if (key.result && fullInfo._tag !== "Success") {
+      return Result.success(key.result)
     }
-    return Result.map(get(productFullInfoRx(key.id)), (_) => _.asBaseInfo)
+    return Result.map(fullInfo, (_) => _.asBaseInfo)
   }).pipe(Rx.setIdleTTL("5 minutes")),
 )
 
@@ -42,7 +42,28 @@ export const productReviewStatsRx = Rx.family((id: string) =>
         return yield* products.productReviewStats({ id })
       }),
     )
-    .pipe(Rx.setIdleTTL("10 minutes")),
+    .pipe(
+      Rx.map((_) => Option.flatten(Result.value(_))),
+      Rx.setIdleTTL("10 minutes"),
+    ),
+)
+
+export const productReviewCountRx = Rx.family((product: ProductBaseInfo) =>
+  Rx.make((get) => {
+    const stats = get(productReviewStatsRx(product.id))
+    return Option.isSome(stats)
+      ? stats.value.ReviewStatistics.TotalReviewCount
+      : product.numberOfReviews
+  }),
+)
+
+export const productRatingRx = Rx.family((product: ProductBaseInfo) =>
+  Rx.make((get) => {
+    const stats = get(productReviewStatsRx(product.id))
+    return Option.isSome(stats)
+      ? stats.value.ReviewStatistics.AverageOverallRating
+      : product.rating
+  }),
 )
 
 export const productReviewsRx = Rx.family((id: string) =>

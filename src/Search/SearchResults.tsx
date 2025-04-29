@@ -1,4 +1,4 @@
-import { Result, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { Array, Cause } from "effect"
 import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
@@ -25,9 +25,19 @@ import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Filters } from "./Filters"
 
+const itemsRx = Rx.mapResult(resultsRx, (_) => _.items)
+const hasResultsRx = Rx.make((get) => {
+  const result = get(itemsRx)
+  return (
+    Result.isSuccess(result) && (result.value.length > 0 || !result.waiting)
+  )
+})
+
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
-  const [result, pull] = useRx(resultsRx)
+  const result = useRxValue(itemsRx, Result.waiting)
+  const hasResults = useRxValue(hasResultsRx)
+  const pull = useRxSet(resultsRx)
   useScrollBottom(() => {
     pull()
   })
@@ -36,13 +46,9 @@ export function SearchResults() {
     return <NoResults />
   }
 
-  if (result._tag === "Failure") {
+  if (Result.isFailure(result)) {
     throw Cause.squash(result.cause)
   }
-
-  const hasResults =
-    Result.isSuccess(result) &&
-    (result.value.items.length > 0 || !result.waiting)
 
   return (
     <>
@@ -51,10 +57,10 @@ export function SearchResults() {
       <div className="h-4" />
       <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {hasResults
-          ? result.value.items.map((result) => (
-              <ResultCard key={result.id} product={result} />
+          ? Result.getOrThrow(result).map((result, i) => (
+              <ResultCard key={i} product={result} />
             ))
-          : Array.makeBy(9, (i) => <SkeletonCard key={String(i)} />)}
+          : Array.makeBy(9, (i) => <SkeletonCard key={i} />)}
         <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
           <BackToTop />
           <div className="h-6" />

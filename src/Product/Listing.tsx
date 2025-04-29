@@ -3,37 +3,30 @@ import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { ProductReview, ReviewStats } from "api/src/domain/Bazaar"
+import { ProductReview } from "api/src/domain/Bazaar"
 import Markdown from "react-markdown"
-import { productReviewsRx } from "./rx"
+import {
+  productRatingRx,
+  productReviewCountRx,
+  productReviewsRx,
+  productReviewStatsRx,
+} from "./rx"
 import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
 
-const imageIndexRx = Rx.make(0)
-
 export function ProductListing({
   product,
   fullInfo,
-  reviews,
-  reviewStats,
 }: {
   readonly product: ProductBaseInfo
   readonly fullInfo: Option.Option<ProductPriceInfo>
-  readonly reviewStats: Option.Option<ReviewStats>
-  readonly reviews: ReadonlyArray<ProductReview>
 }) {
-  const pullReviews = useRxSet(productReviewsRx(product.id))
-
-  useScrollBottom(() => {
-    pullReviews()
-  })
-
   const pointers = fullInfo.pipe(
     Option.flatMapNullable((info) => info.info.feature.pointers),
   )
@@ -70,26 +63,7 @@ export function ProductListing({
               <span className="text-3xl font-bold">${product.price}</span>
               <span className="text-sm text-gray-500">inc. GST</span>
             </div>
-            <div className="flex gap-2">
-              <StarRating
-                rating={reviewStats.pipe(
-                  Option.map(
-                    (stats) => stats.ReviewStatistics.AverageOverallRating,
-                  ),
-                  Option.getOrElse(() => product.rating),
-                )}
-              />
-              <span className="text-sm text-gray-500">
-                (
-                {reviewStats.pipe(
-                  Option.map(
-                    (stats) => stats.ReviewStatistics.TotalReviewCount,
-                  ),
-                  Option.getOrElse(() => product.numberOfReviews),
-                )}{" "}
-                reviews)
-              </span>
-            </div>
+            <ProductRating product={product} />
           </div>
 
           <div className="flex gap-2 items-center flex-wrap">
@@ -126,26 +100,80 @@ export function ProductListing({
 
       <div className="h-8 md:h-12" />
 
-      <div>
-        <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
-
-        {Option.match(reviewStats, {
-          onNone: () => <SkeletonRatings />,
-          onSome: (reviews) => <ReviewsOverview reviews={reviews} />,
-        })}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 grid-template-rows-[masonry]">
-          {reviews.map((review, i) => (
-            <ReviewCard key={i} review={review} />
-          ))}
-        </div>
-      </div>
+      <Reviews product={product} />
     </div>
   )
 }
 
-function ReviewsOverview({ reviews }: { readonly reviews: ReviewStats }) {
-  const stats = reviews.ReviewStatistics
+function ProductRating({ product }: { readonly product: ProductBaseInfo }) {
+  const numberOfReviews = useRxValue(productReviewCountRx(product))
+  const rating = useRxValue(productRatingRx(product))
+  return (
+    <div className="flex gap-2">
+      <StarRating rating={rating} />
+      <span className="text-sm text-gray-500">({numberOfReviews} reviews)</span>
+    </div>
+  )
+}
+
+function SkeletonDescription() {
+  return (
+    <div className="flex flex-col space-y-2">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-full" />
+    </div>
+  )
+}
+
+const imageIndexRx = Rx.make(0)
+
+function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
+  const index = useRxValue(imageIndexRx)
+  const image = product.images[index]
+  return (
+    <div className="border rounded-lg bg-white flex items-center justify-center aspect-square overflow-hidden">
+      <img src={image.url} alt={product.title} />
+    </div>
+  )
+}
+
+function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
+  const [index, setIndex] = useRx(imageIndexRx)
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      {product.images.map((image, i) => (
+        <button
+          key={i}
+          className={cn(
+            "border rounded-md p-2 hover:border-primary",
+            i === index ? "border-primary" : undefined,
+          )}
+          onClick={() => setIndex(i)}
+        >
+          <img src={image.thumbnailUrl} alt={product.title} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Reviews({ product }: { readonly product: ProductBaseInfo }) {
+  return (
+    <div>
+      <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
+      <ReviewsOverview product={product} />,
+      <ReviewsGrid product={product} />
+    </div>
+  )
+}
+
+function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
+  const reviewStats = useRxValue(productReviewStatsRx(product.id))
+  if (Option.isNone(reviewStats)) {
+    return <SkeletonRatings />
+  }
+  const stats = reviewStats.value.ReviewStatistics
   return (
     <div className="flex items-center gap-4 mb-6 max-w-lg">
       <div className="flex flex-col items-center">
@@ -186,6 +214,43 @@ function ReviewsOverview({ reviews }: { readonly reviews: ReviewStats }) {
   )
 }
 
+function SkeletonRatings() {
+  return (
+    <div className="flex items-center gap-4 mb-6 max-w-lg">
+      <div className="flex w-full space-y-3">
+        <Skeleton className="h-32 w-32 rounded-xl" />
+        <div className="w-4" />
+        <div className="space-y-2 flex-1">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
+  const [result, pullReviews] = useRx(productReviewsRx(product.id))
+  const reviews = Result.map(result, (_) => _.items).pipe(
+    Result.getOrElse(() => []),
+  )
+
+  useScrollBottom(() => {
+    pullReviews()
+  })
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 grid-template-rows-[masonry]">
+      {reviews.map((review, i) => (
+        <ReviewCard key={i} review={review} />
+      ))}
+    </div>
+  )
+}
+
 function ReviewCard({ review }: { readonly review: ProductReview }) {
   return (
     <Card>
@@ -208,63 +273,5 @@ function ReviewCard({ review }: { readonly review: ProductReview }) {
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-function SkeletonDescription() {
-  return (
-    <div className="flex flex-col space-y-2">
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-full" />
-    </div>
-  )
-}
-
-function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
-  const index = useRxValue(imageIndexRx)
-  const image = product.images[index]
-  return (
-    <div className="border rounded-lg bg-white flex items-center justify-center aspect-square overflow-hidden">
-      <img src={image.url} alt={product.title} />
-    </div>
-  )
-}
-
-function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
-  const [index, setIndex] = useRx(imageIndexRx)
-  return (
-    <div className="grid grid-cols-4 gap-2">
-      {product.images.map((image, i) => (
-        <button
-          key={i}
-          className={cn(
-            "border rounded-md p-2 hover:border-primary",
-            i === index ? "border-primary" : undefined,
-          )}
-          onClick={() => setIndex(i)}
-        >
-          <img src={image.thumbnailUrl} alt={product.title} />
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function SkeletonRatings() {
-  return (
-    <div className="flex items-center gap-4 mb-6 max-w-lg">
-      <div className="flex w-full space-y-3">
-        <Skeleton className="h-32 w-32 rounded-xl" />
-        <div className="w-4" />
-        <div className="space-y-2 flex-1">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-        </div>
-      </div>
-    </div>
   )
 }
