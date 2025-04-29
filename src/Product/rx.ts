@@ -4,14 +4,14 @@ import { Effect, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
 import { ProductBaseInfo } from "api/src/domain/Bunnings"
 
-const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
+const runtimeRx = Rx.runtime(BunningsClient.Default)
 
 export const preloadRx = Rx.fnSync((key: BaseInfoKey, get) => {
-  get.once(productRx(key))
-  get.once(productFullInfoRx(key.id))
-  get.once(productFulfillmentRx(key.id))
-  get.once(productReviewStatsRx(key.id))
-  get.once(productReviewsRx(key.id))
+  get(productRx(key))
+  get(productFullInfoRx(key.id))
+  get(productFulfillmentRx(key.id))
+  get(productReviewStatsRx(key.id))
+  get(productReviewsRx(key.id))
 })
 
 export const productRx = Rx.family((key: BaseInfoKey) =>
