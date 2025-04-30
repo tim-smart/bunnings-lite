@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect-rx/rx-react':
-        specifier: ^0.33.5
-        version: 0.33.5(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)(react@19.1.0)(scheduler@0.26.0)
+        specifier: ^0.33.6
+        version: 0.33.6(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)(react@19.1.0)(scheduler@0.26.0)
       '@effect/experimental':
         specifier: ^0.44.15
         version: 0.44.15(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)
@@ -669,15 +669,15 @@ packages:
   '@canvas/image-data@1.0.0':
     resolution: {integrity: sha512-BxOqI5LgsIQP1odU5KMwV9yoijleOPzHL18/YvNqF9KFSGF2K/DLlYAbDQsWqd/1nbaFuSkYD/191dpMtNh4vw==}
 
-  '@effect-rx/rx-react@0.33.5':
-    resolution: {integrity: sha512-Ktf6tdv59xr4erF+/TI0n41553tsT5ZaFnLlLbl1tqd8zWJgZ2suFKuDe3yQoACHbsn5H90zWXqChPICetk+3w==}
+  '@effect-rx/rx-react@0.33.6':
+    resolution: {integrity: sha512-ttMPUX6U8XloRkoZlQ9wvBpi2OxZKA2FSupXzDPpikWfCOhvG4OPeCaOwWppWajo2RZrM2nDsIltHTTv0MfZ+g==}
     peerDependencies:
       effect: ^3.14.12
       react: '>=18 <20'
       scheduler: '*'
 
-  '@effect-rx/rx@0.38.6':
-    resolution: {integrity: sha512-jQp5z79RoH7d3Paz/K7VOVfow+F4WFMLpWBQxlay2zougrYsnCqI9OaeeQ7t0vayd4l5m491PRMqz/RRf7+BCQ==}
+  '@effect-rx/rx@0.38.7':
+    resolution: {integrity: sha512-qf0eoOXbxnNVvzfMV9TtDqxlau8d0TmWDhpoo2yr9/Dqj0j0QzMCEaspxQ8XHVGQVorQDaMd9otRpiALeh6V8w==}
     peerDependencies:
       '@effect/platform': ^0.80.12
       effect: ^3.14.12
@@ -4144,16 +4144,16 @@ snapshots:
 
   '@canvas/image-data@1.0.0': {}
 
-  '@effect-rx/rx-react@0.33.5(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)(react@19.1.0)(scheduler@0.26.0)':
+  '@effect-rx/rx-react@0.33.6(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)(react@19.1.0)(scheduler@0.26.0)':
     dependencies:
-      '@effect-rx/rx': 0.38.6(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)
+      '@effect-rx/rx': 0.38.7(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)
       effect: 3.14.15
       react: 19.1.0
       scheduler: 0.26.0
     transitivePeerDependencies:
       - '@effect/platform'
 
-  '@effect-rx/rx@0.38.6(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)':
+  '@effect-rx/rx@0.38.7(@effect/platform@0.80.15(effect@3.14.15))(effect@3.14.15)':
     dependencies:
       '@effect/platform': 0.80.15(effect@3.14.15)
       effect: 3.14.15
