@@ -35,17 +35,10 @@ export const productFullInfoRx = Rx.family((id: string) =>
 )
 
 export const productReviewStatsRx = Rx.family((id: string) =>
-  runtimeRx
-    .rx(
-      Effect.gen(function* () {
-        const products = yield* BunningsClient
-        return yield* products.productReviewStats({ id })
-      }),
-    )
-    .pipe(
-      Rx.map((_) => Option.flatten(Result.value(_))),
-      Rx.setIdleTTL("10 minutes"),
-    ),
+  runtimeRx.rx(BunningsClient.use((_) => _.productReviewStats({ id }))).pipe(
+    Rx.map((_) => Option.flatten(Result.value(_))),
+    Rx.setIdleTTL("10 minutes"),
+  ),
 )
 
 export const productReviewCountRx = Rx.family((product: ProductBaseInfo) =>

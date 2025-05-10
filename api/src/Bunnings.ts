@@ -13,13 +13,14 @@ import {
   StoresResponse,
 } from "./domain/Bunnings"
 import {
-  Cookies,
   HttpBody,
   HttpClient,
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform"
 import { NodeHttpClient } from "@effect/platform-node"
+import { Page } from "./Playwright"
+import { Cookie } from "playwright"
 
 export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
   dependencies: [NodeHttpClient.layerUndici],
@@ -29,20 +30,24 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
     const makeSession = Effect.fn("Bunnings.makeSession")(function* (
       id: string,
     ) {
-      const cookies = yield* Ref.make(Cookies.empty)
-      const client = HttpClient.withCookiesRef(defaultClient, cookies)
-      yield* client.get("https://www.bunnings.co.nz/")
-      const tokenString = Cookies.getValue(
-        yield* Ref.get(cookies),
-        "guest-token-storage",
-      ).pipe(Option.getOrElse(() => ""))
-      const token = yield* SessionToken.fromJson(tokenString)
+      yield* Page.with((page) => page.goto("https://www.bunnings.co.nz/"))
+
+      let tokenCookie: Cookie | undefined = undefined
+      while (!tokenCookie) {
+        tokenCookie = yield* Page.with((page) =>
+          page
+            .context()
+            .cookies()
+            .then((_) => _.find((_) => _.name === "guest-token-storage")),
+        )
+      }
+      const token = yield* SessionToken.fromJson(tokenCookie.value)
       return new Session({
         id,
         token,
         location: SessionUnsetLocation.default,
       })
-    })
+    }, Effect.provide(Page.Default))
 
     const apiClient = Effect.fnUntraced(function* (version = "v1") {
       const session = yield* CurrentSession
