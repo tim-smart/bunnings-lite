@@ -1,4 +1,4 @@
-import { Array as Arr, Effect, Ref, Option, Stream } from "effect"
+import { Array as Arr, Effect, Option, Stream } from "effect"
 import {
   CurrentSession,
   FulfillmentResponse,
@@ -20,7 +20,6 @@ import {
 } from "@effect/platform"
 import { NodeHttpClient } from "@effect/platform-node"
 import { Page } from "./Playwright"
-import { Cookie } from "playwright"
 
 export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
   dependencies: [NodeHttpClient.layerUndici],
@@ -32,7 +31,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
     ) {
       yield* Page.with((page) => page.goto("https://www.bunnings.co.nz/"))
 
-      let tokenCookie: Cookie | undefined = undefined
+      let tokenCookie: { value: string } | undefined = undefined
       while (!tokenCookie) {
         tokenCookie = yield* Page.with((page) =>
           page
