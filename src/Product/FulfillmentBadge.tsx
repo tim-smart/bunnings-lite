@@ -1,4 +1,4 @@
-import { ProductBaseInfo } from "api/src/domain/Bunnings"
+import { ProductBaseInfo } from "server/src/domain/Bunnings"
 import { Option } from "effect"
 import { Result, useRxValue } from "@effect-rx/rx-react"
 import { productFulfillmentRx } from "./rx"

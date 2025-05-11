@@ -1,4 +1,4 @@
-import { SessionLocation } from "../../api/src/domain/Bunnings"
+import { SessionLocation } from "../../server/src/domain/Bunnings"
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { Rx } from "@effect-rx/rx-react"
 import { BrowserKeyValueStore, Geolocation } from "@effect/platform-browser"

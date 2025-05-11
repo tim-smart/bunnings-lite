@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { ProductBaseInfo, ProductPriceInfo } from "api/src/domain/Bunnings"
+import { ProductBaseInfo, ProductPriceInfo } from "server/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -7,7 +7,7 @@ import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-import { ProductReview } from "api/src/domain/Bazaar"
+import { ProductReview } from "server/src/domain/Bazaar"
 import Markdown from "react-markdown"
 import {
   productRatingRx,

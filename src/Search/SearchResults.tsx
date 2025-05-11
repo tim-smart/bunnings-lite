@@ -1,7 +1,7 @@
 import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { Array, Cause } from "effect"
-import { ProductBaseInfo } from "../../api/src/domain/Bunnings"
+import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
   Card,
   CardDescription,

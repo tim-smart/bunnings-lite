@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useContext, useState } from "react"
-import { SessionLocation } from "../../api/src/domain/Bunnings"
+import { SessionLocation } from "../../server/src/domain/Bunnings"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function StoreSelector() {

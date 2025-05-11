@@ -1,4 +1,4 @@
-import { ProductBaseInfo } from "api/src/domain/Bunnings"
+import { ProductBaseInfo } from "server/src/domain/Bunnings"
 import { isFavoriteRx, useFavoritesToggle } from "../Favorites"
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"

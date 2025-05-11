@@ -1,6 +1,6 @@
 import { Rx, useRxSet } from "@effect-rx/rx-react"
 import { BrowserKeyValueStore } from "@effect/platform-browser"
-import { ProductBaseInfo } from "../api/src/domain/Bunnings"
+import { ProductBaseInfo } from "../server/src/domain/Bunnings"
 import { Schema } from "effect"
 import { useCallback } from "react"
 

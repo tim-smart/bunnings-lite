@@ -8,10 +8,10 @@ import {
   Hash,
   Layer,
 } from "effect"
-import { Rpcs } from "../api/src/domain/Rpc"
+import { Rpcs } from "../server/src/domain/Rpc"
 import { Socket } from "@effect/platform"
-import { AuthMiddleware } from "../api/src/domain/Auth"
-import { ProductBaseInfo } from "api/src/domain/Bunnings"
+import { AuthMiddleware } from "../server/src/domain/Auth"
+import { ProductBaseInfo } from "server/src/domain/Bunnings"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,

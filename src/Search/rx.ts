@@ -2,7 +2,7 @@ import { Rx } from "@effect-rx/rx-react"
 import { BunningsClient } from "@/RpcClient"
 import { Array, Chunk, Data, Effect, Option, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
-import { Facet } from "../../api/src/domain/Bunnings"
+import { Facet } from "../../server/src/domain/Bunnings"
 
 const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
 
