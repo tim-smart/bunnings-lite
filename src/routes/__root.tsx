@@ -1,9 +1,4 @@
-import {
-  createRootRoute,
-  Outlet,
-  useRouter,
-  useNavigate,
-} from "@tanstack/react-router"
+import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router"
 import { LoaderCircle, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -11,10 +6,12 @@ import {
   useRx,
   useRxSet,
   useRxSubscribe,
+  Rx,
 } from "@effect-rx/rx-react"
 import { focusRx, loadingRx, queryIsSetRx, queryRx } from "@/Search/rx"
 import React, { useCallback } from "react"
 import { cn } from "@/lib/utils"
+import { locationRx } from "@/Router"
 
 export const Route = createRootRoute({
   component: () => (
@@ -40,8 +37,13 @@ export const Route = createRootRoute({
   ),
 })
 
+const minimizeRx = Rx.make((get) => {
+  const path = get(locationRx).pathname
+  return path !== "/" || get(queryIsSetRx)
+})
+
 function Logo() {
-  const queryIsSet = useRxValue(queryIsSetRx)
+  const minimize = useRxValue(minimizeRx)
   const setQuery = useRxSet(queryRx)
   const navigate = useNavigate()
   return (
@@ -50,7 +52,7 @@ function Logo() {
       alt="Bunnings Logo"
       width={150}
       height={50}
-      className={`block transition-all ${queryIsSet ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto cursor-pointer`}
+      className={`block transition-all ${minimize ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto cursor-pointer`}
       onClick={() => {
         setQuery("")
         navigate({ to: "/" })
@@ -60,20 +62,19 @@ function Logo() {
 }
 
 function SearchInput() {
-  const router = useRouter()
   const navigate = useNavigate()
   const [query, setQuery] = useRx(queryRx)
-  const queryIsSet = query.trim() !== ""
+  const minimize = useRxValue(minimizeRx)
   const inputRef = React.useRef<HTMLInputElement>(null)
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setQuery(e.target.value)
-      if (router.state.location.pathname !== "/") {
+      if (location.pathname !== "/") {
         navigate({ to: "/", search: { query: e.target.value } })
       }
     },
-    [setQuery, router, navigate],
+    [setQuery, location, navigate],
   )
 
   useRxSubscribe(focusRx, (i) => {
@@ -106,7 +107,7 @@ function SearchInput() {
           ref={inputRef}
           type="search"
           placeholder="Search for products..."
-          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-secondary focus-visible:border-secondary bg-white ${queryIsSet ? "my-5" : "my-20"}`}
+          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-secondary focus-visible:border-secondary bg-white ${minimize ? "my-5" : "my-20"}`}
           value={query}
           onChange={onChange}
           autoFocus

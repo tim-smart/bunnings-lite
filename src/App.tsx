@@ -1,21 +1,8 @@
-import { RouterProvider, createRouter } from "@tanstack/react-router"
-import { routeTree } from "./routeTree.gen"
+import { RouterProvider } from "@tanstack/react-router"
 import { useRegisterSW } from "virtual:pwa-register/react"
 import { useRxMount } from "@effect-rx/rx-react"
 import { loginRx } from "./Search/rx"
-
-const router = createRouter({
-  routeTree,
-  defaultPreload: "render",
-  defaultPendingMinMs: 0,
-  scrollRestoration: true,
-})
-
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router
-  }
-}
+import { router } from "./Router"
 
 export default function App() {
   useRegisterSW({
