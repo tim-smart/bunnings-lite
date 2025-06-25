@@ -1,6 +1,5 @@
 import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
-import { Array, Cause } from "effect"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
   Card,
@@ -24,6 +23,8 @@ import { favoritesRx } from "@/Favorites"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Filters } from "./Filters"
+import * as Array from "effect/Array"
+import * as Cause from "effect/Cause"
 
 const itemsRx = Rx.mapResult(resultsRx, (_) => _.items)
 const hasResultsRx = Rx.make((get) => {

@@ -1,5 +1,5 @@
 import { Rx } from "@effect-rx/rx-react"
-import { Effect } from "effect"
+import * as Effect from "effect/Effect"
 
 export const installPromptRx = Rx.make((get) =>
   Effect.async<() => Promise<void>>((resume) => {

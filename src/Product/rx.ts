@@ -1,8 +1,10 @@
 import { Result, Rx } from "@effect-rx/rx-react"
 import { BaseInfoKey, BunningsClient } from "@/RpcClient"
-import { Effect, Option, Stream } from "effect"
 import { currentLocationRx } from "@/Stores/rx"
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
+import * as Stream from "effect/Stream"
 
 const runtimeRx = Rx.runtime(BunningsClient.Default)
 

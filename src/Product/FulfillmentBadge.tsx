@@ -1,9 +1,9 @@
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
-import { Option } from "effect"
 import { Result, useRxValue } from "@effect-rx/rx-react"
 import { productFulfillmentRx } from "./rx"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
+import * as Option from "effect/Option"
 
 export function FulfillmentBadge({
   product,

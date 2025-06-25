@@ -21,13 +21,23 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    "plugins": [{ "name": "@effect/language-service" }],
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "namespaceImportPackages": [
+          "effect",
+          "@effect/platform",
+          "@effect/platform-browser",
+          "@effect/rpc",
+          "@effect/experimental"
+        ]
+      }
+    ],
 
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "domain"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "domain"]
 }

@@ -5,7 +5,6 @@ import {
   useRxValue,
 } from "@effect-rx/rx-react"
 import { currentLocationRx, storesRx } from "./rx"
-import { Chunk, Option } from "effect"
 import { MapPin } from "lucide-react"
 import {
   Select,
@@ -19,6 +18,8 @@ import {
 import { useContext, useState } from "react"
 import { SessionLocation } from "../../server/src/domain/Bunnings"
 import { Skeleton } from "@/components/ui/skeleton"
+import * as Option from "effect/Option"
+import * as Chunk from "effect/Chunk"
 
 export function StoreSelector() {
   const registry = useContext(RegistryContext)

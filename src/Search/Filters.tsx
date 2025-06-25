@@ -1,10 +1,10 @@
 import { useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { allFilters } from "./rx"
-import { Option } from "effect"
 import { useRef } from "react"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Input } from "@/components/ui/input"
+import * as Option from "effect/Option"
 
 export function Filters() {
   return (

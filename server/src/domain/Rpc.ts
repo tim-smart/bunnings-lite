@@ -1,6 +1,4 @@
-import { Rpc, RpcGroup } from "@effect/rpc"
 import { AuthMiddleware } from "./Auth"
-import { Schema } from "effect"
 import {
   FulfillmentInfoWithLocation,
   ProductPriceInfo,
@@ -10,6 +8,9 @@ import {
   Store,
 } from "./Bunnings"
 import { ProductReview, ReviewStats } from "./Bazaar"
+import * as RpcGroup from "@effect/rpc/RpcGroup"
+import * as Rpc from "@effect/rpc/Rpc"
+import * as Schema from "effect/Schema"
 
 export class Rpcs extends RpcGroup.make(
   Rpc.make("login", {

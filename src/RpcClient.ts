@@ -1,17 +1,17 @@
-import { RpcClient, RpcMiddleware, RpcSerialization } from "@effect/rpc"
-import {
-  Config,
-  ConfigProvider,
-  Data,
-  Effect,
-  Equal,
-  Hash,
-  Layer,
-} from "effect"
-import { Rpcs } from "../server/src/domain/Rpc"
-import { Socket } from "@effect/platform"
-import { AuthMiddleware } from "../server/src/domain/Auth"
+import * as Socket from "@effect/platform/Socket"
+import * as RpcClient from "@effect/rpc/RpcClient"
+import * as RpcMiddleware from "@effect/rpc/RpcMiddleware"
+import * as RpcSerialization from "@effect/rpc/RpcSerialization"
+import * as Config from "effect/Config"
+import * as ConfigProvider from "effect/ConfigProvider"
+import * as Data from "effect/Data"
+import * as Effect from "effect/Effect"
+import * as Equal from "effect/Equal"
+import * as Hash from "effect/Hash"
+import * as Layer from "effect/Layer"
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
+import { AuthMiddleware } from "../server/src/domain/Auth"
+import { Rpcs } from "../server/src/domain/Rpc"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,

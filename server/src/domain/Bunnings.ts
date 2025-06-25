@@ -1,11 +1,8 @@
-import {
-  Context,
-  DateTime,
-  Effect,
-  Schema,
-  Schema as S,
-  ParseResult,
-} from "effect"
+import * as Context from "effect/Context"
+import * as DateTime from "effect/DateTime"
+import * as Effect from "effect/Effect"
+import * as ParseResult from "effect/ParseResult"
+import * as Schema from "effect/Schema"
 
 export class CurrentSession extends Context.Tag(
   "domain/Bunnings/CurrentSession",
@@ -14,12 +11,12 @@ export class CurrentSession extends Context.Tag(
 export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
   "domain/Bunnings/SessionLocation",
 )("Set", {
-  region: S.String,
-  code: S.String,
-  city: S.String,
-  country: S.String,
-  state: S.String,
-  website: S.String,
+  region: Schema.String,
+  code: Schema.String,
+  city: Schema.String,
+  country: Schema.String,
+  state: Schema.String,
+  website: Schema.String,
 }) {
   static fromStore(store: Store) {
     return new SessionLocation({
@@ -56,11 +53,11 @@ export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
 export class SessionUnsetLocation extends Schema.TaggedClass<SessionUnsetLocation>(
   "domain/Bunnings/SessionUnsetLocation",
 )("Unset", {
-  country: S.String,
-  website: S.String,
-  code: S.String,
-  region: S.String,
-  state: S.String,
+  country: Schema.String,
+  website: Schema.String,
+  code: Schema.String,
+  region: Schema.String,
+  state: Schema.String,
 }) {
   static default = new SessionUnsetLocation({
     country: "New Zealand",
@@ -96,14 +93,14 @@ export class SessionToken extends Schema.Class<SessionToken>(
 }
 
 export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
-  id: S.String,
+  id: Schema.String,
   token: SessionToken,
   location: Schema.Union(SessionLocation, SessionUnsetLocation),
 }) {
   get expired() {
     return this.token.expires.pipe(
       DateTime.subtract({ hours: 1 }),
-      DateTime.lessThan(DateTime.unsafeNow()),
+      DateTime.unsafeIsPast,
     )
   }
 
@@ -115,23 +112,27 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   }
 }
 
-const ImageUrl = S.optionalWith(S.String, {
+const ImageUrl = Schema.optionalWith(Schema.String, {
   default: () => "https://www.bunnings.co.nz/static/icons/notFoundImage.svg",
 })
 
-export class SearchResult extends S.Class<SearchResult>("SearchResult")({
+export class SearchResult extends Schema.Class<SearchResult>("SearchResult")({
   thumbnailimageurl: ImageUrl,
-  isactive: S.String,
-  ratingcount: S.optionalWith(S.Number, { default: () => 0 }),
-  permanentid: S.String,
-  title: S.String,
-  productroutingurl: S.String,
-  rating: S.optionalWith(S.Number, { default: () => 0 }),
-  size: S.Number,
-  name: S.String,
-  price: S.Number,
+  isactive: Schema.String,
+  ratingcount: Schema.optionalWith(Schema.Number, {
+    default: () => 0,
+  }),
+  permanentid: Schema.String,
+  title: Schema.String,
+  productroutingurl: Schema.String,
+  rating: Schema.optionalWith(Schema.Number, {
+    default: () => 0,
+  }),
+  size: Schema.Number,
+  name: Schema.String,
+  price: Schema.Number,
   imageurl: ImageUrl,
-  uri: S.String,
+  uri: Schema.String,
 }) {
   get asBaseInfo() {
     return new ProductBaseInfo({
@@ -153,64 +154,64 @@ export class SearchResult extends S.Class<SearchResult>("SearchResult")({
   }
 }
 
-export class SearchResultWrap extends S.Class<SearchResultWrap>(
+export class SearchResultWrap extends Schema.Class<SearchResultWrap>(
   "SearchResultWrap",
 )({
   raw: SearchResult,
 }) {}
 
-export class ImageElement extends S.Class<ImageElement>("ImageElement")({
-  altText: S.optional(S.Union(S.Null, S.String)),
-  format: S.optional(S.Union(S.Null, S.String)),
-  imageType: S.optional(S.Union(S.Null, S.String)),
-  mime: S.String,
-  sequence: S.String,
+export class ImageElement extends Schema.Class<ImageElement>("ImageElement")({
+  altText: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  format: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  imageType: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  mime: Schema.String,
+  sequence: Schema.String,
   thumbnailUrl: ImageUrl,
   url: ImageUrl,
-  videoId: S.optional(S.Union(S.Null, S.String)),
+  videoId: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
 export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
   "ProductBaseInfo",
 )({
-  id: S.String,
-  title: S.String,
-  url: S.String,
-  images: S.NonEmptyArray(ImageElement),
-  price: S.Number,
-  numberOfReviews: S.Number,
-  rating: S.Number,
+  id: Schema.String,
+  title: Schema.String,
+  url: Schema.String,
+  images: Schema.NonEmptyArray(ImageElement),
+  price: Schema.Number,
+  numberOfReviews: Schema.Number,
+  rating: Schema.Number,
 }) {}
 
-export class FacetValue extends S.Class<FacetValue>("FacetValue")({
-  start: S.Number,
-  end: S.Number,
-  endInclusive: S.Boolean,
+export class FacetValue extends Schema.Class<FacetValue>("FacetValue")({
+  start: Schema.Number,
+  end: Schema.Number,
+  endInclusive: Schema.Boolean,
 }) {}
 
-export class Facet extends S.Class<Facet>("Facet")({
-  facetId: S.String,
-  values: S.Array(FacetValue),
+export class Facet extends Schema.Class<Facet>("Facet")({
+  facetId: Schema.String,
+  values: Schema.Array(FacetValue),
 }) {}
 
-export class SearchResponseDataRaw extends S.Class<SearchResponseDataRaw>(
+export class SearchResponseDataRaw extends Schema.Class<SearchResponseDataRaw>(
   "SearchResponseDataRaw",
 )({
-  totalCount: S.Number,
-  facets: S.Array(Facet),
-  results: S.Array(SearchResultWrap),
+  totalCount: Schema.Number,
+  facets: Schema.Array(Facet),
+  results: Schema.Array(SearchResultWrap),
 }) {}
 
-export class SearchResponseData extends S.Class<SearchResponseData>(
+export class SearchResponseData extends Schema.Class<SearchResponseData>(
   "SearchResponseData",
 )({
-  totalCount: S.Number,
-  facets: S.Array(Facet),
-  results: S.Array(ProductBaseInfo),
+  totalCount: Schema.Number,
+  facets: Schema.Array(Facet),
+  results: Schema.Array(ProductBaseInfo),
 }) {}
 
-export const SearchResponseDataRemapped = S.transformOrFail(
-  S.Object,
+export const SearchResponseDataRemapped = Schema.transformOrFail(
+  Schema.Object,
   SearchResponseDataRaw,
   {
     decode(data: any) {
@@ -233,7 +234,7 @@ export const SearchResponseDataRemapped = S.transformOrFail(
     },
   },
 ).pipe(
-  S.transform(SearchResponseData, {
+  Schema.transform(SearchResponseData, {
     decode(fromA) {
       return new SearchResponseData({
         ...fromA,
@@ -246,168 +247,184 @@ export const SearchResponseDataRemapped = S.transformOrFail(
   }),
 )
 
-export const SearchResponse = S.Struct({
+export const SearchResponse = Schema.Struct({
   data: SearchResponseDataRemapped,
 })
 
-export class GuideDocument extends S.Class<GuideDocument>("GuideDocument")({
-  altText: S.optionalWith(S.String, { nullable: true }),
-  docType: S.String,
-  mime: S.String,
-  sequence: S.String,
-  size: S.Number,
-  thumbnailUrl: ImageUrl,
-  url: S.String,
+export class GuideDocument extends Schema.Class<GuideDocument>("GuideDocument")(
+  {
+    altText: Schema.optionalWith(Schema.String, { nullable: true }),
+    docType: Schema.String,
+    mime: Schema.String,
+    sequence: Schema.String,
+    size: Schema.Number,
+    thumbnailUrl: ImageUrl,
+    url: Schema.String,
+  },
+) {}
+
+export class DataFeature extends Schema.Class<DataFeature>("DataFeature")({
+  description: Schema.String,
+  pointers: Schema.optional(Schema.Array(Schema.String)),
 }) {}
 
-export class DataFeature extends S.Class<DataFeature>("DataFeature")({
-  description: S.String,
-  pointers: S.optional(S.Array(S.String)),
+export class Product extends Schema.Class<Product>("Product")({
+  depth: Schema.String,
+  height: Schema.String,
+  width: Schema.String,
+  label: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
-export class Product extends S.Class<Product>("Product")({
-  depth: S.String,
-  height: S.String,
-  width: S.String,
-  label: S.optional(S.Union(S.Null, S.String)),
+export class Package extends Schema.Class<Package>("Package")({
+  height: Schema.String,
+  length: Schema.String,
+  width: Schema.String,
 }) {}
 
-export class Package extends S.Class<Package>("Package")({
-  height: S.String,
-  length: S.String,
-  width: S.String,
+export class Dimension extends Schema.Class<Dimension>("Dimension")({
+  packages: Schema.optionalWith(Schema.Array(Package), {
+    default: () => [],
+  }),
+  product: Schema.optionalWith(Schema.Array(Product), {
+    default: () => [],
+  }),
+  dimensionTerm: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
-export class Dimension extends S.Class<Dimension>("Dimension")({
-  packages: S.optionalWith(S.Array(Package), { default: () => [] }),
-  product: S.optionalWith(S.Array(Product), { default: () => [] }),
-  dimensionTerm: S.optional(S.Union(S.Null, S.String)),
+export class FeatureValue extends Schema.Class<FeatureValue>("FeatureValue")({
+  value: Schema.String,
 }) {}
 
-export class FeatureValue extends S.Class<FeatureValue>("FeatureValue")({
-  value: S.String,
+export class FeatureElement extends Schema.Class<FeatureElement>(
+  "FeatureElement",
+)({
+  code: Schema.String,
+  comparable: Schema.Boolean,
+  featureValues: Schema.Array(FeatureValue),
+  name: Schema.String,
+  range: Schema.Boolean,
 }) {}
 
-export class FeatureElement extends S.Class<FeatureElement>("FeatureElement")({
-  code: S.String,
-  comparable: S.Boolean,
-  featureValues: S.Array(FeatureValue),
-  name: S.String,
-  range: S.Boolean,
+export class Classification extends Schema.Class<Classification>(
+  "Classification",
+)({
+  features: Schema.Array(FeatureElement),
+  code: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  name: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
-export class Classification extends S.Class<Classification>("Classification")({
-  features: S.Array(FeatureElement),
-  code: S.optional(S.Union(S.Null, S.String)),
-  name: S.optional(S.Union(S.Null, S.String)),
-}) {}
-
-export class BrandImage extends S.Class<BrandImage>("BrandImage")({
-  mime: S.String,
-  sequence: S.String,
+export class BrandImage extends Schema.Class<BrandImage>("BrandImage")({
+  mime: Schema.String,
+  sequence: Schema.String,
   thumbnailUrl: ImageUrl,
   url: ImageUrl,
-  disclaimer: S.optional(S.Union(S.Null, S.String)),
+  disclaimer: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
-export class Brand extends S.Class<Brand>("Brand")({
-  brandUrl: S.String,
-  code: S.String,
-  image: S.optional(BrandImage),
-  isLeadingBrand: S.Boolean,
-  isMarketPlaceBrand: S.Boolean,
-  isTradeBrand: S.Boolean,
-  name: S.String,
+export class Brand extends Schema.Class<Brand>("Brand")({
+  brandUrl: Schema.String,
+  code: Schema.String,
+  image: Schema.optional(BrandImage),
+  isLeadingBrand: Schema.Boolean,
+  isMarketPlaceBrand: Schema.Boolean,
+  isTradeBrand: Schema.Boolean,
+  name: Schema.String,
 }) {}
 
-export class ProductValue extends S.Class<ProductValue>("ProductValue")({
-  displayOrder: S.Number,
-  name: S.String,
-  value: S.String,
+export class ProductValue extends Schema.Class<ProductValue>("ProductValue")({
+  displayOrder: Schema.Number,
+  name: Schema.String,
+  value: Schema.String,
 }) {}
 
-export class BasePaint extends S.Class<BasePaint>("BasePaint")({
-  colorName: S.String,
+export class BasePaint extends Schema.Class<BasePaint>("BasePaint")({
+  colorName: Schema.String,
 }) {}
 
-export class Selected extends S.Class<Selected>("Selected")({
-  basePaint: S.optional(S.Union(BasePaint, S.Null)),
-  code: S.String,
-  itemNumber: S.String,
-  productValues: S.Array(ProductValue),
-  routingUrl: S.String,
+export class Selected extends Schema.Class<Selected>("Selected")({
+  basePaint: Schema.optional(Schema.Union(BasePaint, Schema.Null)),
+  code: Schema.String,
+  itemNumber: Schema.String,
+  productValues: Schema.Array(ProductValue),
+  routingUrl: Schema.String,
 }) {}
 
-export class BaseOption extends S.Class<BaseOption>("BaseOption")({
+export class BaseOption extends Schema.Class<BaseOption>("BaseOption")({
   selected: Selected,
-  variantType: S.String,
+  variantType: Schema.String,
 }) {}
 
-export class AllCategory extends S.Class<AllCategory>("AllCategory")({
-  code: S.String,
-  displayName: S.String,
-  internalPath: S.String,
-  level: S.Number,
-  workShopCategory: S.optional(S.Union(S.Null, S.String)),
+export class AllCategory extends Schema.Class<AllCategory>("AllCategory")({
+  code: Schema.String,
+  displayName: Schema.String,
+  internalPath: Schema.String,
+  level: Schema.Number,
+  workShopCategory: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
 }) {}
 
-export class ProductInfo extends S.Class<ProductInfo>("ProductInfo")({
-  allCategories: S.Array(AllCategory),
-  availableForDelivery: S.Boolean,
-  averageRating: S.optionalWith(S.Number, { default: () => 0 }),
-  baseOptions: S.Array(BaseOption),
-  bestSeller: S.Boolean,
+export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
+  allCategories: Schema.Array(AllCategory),
+  availableForDelivery: Schema.Boolean,
+  averageRating: Schema.optionalWith(Schema.Number, {
+    default: () => 0,
+  }),
+  baseOptions: Schema.Array(BaseOption),
+  bestSeller: Schema.Boolean,
   brand: Brand,
-  defaultVariant: S.Boolean,
+  defaultVariant: Schema.Boolean,
   dimension: Dimension,
   feature: DataFeature,
-  images: S.NonEmptyArray(ImageElement),
-  instorePickup: S.Boolean,
-  isAREnabled: S.Boolean,
-  isActive: S.Boolean,
-  isAgeRestricted: S.Boolean,
-  isDangerousGood: S.Boolean,
-  isPOAProduct: S.Boolean,
-  isSpecialProduct: S.Boolean,
-  isTradeOnly: S.Boolean,
-  isWorkflowRequired: S.Boolean,
-  itemNumber: S.String,
-  manufacturer: S.optional(S.Union(S.Null, S.String)),
-  name: S.String,
-  newArrival: S.Boolean,
-  numberOfReviews: S.Number,
-  productLinks: S.Array(S.String),
-  purchasable: S.Boolean,
-  summary: S.String,
-  sustainabilityInformation: S.String,
-  transactable: S.Boolean,
-  unitofprice: S.String,
-  url: S.String,
-  visible: S.Boolean,
-  warrantyReturns: S.String,
-  weight: S.optional(S.String),
-  guideDocument: S.optional(S.Union(S.Array(GuideDocument), S.Null)),
+  images: Schema.NonEmptyArray(ImageElement),
+  instorePickup: Schema.Boolean,
+  isAREnabled: Schema.Boolean,
+  isActive: Schema.Boolean,
+  isAgeRestricted: Schema.Boolean,
+  isDangerousGood: Schema.Boolean,
+  isPOAProduct: Schema.Boolean,
+  isSpecialProduct: Schema.Boolean,
+  isTradeOnly: Schema.Boolean,
+  isWorkflowRequired: Schema.Boolean,
+  itemNumber: Schema.String,
+  manufacturer: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  name: Schema.String,
+  newArrival: Schema.Boolean,
+  numberOfReviews: Schema.Number,
+  productLinks: Schema.Array(Schema.String),
+  purchasable: Schema.Boolean,
+  summary: Schema.String,
+  sustainabilityInformation: Schema.String,
+  transactable: Schema.Boolean,
+  unitofprice: Schema.String,
+  url: Schema.String,
+  visible: Schema.Boolean,
+  warrantyReturns: Schema.String,
+  weight: Schema.optional(Schema.String),
+  guideDocument: Schema.optional(
+    Schema.Union(Schema.Array(GuideDocument), Schema.Null),
+  ),
 }) {}
 
-export class ProductResponse extends S.Class<ProductResponse>(
+export class ProductResponse extends Schema.Class<ProductResponse>(
   "ProductResponse",
 )({
   data: ProductInfo,
 }) {}
 
-export class PriceInfo extends S.Class<PriceInfo>("PriceInfo")({
-  currencyIso: S.String,
-  formattedValue: S.String,
-  priceAvailable: S.Boolean,
-  priceType: S.String,
-  value: S.Number,
+export class PriceInfo extends Schema.Class<PriceInfo>("PriceInfo")({
+  currencyIso: Schema.String,
+  formattedValue: Schema.String,
+  priceAvailable: Schema.Boolean,
+  priceType: Schema.String,
+  value: Schema.Number,
 }) {}
 
-export class PriceResponse extends S.Class<PriceResponse>("PriceResponse")({
-  data: PriceInfo,
-}) {}
+export class PriceResponse extends Schema.Class<PriceResponse>("PriceResponse")(
+  {
+    data: PriceInfo,
+  },
+) {}
 
-export class ProductPriceInfo extends S.Class<ProductPriceInfo>(
+export class ProductPriceInfo extends Schema.Class<ProductPriceInfo>(
   "ProductPriceInfo",
 )({
   info: ProductInfo,
@@ -427,101 +444,103 @@ export class ProductPriceInfo extends S.Class<ProductPriceInfo>(
   }
 }
 
-class GeoPoint extends S.Class<GeoPoint>("GeoPoint")({
-  latitude: S.Number,
-  longitude: S.Number,
+class GeoPoint extends Schema.Class<GeoPoint>("GeoPoint")({
+  latitude: Schema.Number,
+  longitude: Schema.Number,
 }) {}
 
-class Country extends S.Class<Country>("Country")({
-  isocode: S.String,
-  name: S.String,
+class Country extends Schema.Class<Country>("Country")({
+  isocode: Schema.String,
+  name: Schema.String,
 }) {}
 
-class Address extends S.Class<Address>("Address")({
-  billingAddress: S.Boolean,
+class Address extends Schema.Class<Address>("Address")({
+  billingAddress: Schema.Boolean,
   country: Country,
-  creationtime: S.String,
-  defaultAddress: S.Boolean,
-  email: S.String,
-  fax: S.optional(S.Union(S.Null, S.String)),
-  firstName: S.String,
-  formattedAddress: S.String,
-  id: S.String,
-  isPoBoxAddress: S.Boolean,
-  line1: S.String,
-  line2: S.optional(S.Union(S.Null, S.String)),
-  phone: S.String,
-  postalCode: S.String,
-  shippingAddress: S.Boolean,
-  town: S.String,
-  visibleInAddressBook: S.Boolean,
+  creationtime: Schema.String,
+  defaultAddress: Schema.Boolean,
+  email: Schema.String,
+  fax: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  firstName: Schema.String,
+  formattedAddress: Schema.String,
+  id: Schema.String,
+  isPoBoxAddress: Schema.Boolean,
+  line1: Schema.String,
+  line2: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  phone: Schema.String,
+  postalCode: Schema.String,
+  shippingAddress: Schema.Boolean,
+  town: Schema.String,
+  visibleInAddressBook: Schema.Boolean,
 }) {}
 
-export class Store extends S.Class<Store>("Store")({
+export class Store extends Schema.Class<Store>("Store")({
   address: Address,
-  description: S.String,
-  displayName: S.String,
-  driveNCollect: S.String,
-  formattedDistance: S.String,
+  description: Schema.String,
+  displayName: Schema.String,
+  driveNCollect: Schema.String,
+  formattedDistance: Schema.String,
   geoPoint: GeoPoint,
-  isActiveLocation: S.Boolean,
-  mapUrl: S.String,
-  name: S.String,
-  pricingRegion: S.String,
-  storeRegion: S.String,
-  storeZone: S.String,
-  timeZone: S.String,
-  type: S.String,
-  underOMSTrial: S.Boolean,
-  url: S.String,
-  urlRegion: S.String,
+  isActiveLocation: Schema.Boolean,
+  mapUrl: Schema.String,
+  name: Schema.String,
+  pricingRegion: Schema.String,
+  storeRegion: Schema.String,
+  storeZone: Schema.String,
+  timeZone: Schema.String,
+  type: Schema.String,
+  underOMSTrial: Schema.Boolean,
+  url: Schema.String,
+  urlRegion: Schema.String,
 }) {}
 
-class Pagination extends S.Class<Pagination>("Pagination")({
-  currentPage: S.Number,
-  pageSize: S.Number,
-  totalPages: S.Number,
-  totalResults: S.Number,
+class Pagination extends Schema.Class<Pagination>("Pagination")({
+  currentPage: Schema.Number,
+  pageSize: Schema.Number,
+  totalPages: Schema.Number,
+  totalResults: Schema.Number,
 }) {}
 
-export class StoresData extends S.Class<StoresData>("StoresData")({
-  boundEastLongitude: S.Number,
-  boundNorthLatitude: S.Number,
-  boundSouthLatitude: S.Number,
-  boundWestLongitude: S.Number,
+export class StoresData extends Schema.Class<StoresData>("StoresData")({
+  boundEastLongitude: Schema.Number,
+  boundNorthLatitude: Schema.Number,
+  boundSouthLatitude: Schema.Number,
+  boundWestLongitude: Schema.Number,
   pagination: Pagination,
-  sourceLatitude: S.Number,
-  sourceLongitude: S.Number,
-  stores: S.Chunk(Store),
+  sourceLatitude: Schema.Number,
+  sourceLongitude: Schema.Number,
+  stores: Schema.Chunk(Store),
 }) {}
 
-export class StoresResponse extends S.Class<StoresResponse>("StoresResponse")({
+export class StoresResponse extends Schema.Class<StoresResponse>(
+  "StoresResponse",
+)({
   data: StoresData,
 }) {}
 
 // fullfillment
 
-export class InStorePickUpData extends S.Class<InStorePickUpData>(
+export class InStorePickUpData extends Schema.Class<InStorePickUpData>(
   "InStorePickUpData",
 )({
-  inStoreStockMsg: S.String,
-  stock: S.optionalWith(S.Number, { default: () => 0 }),
+  inStoreStockMsg: Schema.String,
+  stock: Schema.optionalWith(Schema.Number, { default: () => 0 }),
 }) {}
 
-export class FulfillmentInfo extends S.Class<FulfillmentInfo>(
+export class FulfillmentInfo extends Schema.Class<FulfillmentInfo>(
   "FulfillmentInfo",
 )({
-  addToCartEnabled: S.Boolean,
-  availableInStore: S.Boolean,
-  disableStockVisibility: S.Boolean,
-  driveNCollect: S.String,
+  addToCartEnabled: Schema.Boolean,
+  availableInStore: Schema.Boolean,
+  disableStockVisibility: Schema.Boolean,
+  driveNCollect: Schema.String,
   inStorePickUpData: InStorePickUpData,
-  isActive: S.Boolean,
-  isSpecialProduct: S.Boolean,
-  poa: S.Boolean,
+  isActive: Schema.Boolean,
+  isSpecialProduct: Schema.Boolean,
+  poa: Schema.Boolean,
 }) {}
 
-export class FulfillmentResponse extends S.Class<FulfillmentResponse>(
+export class FulfillmentResponse extends Schema.Class<FulfillmentResponse>(
   "FulfillmentResponse",
 )({
   data: FulfillmentInfo,
@@ -529,29 +548,31 @@ export class FulfillmentResponse extends S.Class<FulfillmentResponse>(
 
 // item location
 
-export class InStoreLocation extends S.Class<InStoreLocation>(
+export class InStoreLocation extends Schema.Class<InStoreLocation>(
   "InStoreLocation",
 )({
-  aisle: S.String,
-  bay: S.String,
-  sequence: S.String,
+  aisle: Schema.String,
+  bay: Schema.String,
+  sequence: Schema.String,
 }) {}
 
-export class ItemLocations extends S.Class<ItemLocations>("ItemLocations")({
-  inStoreLocations: S.Array(InStoreLocation),
-}) {}
+export class ItemLocations extends Schema.Class<ItemLocations>("ItemLocations")(
+  {
+    inStoreLocations: Schema.Array(InStoreLocation),
+  },
+) {}
 
-export class ItemLocationResponse extends S.Class<ItemLocationResponse>(
+export class ItemLocationResponse extends Schema.Class<ItemLocationResponse>(
   "ItemLocationResponse",
 )({
-  data: S.Array(ItemLocations),
+  data: Schema.Array(ItemLocations),
 }) {}
 
-export class FulfillmentInfoWithLocation extends S.Class<FulfillmentInfoWithLocation>(
+export class FulfillmentInfoWithLocation extends Schema.Class<FulfillmentInfoWithLocation>(
   "FulfillmentInfoWithLocation",
 )({
   fulfillment: FulfillmentInfo,
-  location: S.Option(InStoreLocation),
+  location: Schema.Option(InStoreLocation),
 }) {
   get isAvailable() {
     return (

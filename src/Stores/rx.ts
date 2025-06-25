@@ -1,8 +1,13 @@
-import { SessionLocation } from "../../server/src/domain/Bunnings"
-import { Effect, Layer, Option, Schema, Stream } from "effect"
-import { Rx } from "@effect-rx/rx-react"
-import { BrowserKeyValueStore, Geolocation } from "@effect/platform-browser"
 import { BunningsClient } from "@/RpcClient"
+import { Rx } from "@effect-rx/rx-react"
+import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
+import * as Geolocation from "@effect/platform-browser/Geolocation"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import * as Schema from "effect/Schema"
+import * as Stream from "effect/Stream"
+import { SessionLocation } from "../../server/src/domain/Bunnings"
 
 const runtime = Rx.runtime(
   Layer.mergeAll(Geolocation.layer, BunningsClient.Default),

@@ -4,7 +4,7 @@ import { BaseInfoKey } from "@/RpcClient"
 import { resultsRx } from "@/Search/rx"
 import { Result, useRxMount, useRxValue } from "@effect-rx/rx-react"
 import { createFileRoute } from "@tanstack/react-router"
-import { Option } from "effect"
+import * as Option from "effect/Option"
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductScreen,

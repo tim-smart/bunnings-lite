@@ -13,7 +13,18 @@
     "strictNullChecks": true,
     "target": "ESNext",
     "incremental": true,
-    "plugins": [{ "name": "@effect/language-service" }],
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "namespaceImportPackages": [
+          "effect",
+          "@effect/platform",
+          "@effect/platform-browser",
+          "@effect/rpc",
+          "@effect/experimental"
+        ]
+      }
+    ],
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*"]

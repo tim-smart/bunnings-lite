@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { ProductBaseInfo, ProductPriceInfo } from "server/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
-import { DateTime, Option } from "effect"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
 import { cn } from "@/lib/utils"
@@ -19,6 +18,8 @@ import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
+import * as DateTime from "effect/DateTime"
+import * as Option from "effect/Option"
 
 export function ProductListing({
   product,
