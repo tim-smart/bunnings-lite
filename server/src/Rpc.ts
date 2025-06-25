@@ -15,7 +15,7 @@ const Handlers = Rpcs.toLayer(
     const bunnings = yield* Bunnings
     const bazaar = yield* Bazaar
     const sessions = yield* Sessions
-    return {
+    return Rpcs.of({
       login: Effect.fnUntraced(function* ({ location }) {
         const session = yield* CurrentSession
         if (Option.isSome(location)) {
@@ -43,7 +43,7 @@ const Handlers = Rpcs.toLayer(
         )
       }, Effect.orDie),
       stores: (req) => bunnings.stores(req).pipe(Stream.orDie),
-    }
+    })
   }),
 ).pipe(Layer.provide([Bunnings.Default, Bazaar.Default, Sessions.Default]))
 
