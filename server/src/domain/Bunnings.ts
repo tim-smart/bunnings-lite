@@ -263,6 +263,11 @@ export class GuideDocument extends Schema.Class<GuideDocument>("GuideDocument")(
   },
 ) {}
 
+export class DataFeature extends Schema.Class<DataFeature>("DataFeature")({
+  description: Schema.String,
+  pointers: Schema.optional(Schema.Array(Schema.String)),
+}) {}
+
 export class Product extends Schema.Class<Product>("Product")({
   depth: Schema.String,
   height: Schema.String,
@@ -368,6 +373,7 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   brand: Brand,
   defaultVariant: Schema.Boolean,
   dimension: Dimension,
+  feature: DataFeature,
   images: Schema.NonEmptyArray(ImageElement),
   instorePickup: Schema.Boolean,
   isAREnabled: Schema.Boolean,
