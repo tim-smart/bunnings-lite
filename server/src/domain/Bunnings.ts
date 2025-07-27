@@ -263,11 +263,6 @@ export class GuideDocument extends Schema.Class<GuideDocument>("GuideDocument")(
   },
 ) {}
 
-export class DataFeature extends Schema.Class<DataFeature>("DataFeature")({
-  description: Schema.String,
-  pointers: Schema.optional(Schema.Array(Schema.String)),
-}) {}
-
 export class Product extends Schema.Class<Product>("Product")({
   depth: Schema.String,
   height: Schema.String,
@@ -373,7 +368,6 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   brand: Brand,
   defaultVariant: Schema.Boolean,
   dimension: Dimension,
-  feature: DataFeature,
   images: Schema.NonEmptyArray(ImageElement),
   instorePickup: Schema.Boolean,
   isAREnabled: Schema.Boolean,
@@ -476,9 +470,7 @@ class Address extends Schema.Class<Address>("Address")({
 
 export class Store extends Schema.Class<Store>("Store")({
   address: Address,
-  description: Schema.String,
   displayName: Schema.String,
-  driveNCollect: Schema.String,
   formattedDistance: Schema.String,
   geoPoint: GeoPoint,
   isActiveLocation: Schema.Boolean,
@@ -489,7 +481,6 @@ export class Store extends Schema.Class<Store>("Store")({
   storeZone: Schema.String,
   timeZone: Schema.String,
   type: Schema.String,
-  underOMSTrial: Schema.Boolean,
   url: Schema.String,
   urlRegion: Schema.String,
 }) {}
