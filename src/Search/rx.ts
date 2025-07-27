@@ -61,13 +61,13 @@ const filterRx = Rx.family((filter: Filter) => {
       (ctx, value: number) => {
         ctx.setSelf(Option.some(value))
       },
-    ).pipe(Rx.refreshable, Rx.keepAlive),
+    ).pipe(Rx.keepAlive),
     max: Rx.writable(
       () => Option.none<number>(),
       (ctx, value: number) => {
         ctx.setSelf(Option.some(value))
       },
-    ).pipe(Rx.refreshable, Rx.keepAlive),
+    ).pipe(Rx.keepAlive),
     value: Rx.make(Option.none<readonly [number, number]>()),
     reset: Rx.fnSync((_: void, get) => {
       get.set(self.value, Option.none())

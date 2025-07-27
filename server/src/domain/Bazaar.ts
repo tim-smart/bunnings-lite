@@ -41,7 +41,7 @@ export class ProductReview extends S.Class<ProductReview>("ProductReview")({
   ModerationStatus: S.String,
   SubmissionTime: S.DateTimeUtc,
   ReviewText: S.String,
-  Title: S.String,
+  Title: S.NullOr(S.String),
   UserNickname: S.Union(S.Null, S.String),
 }) {}
 
