@@ -70,18 +70,9 @@ export const identityRx = Rx.kvs({
   defaultValue: Identity.makeRandom,
 })
 
-export const identityStringRx = Rx.make((get) =>
-  Identity.toJsonString(get(identityRx)),
-)
-export const setIdentityRx = EventLogClient.runtime.fn(
-  Effect.fnUntraced(function* (s: string, get: Rx.FnContext) {
-    const identity = Identity.fromJsonString(s)
-    const client = yield* EventLogClient
-    yield* client("FavoritesClear", void 0)
-    const log = yield* EventLog.EventLog
-    yield* log.destroy
-    get.set(identityRx, identity)
-  }),
+export const identityStringRx = Rx.writable(
+  (get) => Identity.toJsonString(get(identityRx)),
+  (ctx, s: string) => ctx.set(identityRx, Identity.fromJsonString(s)),
 )
 
 export const remoteUrlRx = Rx.kvs({

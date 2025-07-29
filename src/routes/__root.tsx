@@ -22,7 +22,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
-import { identityStringRx, remoteUrlRx, setIdentityRx } from "@/EventLog"
+import { identityStringRx, remoteUrlRx } from "@/EventLog"
 import * as Option from "effect/Option"
 
 export const Route = createRootRoute({
@@ -132,8 +132,7 @@ function SearchInput() {
 }
 
 function SettingsPanel() {
-  const identityString = useRxValue(identityStringRx)
-  const setIdentityString = useRxSet(setIdentityRx)
+  const [identityString, setIdentityString] = useRx(identityStringRx)
   const [remoteUrlReal, setRemoteUrlReal] = useRx(remoteUrlRx)
   const [remoteUrl, setRemoteUrl] = useState(
     Option.match(remoteUrlReal, {
