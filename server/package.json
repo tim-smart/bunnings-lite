@@ -12,7 +12,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
-    "@effect/experimental": "^0.54.1",
+    "@effect/experimental": "^0.54.2",
     "@effect/language-service": "^0.31.2",
     "@effect/opentelemetry": "^0.56.0",
     "@effect/platform": "^0.90.0",

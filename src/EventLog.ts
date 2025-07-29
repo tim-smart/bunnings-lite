@@ -71,8 +71,8 @@ export const identityRx = Rx.kvs({
 })
 
 export const identityStringRx = Rx.writable(
-  (get) => Identity.toJsonString(get(identityRx)),
-  (ctx, s: string) => ctx.set(identityRx, Identity.fromJsonString(s)),
+  (get) => Identity.encodeString(get(identityRx)),
+  (ctx, s: string) => ctx.set(identityRx, Identity.decodeString(s)),
 )
 
 export const remoteUrlRx = Rx.kvs({
