@@ -1,4 +1,4 @@
-import { Result, Rx, useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { Result, Rx, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
@@ -19,7 +19,7 @@ import { FavoriteButton } from "@/Favorites/Button"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { ArrowUp } from "lucide-react"
-import { favoritesRx } from "@/Favorites"
+import { clearFavoritesRx, favoritesRx } from "@/Favorites/rx"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Filters } from "./Filters"
@@ -162,7 +162,11 @@ function NoResults() {
 }
 
 function FavoritesList() {
-  const [favorites, setFavorites] = useRx(favoritesRx)
+  const favorites = useRxValue(
+    favoritesRx,
+    Result.getOrElse(() => []),
+  )
+  const clear = useRxSet(clearFavoritesRx)
 
   if (favorites.length === 0) {
     return null
@@ -172,10 +176,7 @@ function FavoritesList() {
     <div className="w-full flex flex-col gap-4">
       <div className="text-primary font-medium text-sm flex gap-2">
         Favourites:
-        <span
-          onClick={() => setFavorites([])}
-          className="text-gray-600 cursor-pointer"
-        >
+        <span onClick={() => clear()} className="text-gray-600 cursor-pointer">
           (clear all)
         </span>
       </div>

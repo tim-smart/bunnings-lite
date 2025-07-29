@@ -3,6 +3,7 @@ import { useRegisterSW } from "virtual:pwa-register/react"
 import { RegistryProvider, useRxMount } from "@effect-rx/rx-react"
 import { loginRx } from "./Search/rx"
 import { router } from "./Router"
+import { EventLogClient } from "./EventLog"
 
 export default function App() {
   useRegisterSW({
@@ -19,5 +20,6 @@ export default function App() {
 
 function Session() {
   useRxMount(loginRx)
+  useRxMount(EventLogClient.runtime)
   return null
 }

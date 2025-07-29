@@ -1,5 +1,5 @@
 import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router"
-import { LoaderCircle, Search } from "lucide-react"
+import { LoaderCircle, Search, Settings2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   useRxValue,
@@ -9,14 +9,28 @@ import {
   Rx,
 } from "@effect-rx/rx-react"
 import { focusRx, loadingRx, queryIsSetRx, queryRx } from "@/Search/rx"
-import React, { useCallback } from "react"
+import React, { useCallback, useState } from "react"
 import { cn } from "@/lib/utils"
 import { locationRx } from "@/Router"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { Button } from "@/components/ui/button"
+import { identityStringRx, remoteUrlRx, setIdentityRx } from "@/EventLog"
+import * as Option from "effect/Option"
 
 export const Route = createRootRoute({
   component: () => (
     <div className="flex min-h-screen flex-col bg-primary">
       <header>
+        <SettingsPanel />
+
         <div className="flex">
           <div className="flex-1"></div>
           <Logo />
@@ -114,5 +128,73 @@ function SearchInput() {
         />
       </form>
     </div>
+  )
+}
+
+function SettingsPanel() {
+  const identityString = useRxValue(identityStringRx)
+  const setIdentityString = useRxSet(setIdentityRx)
+  const [remoteUrlReal, setRemoteUrlReal] = useRx(remoteUrlRx)
+  const [remoteUrl, setRemoteUrl] = useState(
+    Option.match(remoteUrlReal, {
+      onNone: () => "",
+      onSome: (url) => url.toString(),
+    }),
+  )
+  return (
+    <Drawer
+      onClose={() =>
+        setRemoteUrl(
+          Option.match(remoteUrlReal, {
+            onNone: () => "",
+            onSome: (url) => url.toString(),
+          }),
+        )
+      }
+    >
+      <DrawerTrigger>
+        <Settings2 className="text-white absolute top-3 right-3 cursor-pointer" />
+      </DrawerTrigger>
+      <DrawerContent className="max-w-md mx-auto">
+        <DrawerHeader>
+          <DrawerTitle>Sync settings</DrawerTitle>
+        </DrawerHeader>
+        <div className="p-3 flex flex-col gap-4">
+          <label className="text-sm">
+            Remote URL
+            <Input
+              id="identity"
+              value={remoteUrl}
+              onChange={(e) => {
+                const trimmed = e.target.value.trim()
+                if (trimmed === "") {
+                  setRemoteUrlReal(Option.none())
+                } else {
+                  const url = URL.parse(trimmed)
+                  if (url) {
+                    setRemoteUrlReal(Option.some(url))
+                  }
+                }
+                setRemoteUrl(e.target.value)
+              }}
+            />
+          </label>
+
+          <label className="text-sm">
+            Identity
+            <Input
+              id="identity"
+              value={identityString}
+              onChange={(e) => setIdentityString(e.target.value)}
+            />
+          </label>
+        </div>
+        <DrawerFooter>
+          <DrawerClose asChild>
+            <Button variant="outline">Close</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   )
 }
