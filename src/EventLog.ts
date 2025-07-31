@@ -2,11 +2,7 @@ import { Identity } from "@effect/experimental/EventLog"
 import { Effect, Layer } from "effect"
 import { AllEvents } from "./Events"
 import { Socket } from "@effect/platform"
-import {
-  FavoritesCompactionLive,
-  FavoritesLayer,
-  FavoritesReactivityLive,
-} from "./Favorites"
+import { FavoritesLayer } from "./Favorites"
 import * as EventLog from "@effect/experimental/EventLog"
 import * as EventJournal from "@effect/experimental/EventJournal"
 import * as EventLogEncryption from "@effect/experimental/EventLogEncryption"
@@ -20,21 +16,6 @@ import * as Function from "effect/Function"
 const EventLogLayer = EventLog.layer(AllEvents).pipe(
   Layer.provide([FavoritesLayer]),
   Layer.provide(EventJournal.layerIndexedDb()),
-)
-
-const CompactionLive = Layer.mergeAll(FavoritesCompactionLive).pipe(
-  Layer.provide(EventLogLayer),
-)
-
-const ReactivityLayer = Layer.mergeAll(FavoritesReactivityLive).pipe(
-  Layer.provide(EventLogLayer),
-)
-
-export const EventLogLive = Layer.mergeAll(
-  EventLogLayer,
-  CompactionLive,
-  ReactivityLayer,
-).pipe(
   Layer.provide([
     EventLogEncryption.layerSubtle,
     Socket.layerWebSocketConstructorGlobal,
@@ -57,7 +38,7 @@ export class EventLogClient extends Effect.Service<EventLogClient>()(
             EventLogRemote.layerWebSocketBrowser(remoteUrl.value.toString()),
           )
         : Function.identity,
-      Layer.provideMerge(EventLogLive),
+      Layer.provideMerge(EventLogLayer),
       Layer.provide(Layer.succeed(Identity, get(identityRx))),
     )
   })

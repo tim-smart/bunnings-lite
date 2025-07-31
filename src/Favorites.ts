@@ -57,7 +57,7 @@ export class FavoritesRepo extends Effect.Service<FavoritesRepo>()(
   static runtime = Rx.runtime(this.Default)
 }
 
-export const FavoritesLayer = EventLog.group(
+const FavoritesEventsLayer = EventLog.group(
   FavoriteEvents,
   Effect.fnUntraced(function* (handlers) {
     const repo = yield* FavoritesRepo
@@ -69,7 +69,7 @@ export const FavoritesLayer = EventLog.group(
   }),
 ).pipe(Layer.provide(FavoritesRepo.Default))
 
-export const FavoritesCompactionLive = EventLog.groupCompaction(
+const FavoritesCompactionLive = EventLog.groupCompaction(
   FavoriteEvents,
   Effect.fnUntraced(function* ({ events, write }) {
     const map = new Map<string, ProductBaseInfo>()
@@ -109,7 +109,12 @@ export const FavoritesCompactionLive = EventLog.groupCompaction(
   }),
 )
 
-export const FavoritesReactivityLive = EventLog.groupReactivity(
-  FavoriteEvents,
-  ["favorites"],
+const FavoritesReactivityLive = EventLog.groupReactivity(FavoriteEvents, [
+  "favorites",
+])
+
+export const FavoritesLayer = Layer.mergeAll(
+  FavoritesEventsLayer,
+  FavoritesCompactionLive,
+  FavoritesReactivityLive,
 )
