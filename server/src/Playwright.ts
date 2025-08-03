@@ -73,35 +73,33 @@ export class BrowserContext extends Context.Tag("Playwright/BrowserContext")<
 }
 
 export class Page extends Effect.Service<Page>()("Playwright/Page", {
-  scoped: BrowserContext.pipe(
-    Effect.flatMap((context) =>
-      Effect.acquireRelease(
-        Effect.tryPromise({
-          try: () => context.newPage(),
+  scoped: Effect.gen(function* () {
+    const context = yield* BrowserContext
+    const page = yield* Effect.acquireRelease(
+      Effect.tryPromise({
+        try: () => context.newPage(),
+        catch: (cause) => new PlaywrightError({ cause }),
+      }),
+      (page) => Effect.promise(() => page.close()),
+    )
+
+    return {
+      page,
+      with<A>(
+        f: (page: Api.Page) => Promise<A>,
+      ): Effect.Effect<A, PlaywrightError> {
+        const trace = new Error()
+        return Effect.tryPromise({
+          try: () => f(page),
           catch: (cause) => new PlaywrightError({ cause }),
-        }),
-        (page) => Effect.promise(() => page.close()),
-      ),
-    ),
-    Effect.map(
-      (page) =>
-        ({
-          page,
-          with<A>(
-            f: (page: Api.Page) => Promise<A>,
-          ): Effect.Effect<A, PlaywrightError> {
-            return Effect.tryPromise({
-              try: () => f(page),
-              catch: (cause) => new PlaywrightError({ cause }),
-            }).pipe(
-              Effect.withSpan("Playwright/Page.with", {
-                captureStackTrace: false,
-              }),
-            )
-          },
-        }) as const,
-    ),
-  ),
+        }).pipe(
+          Effect.withSpan("Playwright/Page.with", {
+            captureStackTrace: () => trace.stack,
+          }),
+        )
+      },
+    }
+  }),
   dependencies: [BrowserContext.Live],
 }) {
   static with<A>(f: (page: Api.Page) => Promise<A>) {

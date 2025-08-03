@@ -197,32 +197,25 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         )
     })
 
-    const stores = Effect.fnUntraced(
-      function* (options: {
-        readonly latitude: number
-        readonly longitude: number
-      }) {
-        return Stream.paginateChunkEffect(
-          0,
-          Effect.fnUntraced(function* (page) {
-            const result = yield* storesPage({
-              ...options,
-              page,
-            })
-            return [
-              result.data.stores,
-              Option.some(page + 1).pipe(
-                Option.filter(
-                  (page) => page < result.data.pagination.totalPages,
-                ),
-              ),
-            ] as const
-          }),
-        )
-      },
-      Stream.unwrap,
-      Stream.withSpan("Bunnings.stores"),
-    )
+    const stores = (options: {
+      readonly latitude: number
+      readonly longitude: number
+    }) =>
+      Stream.paginateChunkEffect(
+        0,
+        Effect.fnUntraced(function* (page) {
+          const result = yield* storesPage({
+            ...options,
+            page,
+          })
+          return [
+            result.data.stores,
+            Option.some(page + 1).pipe(
+              Option.filter((page) => page < result.data.pagination.totalPages),
+            ),
+          ] as const
+        }),
+      ).pipe(Stream.withSpan("Bunnings.stores"))
 
     return {
       makeSession,

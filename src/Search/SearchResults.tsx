@@ -58,8 +58,8 @@ export function SearchResults() {
       <div className="h-4" />
       <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {hasResults
-          ? Result.getOrThrow(result).map((result, i) => (
-              <ResultCard key={i} product={result} />
+          ? Result.getOrThrow(result).map((result) => (
+              <ResultCard key={result.id} product={result} />
             ))
           : Array.makeBy(9, (i) => <SkeletonCard key={i} />)}
         <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
