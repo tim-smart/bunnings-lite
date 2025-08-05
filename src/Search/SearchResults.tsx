@@ -1,4 +1,4 @@
-import { Result, Rx, useRxSet, useRxValue } from "@effect-rx/rx-react"
+import { Result, useRxSet, useRxValue } from "@effect-rx/rx-react"
 import { focusRx, queryIsSetRx, resultsRx } from "./rx"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
@@ -26,18 +26,9 @@ import { Filters } from "./Filters"
 import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
 
-const itemsRx = Rx.mapResult(resultsRx, (_) => _.items)
-const hasResultsRx = Rx.make((get) => {
-  const result = get(itemsRx)
-  return (
-    Result.isSuccess(result) && (result.value.length > 0 || !result.waiting)
-  )
-})
-
 export function SearchResults() {
   const queryIsSet = useRxValue(queryIsSetRx)
-  const result = useRxValue(itemsRx, Result.waiting)
-  const hasResults = useRxValue(hasResultsRx)
+  const results = useRxValue(resultsRx)
   const pull = useRxSet(resultsRx)
   useScrollBottom(() => {
     pull()
@@ -47,21 +38,31 @@ export function SearchResults() {
     return <NoResults />
   }
 
-  if (Result.isFailure(result)) {
-    throw Cause.squash(result.cause)
-  }
-
   return (
     <>
       <div className="h-4" />
-      {hasResults && <Filters />}
+      {Result.isSuccess(results) && <Filters />}
       <div className="h-4" />
       <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {hasResults
-          ? Result.getOrThrow(result).map((result) => (
+        {Result.builder(results)
+          .onSuccess(({ items }) =>
+            items.map((result) => (
               <ResultCard key={result.id} product={result} />
-            ))
-          : Array.makeBy(9, (i) => <SkeletonCard key={i} />)}
+            )),
+          )
+          .onInitial(() => Array.makeBy(9, (i) => <SkeletonCard key={i} />))
+          .onErrorTag("NoSuchElementException", () =>
+            Array.makeBy(9, (i) => <SkeletonCard key={i} />),
+          )
+          .onFailure((cause) => (
+            <div>
+              <div className="text-red-500">
+                An error occurred while fetching results.
+              </div>
+              {Cause.pretty(cause)}
+            </div>
+          ))
+          .render()}
         <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
           <BackToTop />
           <div className="h-6" />

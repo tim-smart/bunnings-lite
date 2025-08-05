@@ -1,8 +1,7 @@
 import { ProductListing } from "@/Product/Listing"
 import { productFullInfoRx, productRx } from "@/Product/rx"
 import { BaseInfoKey } from "@/RpcClient"
-import { resultsRx } from "@/Search/rx"
-import { Result, useRxMount, useRxValue } from "@effect-rx/rx-react"
+import { Result, useRxValue } from "@effect-rx/rx-react"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Option from "effect/Option"
 
@@ -11,9 +10,6 @@ export const Route = createFileRoute("/product/$id")({
 })
 
 export function ProductScreen() {
-  // Keep the search results alive
-  useRxMount(resultsRx)
-
   const { id } = Route.useParams()
   const product = useRxValue(productRx(new BaseInfoKey({ id })))
   const fullInfo = Result.value(useRxValue(productFullInfoRx(id)))

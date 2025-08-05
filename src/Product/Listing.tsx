@@ -32,6 +32,28 @@ export function ProductListing({
     Option.flatMapNullable((info) => info.info.feature.pointers),
   )
 
+  const description = (
+    <>
+      {fullInfo.pipe(
+        Option.map((info) => (
+          <div className="prose">
+            {Option.isSome(pointers) && (
+              <ul>
+                {pointers.value.map((pointer, i) => (
+                  <li key={i}>{pointer}</li>
+                ))}
+              </ul>
+            )}
+            <Markdown rehypePlugins={[rehypeRaw]}>
+              {info.info.feature.description}
+            </Markdown>
+          </div>
+        )),
+        Option.getOrElse(() => <SkeletonDescription />),
+      )}
+    </>
+  )
+
   return (
     <div>
       <div className="py-2">
@@ -46,11 +68,6 @@ export function ProductListing({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="flex flex-col gap-4">
-          <SelectedImage product={product} />
-          <ThumbnailImages product={product} />
-        </div>
-
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl md:text-3xl font-bold">{product.title}</h1>
 
@@ -77,25 +94,18 @@ export function ProductListing({
             </Button>
           </div>
 
-          <div className="flex flex-col gap-4 text-sm">
-            {fullInfo.pipe(
-              Option.map((info) => (
-                <div className="prose">
-                  {Option.isSome(pointers) && (
-                    <ul>
-                      {pointers.value.map((pointer, i) => (
-                        <li key={i}>{pointer}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <Markdown rehypePlugins={[rehypeRaw]}>
-                    {info.info.feature.description}
-                  </Markdown>
-                </div>
-              )),
-              Option.getOrElse(() => <SkeletonDescription />),
-            )}
+          <div className="flex-col gap-4 text-sm hidden md:block">
+            {description}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-4 md:-order-1">
+          <SelectedImage product={product} />
+          <ThumbnailImages product={product} />
+        </div>
+
+        <div className="flex flex-col gap-4 text-sm md:hidden">
+          {description}
         </div>
       </div>
 
@@ -235,6 +245,7 @@ function SkeletonRatings() {
 
 function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
   const [result, pullReviews] = useRx(productReviewsRx(product.id))
+
   const reviews = Result.map(result, (_) => _.items).pipe(
     Result.getOrElse(() => []),
   )

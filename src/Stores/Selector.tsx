@@ -36,8 +36,8 @@ export function StoreSelector() {
           onSome: (location) => String(location.code),
         })}
         onValueChange={(value) => {
-          const stores = Result.value(registry.get(storesRx))
-          stores.pipe(
+          registry.get(storesRx).pipe(
+            Result.value,
             Option.flatMap(Chunk.findFirst((store) => store.name === value)),
             Option.map((store) => {
               setLocation(Option.some(SessionLocation.fromStore(store)))
@@ -81,9 +81,21 @@ function StoreItems({
 }: {
   readonly currentLocation: Option.Option<SessionLocation>
 }) {
-  const stores = Result.value(useRxValue(storesRx))
-  if (Option.isNone(stores)) {
-    return (
+  return Result.builder(useRxValue(storesRx))
+    .onSuccess((stores) => (
+      <>
+        {Array.from(stores, (store) => (
+          <SelectItem
+            key={store.name}
+            value={store.name}
+            className="py-3 cursor-pointer hover:bg-gray-100"
+          >
+            {store.displayName}
+          </SelectItem>
+        ))}
+      </>
+    ))
+    .orElse(() => (
       <>
         {Option.match(currentLocation, {
           onNone: () => null,
@@ -100,19 +112,5 @@ function StoreItems({
           <Skeleton key={i} className="h-8 flex-1 m-2" />
         ))}
       </>
-    )
-  }
-  return (
-    <>
-      {Array.from(stores.value, (store) => (
-        <SelectItem
-          key={store.name}
-          value={store.name}
-          className="py-3 cursor-pointer hover:bg-gray-100"
-        >
-          {store.displayName}
-        </SelectItem>
-      ))}
-    </>
-  )
+    ))
 }
