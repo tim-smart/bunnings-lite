@@ -11,5 +11,5 @@ export function InstallButton() {
         Add to home screen
       </Button>
     ))
-    .orNull()
+    .render()
 }
