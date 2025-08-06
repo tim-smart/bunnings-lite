@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect-rx/rx-react':
-        specifier: ^0.42.2
-        version: 0.42.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)(react@19.1.1)(scheduler@0.26.0)
+        specifier: ^0.42.4
+        version: 0.42.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)(react@19.1.1)(scheduler@0.26.0)
       '@effect/experimental':
         specifier: ^0.54.3
         version: 0.54.3(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
@@ -694,15 +694,15 @@ packages:
   '@canvas/image-data@1.0.0':
     resolution: {integrity: sha512-BxOqI5LgsIQP1odU5KMwV9yoijleOPzHL18/YvNqF9KFSGF2K/DLlYAbDQsWqd/1nbaFuSkYD/191dpMtNh4vw==}
 
-  '@effect-rx/rx-react@0.42.2':
-    resolution: {integrity: sha512-jIY/D+S9HlllEqx0JQyzeckpZheDD2sn/1MGNLYwcB0yavhHZMHpNf0B7XbCa0OC3zKkFbnRzkODBrWauDCwLw==}
+  '@effect-rx/rx-react@0.42.4':
+    resolution: {integrity: sha512-Y248Rn0kHoTdRifA+QX5KKJIP7LdWz/CbKmfkhnrEou2f/0nCthGwQrheAgpu7wd+f+Svy8eLjjfY69iidEUDQ==}
     peerDependencies:
       effect: ^3.17
       react: '>=18 <20'
       scheduler: '*'
 
-  '@effect-rx/rx@0.48.6':
-    resolution: {integrity: sha512-QXaXsAG4Wf3/Nhzgk0GJT2r2eShP9RaAbbWw9QwJCIkizWHkgiTknRAOMcY71DupdHA5rXRQ89pw/yz13BRUdA==}
+  '@effect-rx/rx@0.48.7':
+    resolution: {integrity: sha512-SdxC/4L+S14kU+6QoKzF0VTbflNYmhX1eJHIP4ZfnDqLVWd4PHJFdLjGCS9ZAODLyukkuBw4OVB4P7ScGaVV1g==}
     peerDependencies:
       '@effect/platform': ^0.90.0
       effect: ^3.17.0
@@ -4261,16 +4261,16 @@ snapshots:
 
   '@canvas/image-data@1.0.0': {}
 
-  '@effect-rx/rx-react@0.42.2(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)(react@19.1.1)(scheduler@0.26.0)':
+  '@effect-rx/rx-react@0.42.4(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)(react@19.1.1)(scheduler@0.26.0)':
     dependencies:
-      '@effect-rx/rx': 0.48.6(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
+      '@effect-rx/rx': 0.48.7(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)
       effect: 3.17.6
       react: 19.1.1
       scheduler: 0.26.0
     transitivePeerDependencies:
       - '@effect/platform'
 
-  '@effect-rx/rx@0.48.6(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
+  '@effect-rx/rx@0.48.7(@effect/platform@0.90.0(effect@3.17.6))(effect@3.17.6)':
     dependencies:
       '@effect/platform': 0.90.0(effect@3.17.6)
       effect: 3.17.6
