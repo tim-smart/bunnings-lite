@@ -1,5 +1,5 @@
 import { BunningsClient } from "@/RpcClient"
-import { Rx } from "@effect-rx/rx-react"
+import { Atom } from "@effect-atom/atom-react"
 import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
 import * as Geolocation from "@effect/platform-browser/Geolocation"
 import * as Effect from "effect/Effect"
@@ -9,22 +9,22 @@ import * as Schema from "effect/Schema"
 import * as Stream from "effect/Stream"
 import { SessionLocation } from "../../server/src/domain/Bunnings"
 
-const runtime = Rx.runtime(
+const runtime = Atom.runtime(
   Layer.mergeAll(Geolocation.layer, BunningsClient.Default),
 )
 
-export const geoRx = runtime.rx(
+export const geoAtom = runtime.atom(
   Effect.gen(function* () {
     const geo = yield* Geolocation.Geolocation
     return yield* geo.getCurrentPosition()
   }),
 )
 
-export const storesRx = runtime
-  .rx(
-    Effect.fnUntraced(function* (get: Rx.Context) {
+export const storesAtom = runtime
+  .atom(
+    Effect.fnUntraced(function* (get: Atom.Context) {
       const client = yield* BunningsClient
-      const location = yield* get.result(geoRx)
+      const location = yield* get.result(geoAtom)
       return client
         .stores({
           latitude: location.coords.latitude,
@@ -33,11 +33,11 @@ export const storesRx = runtime
         .pipe(Stream.take(10), Stream.accumulate)
     }, Stream.unwrap),
   )
-  .pipe(Rx.keepAlive)
+  .pipe(Atom.keepAlive)
 
-export const currentLocationRx = Rx.kvs<Option.Option<SessionLocation>>({
-  runtime: Rx.runtime(BrowserKeyValueStore.layerLocalStorage),
+export const currentLocationAtom = Atom.kvs<Option.Option<SessionLocation>>({
+  runtime: Atom.runtime(BrowserKeyValueStore.layerLocalStorage),
   key: "currentLocation",
   schema: Schema.Option(SessionLocation),
   defaultValue: Option.none,
-}).pipe(Rx.keepAlive)
+}).pipe(Atom.keepAlive)

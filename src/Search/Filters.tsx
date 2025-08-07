@@ -1,5 +1,5 @@
-import { useRx, useRxSet, useRxValue } from "@effect-rx/rx-react"
-import { allFilters } from "./rx"
+import { useAtom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { allFilters } from "./atoms"
 import { useRef } from "react"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -19,11 +19,11 @@ export function Filters() {
 type AllFilters = typeof allFilters
 
 function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
-  const range = useRxValue(filter.facet)
-  const [min, setMin] = useRx(filter.min)
-  const [max, setMax] = useRx(filter.max)
-  const [value, setRange] = useRx(filter.value)
-  const reset = useRxSet(filter.reset)
+  const range = useAtomValue(filter.facet)
+  const [min, setMin] = useAtom(filter.min)
+  const [max, setMax] = useAtom(filter.max)
+  const [value, setRange] = useAtom(filter.value)
+  const reset = useAtomSet(filter.reset)
 
   const minInput = useRef<HTMLInputElement>(null)
   const maxInput = useRef<HTMLInputElement>(null)

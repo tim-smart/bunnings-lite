@@ -1,4 +1,4 @@
-import { Rx } from "@effect-rx/rx-react"
+import { Atom } from "@effect-atom/atom-react"
 import { ProductBaseInfo } from "../server/src/domain/Bunnings"
 import * as Schema from "effect/Schema"
 import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
@@ -54,7 +54,7 @@ export class FavoritesRepo extends Effect.Service<FavoritesRepo>()(
     }),
   },
 ) {
-  static runtime = Rx.runtime(this.Default)
+  static runtime = Atom.runtime(this.Default)
 }
 
 const FavoritesEventsLayer = EventLog.group(

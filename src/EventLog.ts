@@ -6,9 +6,9 @@ import { FavoritesLayer } from "./Favorites"
 import * as EventLog from "@effect/experimental/EventLog"
 import * as EventJournal from "@effect/experimental/EventJournal"
 import * as EventLogEncryption from "@effect/experimental/EventLogEncryption"
-import { Rx } from "@effect-rx/rx-react"
+import { Atom } from "@effect-atom/atom-react"
 import * as EventLogRemote from "@effect/experimental/EventLogRemote"
-import { kvsRuntime } from "./rx/kvs"
+import { kvsRuntime } from "./atoms/kvs"
 import * as Schema from "effect/Schema"
 import * as Option from "effect/Option"
 import * as Function from "effect/Function"
@@ -30,8 +30,8 @@ export class EventLogClient extends Effect.Service<EventLogClient>()(
     effect: makeClient,
   },
 ) {
-  static runtime = Rx.runtime((get) => {
-    const remoteUrl = get(remoteUrlRx)
+  static runtime = Atom.runtime((get) => {
+    const remoteUrl = get(remoteUrlAtom)
     return this.Default.pipe(
       Option.isSome(remoteUrl)
         ? Layer.provide(
@@ -39,24 +39,24 @@ export class EventLogClient extends Effect.Service<EventLogClient>()(
           )
         : Function.identity,
       Layer.provideMerge(EventLogLayer),
-      Layer.provide(Layer.succeed(Identity, get(identityRx))),
+      Layer.provide(Layer.succeed(Identity, get(identityAtom))),
     )
   })
 }
 
-export const identityRx = Rx.kvs({
+export const identityAtom = Atom.kvs({
   runtime: kvsRuntime,
   key: "identity",
   schema: Identity.Schema,
   defaultValue: Identity.makeRandom,
 })
 
-export const identityStringRx = Rx.writable(
-  (get) => Identity.encodeString(get(identityRx)),
-  (ctx, s: string) => ctx.set(identityRx, Identity.decodeString(s)),
+export const identityStringAtom = Atom.writable(
+  (get) => Identity.encodeString(get(identityAtom)),
+  (ctx, s: string) => ctx.set(identityAtom, Identity.decodeString(s)),
 )
 
-export const remoteUrlRx = Rx.kvs({
+export const remoteUrlAtom = Atom.kvs({
   runtime: kvsRuntime,
   key: "remoteUrl",
   schema: Schema.Option(Schema.URL),

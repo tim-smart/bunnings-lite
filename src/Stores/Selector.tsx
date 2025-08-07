@@ -1,10 +1,10 @@
 import {
   RegistryContext,
   Result,
-  useRxSet,
-  useRxValue,
-} from "@effect-rx/rx-react"
-import { currentLocationRx, storesRx } from "./rx"
+  useAtomSet,
+  useAtomValue,
+} from "@effect-atom/atom-react"
+import { currentLocationAtom, storesAtom } from "./atoms"
 import { MapPin } from "lucide-react"
 import {
   Select,
@@ -24,8 +24,8 @@ import * as Chunk from "effect/Chunk"
 export function StoreSelector() {
   const registry = useContext(RegistryContext)
   const [open, setOpen] = useState(false)
-  const currentLocation = useRxValue(currentLocationRx)
-  const setLocation = useRxSet(currentLocationRx)
+  const currentLocation = useAtomValue(currentLocationAtom)
+  const setLocation = useAtomSet(currentLocationAtom)
   return (
     <div className="w-full">
       <Select
@@ -36,7 +36,7 @@ export function StoreSelector() {
           onSome: (location) => String(location.code),
         })}
         onValueChange={(value) => {
-          registry.get(storesRx).pipe(
+          registry.get(storesAtom).pipe(
             Result.value,
             Option.flatMap(Chunk.findFirst((store) => store.name === value)),
             Option.map((store) => {
@@ -81,7 +81,7 @@ function StoreItems({
 }: {
   readonly currentLocation: Option.Option<SessionLocation>
 }) {
-  return Result.builder(useRxValue(storesRx))
+  return Result.builder(useAtomValue(storesAtom))
     .onSuccess((stores) => (
       <>
         {Array.from(stores, (store) => (

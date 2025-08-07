@@ -2,16 +2,16 @@ import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router"
 import { LoaderCircle, Search, Settings2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
-  useRxValue,
-  useRx,
-  useRxSet,
-  useRxSubscribe,
-  Rx,
-} from "@effect-rx/rx-react"
-import { focusRx, loadingRx, queryIsSetRx, queryRx } from "@/Search/rx"
+  useAtomValue,
+  useAtom,
+  useAtomSet,
+  useAtomSubscribe,
+  Atom,
+} from "@effect-atom/atom-react"
+import { focusAtom, loadingAtom, queryIsSetAtom, queryAtom } from "@/Search/atoms"
 import React, { useCallback, useState } from "react"
 import { cn } from "@/lib/utils"
-import { locationRx } from "@/Router"
+import { locationAtom } from "@/Router"
 import {
   Drawer,
   DrawerClose,
@@ -22,7 +22,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
-import { identityStringRx, remoteUrlRx } from "@/EventLog"
+import { identityStringAtom, remoteUrlAtom } from "@/EventLog"
 import * as Option from "effect/Option"
 
 export const Route = createRootRoute({
@@ -51,14 +51,14 @@ export const Route = createRootRoute({
   ),
 })
 
-const minimizeRx = Rx.make((get) => {
-  const path = get(locationRx).pathname
-  return path !== "/" || get(queryIsSetRx)
+const minimizeAtom = Atom.make((get) => {
+  const path = get(locationAtom).pathname
+  return path !== "/" || get(queryIsSetAtom)
 })
 
 function Logo() {
-  const minimize = useRxValue(minimizeRx)
-  const setQuery = useRxSet(queryRx)
+  const minimize = useAtomValue(minimizeAtom)
+  const setQuery = useAtomSet(queryAtom)
   const navigate = useNavigate()
   return (
     <img
@@ -77,8 +77,8 @@ function Logo() {
 
 function SearchInput() {
   const navigate = useNavigate()
-  const [query, setQuery] = useRx(queryRx)
-  const minimize = useRxValue(minimizeRx)
+  const [query, setQuery] = useAtom(queryAtom)
+  const minimize = useAtomValue(minimizeAtom)
   const inputRef = React.useRef<HTMLInputElement>(null)
 
   const onChange = useCallback(
@@ -91,7 +91,7 @@ function SearchInput() {
     [setQuery, location, navigate],
   )
 
-  useRxSubscribe(focusRx, (i) => {
+  useAtomSubscribe(focusAtom, (i) => {
     if (!inputRef.current || i === 0) return
     inputRef.current.focus({ preventScroll: true })
     inputRef.current.scrollIntoView({
@@ -100,7 +100,7 @@ function SearchInput() {
     })
   })
 
-  const loading = useRxValue(loadingRx)
+  const loading = useAtomValue(loadingAtom)
   const Icon = loading ? LoaderCircle : Search
 
   return (
@@ -132,8 +132,8 @@ function SearchInput() {
 }
 
 function SettingsPanel() {
-  const [identityString, setIdentityString] = useRx(identityStringRx)
-  const [remoteUrlReal, setRemoteUrlReal] = useRx(remoteUrlRx)
+  const [identityString, setIdentityString] = useAtom(identityStringAtom)
+  const [remoteUrlReal, setRemoteUrlReal] = useAtom(remoteUrlAtom)
   const [remoteUrl, setRemoteUrl] = useState(
     Option.match(remoteUrlReal, {
       onNone: () => "",

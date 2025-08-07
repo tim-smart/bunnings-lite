@@ -1,6 +1,6 @@
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
-import { Result, useRxValue } from "@effect-rx/rx-react"
-import { productFulfillmentRx } from "./rx"
+import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { productFulfillmentAtom } from "./atoms"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 import * as Option from "effect/Option"
@@ -13,7 +13,7 @@ export function FulfillmentBadge({
   readonly showAvailable?: boolean
 }) {
   const maybeResult = Result.getOrElse(
-    useRxValue(productFulfillmentRx(product.id)),
+    useAtomValue(productFulfillmentAtom(product.id)),
     Option.none,
   )
 

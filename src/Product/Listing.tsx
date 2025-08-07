@@ -2,18 +2,18 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ProductBaseInfo, ProductPriceInfo } from "server/src/domain/Bunnings"
 import { StarRating } from "@/components/ui/star-rating"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Result, Rx, useRx, useRxValue } from "@effect-rx/rx-react"
+import { Result, Atom, useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { ProductReview } from "server/src/domain/Bazaar"
 import Markdown from "react-markdown"
 import {
-  productRatingRx,
-  productReviewCountRx,
-  productReviewsRx,
-  productReviewStatsRx,
-} from "./rx"
+  productRatingAtom,
+  productReviewCountAtom,
+  productReviewsAtom,
+  productReviewStatsAtom,
+} from "./atoms"
 import { FavoriteButton } from "@/Favorites/Button"
 import rehypeRaw from "rehype-raw"
 import { useScrollBottom } from "@/lib/useScrollBottom"
@@ -117,8 +117,8 @@ export function ProductListing({
 }
 
 function ProductRating({ product }: { readonly product: ProductBaseInfo }) {
-  const numberOfReviews = useRxValue(productReviewCountRx(product))
-  const rating = useRxValue(productRatingRx(product))
+  const numberOfReviews = useAtomValue(productReviewCountAtom(product))
+  const rating = useAtomValue(productRatingAtom(product))
   return (
     <div className="flex gap-2">
       <StarRating rating={rating} />
@@ -137,10 +137,10 @@ function SkeletonDescription() {
   )
 }
 
-const imageIndexRx = Rx.make(0)
+const imageIndexAtom = Atom.make(0)
 
 function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
-  const index = useRxValue(imageIndexRx)
+  const index = useAtomValue(imageIndexAtom)
   const image = product.images[index]
   return (
     <div className="border rounded-lg bg-white flex items-center justify-center aspect-square overflow-hidden">
@@ -150,7 +150,7 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
 }
 
 function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
-  const [index, setIndex] = useRx(imageIndexRx)
+  const [index, setIndex] = useAtom(imageIndexAtom)
   return (
     <div className="grid grid-cols-4 gap-2">
       {product.images.map((image, i) => (
@@ -180,7 +180,7 @@ function Reviews({ product }: { readonly product: ProductBaseInfo }) {
 }
 
 function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
-  const reviewStats = useRxValue(productReviewStatsRx(product.id))
+  const reviewStats = useAtomValue(productReviewStatsAtom(product.id))
   if (Option.isNone(reviewStats)) {
     return <SkeletonRatings />
   }
@@ -244,7 +244,7 @@ function SkeletonRatings() {
 }
 
 function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
-  const [result, pullReviews] = useRx(productReviewsRx(product.id))
+  const [result, pullReviews] = useAtom(productReviewsAtom(product.id))
 
   const reviews = Result.map(result, (_) => _.items).pipe(
     Result.getOrElse(() => []),

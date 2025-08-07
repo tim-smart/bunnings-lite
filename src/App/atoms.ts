@@ -1,7 +1,7 @@
-import { Rx } from "@effect-rx/rx-react"
+import { Atom } from "@effect-atom/atom-react"
 import * as Effect from "effect/Effect"
 
-export const installPromptRx = Rx.make((get) =>
+export const installPromptAtom = Atom.make((get) =>
   Effect.async<() => Promise<void>>((resume) => {
     const onBeforeInstallPrompt = (e: any) => {
       e.preventDefault()
@@ -20,4 +20,4 @@ export const installPromptRx = Rx.make((get) =>
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt)
     })
   }),
-).pipe(Rx.keepAlive)
+).pipe(Atom.keepAlive)

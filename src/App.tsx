@@ -1,7 +1,7 @@
 import { RouterProvider } from "@tanstack/react-router"
 import { useRegisterSW } from "virtual:pwa-register/react"
-import { RegistryProvider, useRxMount } from "@effect-rx/rx-react"
-import { loginRx } from "./Search/rx"
+import { RegistryProvider, useAtomMount } from "@effect-atom/atom-react"
+import { loginAtom } from "./Search/atoms"
 import { router } from "./Router"
 import { EventLogClient } from "./EventLog"
 
@@ -19,7 +19,7 @@ export default function App() {
 }
 
 function Session() {
-  useRxMount(loginRx)
-  useRxMount(EventLogClient.runtime)
+  useAtomMount(loginAtom)
+  useAtomMount(EventLogClient.runtime)
   return null
 }

@@ -1,6 +1,6 @@
 import { BunningsClient } from "@/RpcClient"
-import { currentLocationRx } from "@/Stores/rx"
-import { Rx } from "@effect-rx/rx-react"
+import { currentLocationAtom } from "@/Stores/atoms"
+import { Atom } from "@effect-atom/atom-react"
 import * as Array from "effect/Array"
 import * as Chunk from "effect/Chunk"
 import * as Data from "effect/Data"
@@ -9,29 +9,29 @@ import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import { Facet } from "../../server/src/domain/Bunnings"
 
-const runtimeRx = Rx.runtime(BunningsClient.Default).pipe(Rx.keepAlive)
+const runtimeAtom = Atom.runtime(BunningsClient.Default).pipe(Atom.keepAlive)
 
-export const queryRx = Rx.searchParam("query")
+export const queryAtom = Atom.searchParam("query")
 
-export const queryIsSetRx = Rx.map(queryRx, (query) => query.trim() !== "")
+export const queryIsSetAtom = Atom.map(queryAtom, (query) => query.trim() !== "")
 
-export const loginRx = runtimeRx.rx(
-  Effect.fnUntraced(function* (get: Rx.Context) {
+export const loginAtom = runtimeAtom.atom(
+  Effect.fnUntraced(function* (get: Atom.Context) {
     const client = yield* BunningsClient
-    const location = get(currentLocationRx)
+    const location = get(currentLocationAtom)
     yield* client.login({ location })
   }),
 )
 
-const queryTrimmedRx = Rx.map(queryRx, (query) => query.trim())
+const queryTrimmedAtom = Atom.map(queryAtom, (query) => query.trim())
 
-const facetsRx = Rx.make<{
+const facetsAtom = Atom.make<{
   forQuery: string
   facets: ReadonlyArray<Facet>
 }>({
   forQuery: "",
   facets: [],
-}).pipe(Rx.keepAlive)
+}).pipe(Atom.keepAlive)
 
 class Filter extends Data.Class<{
   id: string
@@ -45,31 +45,31 @@ class Filter extends Data.Class<{
   }
 }> {}
 
-const filterRx = Rx.family((filter: Filter) => {
+const filterAtom = Atom.family((filter: Filter) => {
   const self = {
     filter,
     facet: filter.facetValueOverride
-      ? Rx.make(Option.some(filter.facetValueOverride))
-      : Rx.make((get) => {
-          const facets = get(facetsRx).facets
+      ? Atom.make(Option.some(filter.facetValueOverride))
+      : Atom.make((get) => {
+          const facets = get(facetsAtom).facets
           return Array.findFirst(facets, (g) => g.facetId === filter.id).pipe(
             Option.flatMapNullable((_) => _.values[0]),
           )
         }),
-    min: Rx.writable(
+    min: Atom.writable(
       () => Option.none<number>(),
       (ctx, value: number) => {
         ctx.setSelf(Option.some(value))
       },
-    ).pipe(Rx.keepAlive),
-    max: Rx.writable(
+    ).pipe(Atom.keepAlive),
+    max: Atom.writable(
       () => Option.none<number>(),
       (ctx, value: number) => {
         ctx.setSelf(Option.some(value))
       },
-    ).pipe(Rx.keepAlive),
-    value: Rx.make(Option.none<readonly [number, number]>()),
-    reset: Rx.fnSync((_: void, get) => {
+    ).pipe(Atom.keepAlive),
+    value: Atom.make(Option.none<readonly [number, number]>()),
+    reset: Atom.fnSync((_: void, get) => {
       get.set(self.value, Option.none())
       get.refresh(self.min)
       get.refresh(self.max)
@@ -79,7 +79,7 @@ const filterRx = Rx.family((filter: Filter) => {
 })
 
 export const allFilters = {
-  priceRange: filterRx(
+  priceRange: filterAtom(
     new Filter({
       id: "@price",
       name: "Price",
@@ -87,7 +87,7 @@ export const allFilters = {
       valuePrefix: "$",
     }),
   ),
-  ratingRange: filterRx(
+  ratingRange: filterAtom(
     new Filter({
       id: "@rating",
       name: "Rating",
@@ -102,28 +102,28 @@ export const allFilters = {
   ),
 }
 
-const resetFilters = (get: Rx.Context) => {
+const resetFilters = (get: Atom.Context) => {
   for (const filter of Object.values(allFilters)) {
     get.set(filter.value, Option.none())
   }
 }
-const resetFilterUi = (get: Rx.Context) => {
+const resetFilterUi = (get: Atom.Context) => {
   for (const filter of Object.values(allFilters)) {
     get.refresh(filter.min)
     get.refresh(filter.max)
   }
 }
 
-export const resultsRx = runtimeRx
+export const resultsAtom = runtimeAtom
   .pull(
-    Effect.fnUntraced(function* (get: Rx.Context) {
+    Effect.fnUntraced(function* (get: Atom.Context) {
       const client = yield* BunningsClient
-      const query = get(queryTrimmedRx)
+      const query = get(queryTrimmedAtom)
       if (query === "") {
         return Stream.empty
       }
       yield* Effect.sleep(150)
-      if (query !== get.once(facetsRx).forQuery) {
+      if (query !== get.once(facetsAtom).forQuery) {
         resetFilters(get)
       }
       return Stream.paginateChunkEffect(0, (offset) =>
@@ -135,9 +135,9 @@ export const resultsRx = runtimeRx
             ratingRange: get(allFilters.ratingRange.value),
           }),
           (data) => {
-            if (offset === 0 && get.once(facetsRx).forQuery !== query) {
+            if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
               resetFilterUi(get)
-              get.set(facetsRx, { forQuery: query, facets: data.facets })
+              get.set(facetsAtom, { forQuery: query, facets: data.facets })
             }
             return [
               Chunk.unsafeFromArray(data.results),
@@ -150,13 +150,13 @@ export const resultsRx = runtimeRx
       )
     }, Stream.unwrap),
   )
-  .pipe(Rx.keepAlive)
+  .pipe(Atom.keepAlive)
 
-export const loadingRx = Rx.map(resultsRx, (_) => _.waiting)
+export const loadingAtom = Atom.map(resultsAtom, (_) => _.waiting)
 
-export const focusRx = Rx.writable(
+export const focusAtom = Atom.writable(
   () => 0,
   (ctx, _: void) => {
-    ctx.setSelf(ctx.get(focusRx) + 1)
+    ctx.setSelf(ctx.get(focusAtom) + 1)
   },
 )

@@ -1,5 +1,5 @@
-import { Result, useRxSet, useRxValue } from "@effect-rx/rx-react"
-import { focusRx, queryIsSetRx, resultsRx } from "./rx"
+import { Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { focusAtom, queryIsSetAtom, resultsAtom } from "./atoms"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
   Card,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { preloadRx } from "@/Product/rx"
+import { preloadAtom } from "@/Product/atoms"
 import { useCallback, useEffect, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
@@ -19,7 +19,7 @@ import { FavoriteButton } from "@/Favorites/Button"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
 import { ArrowUp } from "lucide-react"
-import { clearFavoritesRx, favoritesRx } from "@/Favorites/rx"
+import { clearFavoritesAtom, favoritesAtom } from "@/Favorites/atoms"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Filters } from "./Filters"
@@ -27,9 +27,9 @@ import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
 
 export function SearchResults() {
-  const queryIsSet = useRxValue(queryIsSetRx)
-  const results = useRxValue(resultsRx)
-  const pull = useRxSet(resultsRx)
+  const queryIsSet = useAtomValue(queryIsSetAtom)
+  const results = useAtomValue(resultsAtom)
+  const pull = useAtomSet(resultsAtom)
   useScrollBottom(() => {
     pull()
   })
@@ -74,7 +74,7 @@ export function SearchResults() {
 
 function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
   const navigate = useNavigate()
-  const preload = useRxSet(preloadRx)
+  const preload = useAtomSet(preloadAtom)
 
   const onPointerDown = useCallback(() => {
     preload(new BaseInfoKey({ id: product.id, result: product }))
@@ -163,11 +163,11 @@ function NoResults() {
 }
 
 function FavoritesList() {
-  const favorites = useRxValue(
-    favoritesRx,
+  const favorites = useAtomValue(
+    favoritesAtom,
     Result.getOrElse(() => []),
   )
-  const clear = useRxSet(clearFavoritesRx)
+  const clear = useAtomSet(clearFavoritesAtom)
 
   if (favorites.length === 0) {
     return null
@@ -203,7 +203,7 @@ function BackToTop() {
     }
   }, [])
 
-  const scrollToTop = useRxSet(focusRx)
+  const scrollToTop = useAtomSet(focusAtom)
 
   if (!visible) {
     return null

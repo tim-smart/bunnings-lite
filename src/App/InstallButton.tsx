@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Result, useRxValue } from "@effect-rx/rx-react"
-import { installPromptRx } from "./rx"
+import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { installPromptAtom } from "./atoms"
 import { Home } from "lucide-react"
 
 export function InstallButton() {
-  return Result.builder(useRxValue(installPromptRx))
+  return Result.builder(useAtomValue(installPromptAtom))
     .onSuccess((install) => (
       <Button onClick={() => install} className="cursor-pointer">
         <Home />

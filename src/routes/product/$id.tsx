@@ -1,7 +1,7 @@
 import { ProductListing } from "@/Product/Listing"
-import { productFullInfoRx, productRx } from "@/Product/rx"
+import { productFullInfoAtom, productAtom } from "@/Product/atoms"
 import { BaseInfoKey } from "@/RpcClient"
-import { Result, useRxValue } from "@effect-rx/rx-react"
+import { Result, useAtomValue } from "@effect-atom/atom-react"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Option from "effect/Option"
 
@@ -11,8 +11,8 @@ export const Route = createFileRoute("/product/$id")({
 
 export function ProductScreen() {
   const { id } = Route.useParams()
-  const product = useRxValue(productRx(new BaseInfoKey({ id })))
-  const fullInfo = Result.value(useRxValue(productFullInfoRx(id)))
+  const product = useAtomValue(productAtom(new BaseInfoKey({ id })))
+  const fullInfo = Result.value(useAtomValue(productFullInfoAtom(id)))
   if (product._tag !== "Success") {
     return null
   }
