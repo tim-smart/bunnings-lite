@@ -1,4 +1,4 @@
-import { BunningsClient } from "@/RpcClient"
+import { rpcAtom } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
 import { Atom } from "@effect-atom/atom-react"
 import * as Array from "effect/Array"
@@ -9,17 +9,18 @@ import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import { Facet } from "../../server/src/domain/Bunnings"
 
-const runtimeAtom = Atom.runtime(BunningsClient.Default).pipe(Atom.keepAlive)
-
 export const queryAtom = Atom.searchParam("query")
 
-export const queryIsSetAtom = Atom.map(queryAtom, (query) => query.trim() !== "")
+export const queryIsSetAtom = Atom.map(
+  queryAtom,
+  (query) => query.trim() !== "",
+)
 
-export const loginAtom = runtimeAtom.atom(
-  Effect.fnUntraced(function* (get: Atom.Context) {
-    const client = yield* BunningsClient
+export const loginAtom = Atom.make(
+  Effect.fnUntraced(function* (get) {
+    const client = yield* get.result(rpcAtom.client)
     const location = get(currentLocationAtom)
-    yield* client.login({ location })
+    yield* client("login", { location })
   }),
 )
 
@@ -114,43 +115,41 @@ const resetFilterUi = (get: Atom.Context) => {
   }
 }
 
-export const resultsAtom = runtimeAtom
-  .pull(
-    Effect.fnUntraced(function* (get: Atom.Context) {
-      const client = yield* BunningsClient
-      const query = get(queryTrimmedAtom)
-      if (query === "") {
-        return Stream.empty
-      }
-      yield* Effect.sleep(150)
-      if (query !== get.once(facetsAtom).forQuery) {
-        resetFilters(get)
-      }
-      return Stream.paginateChunkEffect(0, (offset) =>
-        Effect.map(
-          client.search({
-            query,
-            offset,
-            priceRange: get(allFilters.priceRange.value),
-            ratingRange: get(allFilters.ratingRange.value),
-          }),
-          (data) => {
-            if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
-              resetFilterUi(get)
-              get.set(facetsAtom, { forQuery: query, facets: data.facets })
-            }
-            return [
-              Chunk.unsafeFromArray(data.results),
-              Option.some(data.results.length + offset).pipe(
-                Option.filter((len) => len < data.totalCount),
-              ),
-            ] as const
-          },
-        ),
-      )
-    }, Stream.unwrap),
-  )
-  .pipe(Atom.keepAlive)
+export const resultsAtom = Atom.pull(
+  Effect.fnUntraced(function* (get) {
+    const client = yield* get.result(rpcAtom.client)
+    const query = get(queryTrimmedAtom)
+    if (query === "") {
+      return Stream.empty
+    }
+    yield* Effect.sleep(150)
+    if (query !== get.once(facetsAtom).forQuery) {
+      resetFilters(get)
+    }
+    return Stream.paginateChunkEffect(0, (offset) =>
+      Effect.map(
+        client("search", {
+          query,
+          offset,
+          priceRange: get(allFilters.priceRange.value),
+          ratingRange: get(allFilters.ratingRange.value),
+        }),
+        (data) => {
+          if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
+            resetFilterUi(get)
+            get.set(facetsAtom, { forQuery: query, facets: data.facets })
+          }
+          return [
+            Chunk.unsafeFromArray(data.results),
+            Option.some(data.results.length + offset).pipe(
+              Option.filter((len) => len < data.totalCount),
+            ),
+          ] as const
+        },
+      ),
+    )
+  }, Stream.unwrap),
+).pipe(Atom.keepAlive)
 
 export const loadingAtom = Atom.map(resultsAtom, (_) => _.waiting)
 

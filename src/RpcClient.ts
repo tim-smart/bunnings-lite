@@ -3,7 +3,6 @@ import * as RpcClient from "@effect/rpc/RpcClient"
 import * as RpcMiddleware from "@effect/rpc/RpcMiddleware"
 import * as RpcSerialization from "@effect/rpc/RpcSerialization"
 import * as Config from "effect/Config"
-import * as ConfigProvider from "effect/ConfigProvider"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
@@ -12,6 +11,7 @@ import * as Layer from "effect/Layer"
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
 import { AuthMiddleware } from "../server/src/domain/Auth"
 import { Rpcs } from "../server/src/domain/Rpc"
+import { Atom, AtomRpc } from "@effect-atom/atom-react"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -36,23 +36,20 @@ const SocketLayer = Layer.unwrapEffect(
   Effect.gen(function* () {
     const url = yield* Config.string("VITE_API_URL")
     return Socket.layerWebSocket(url)
-  }).pipe(Effect.withConfigProvider(ConfigProvider.fromJson(import.meta.env))),
+  }),
 )
 
-export class BunningsClient extends Effect.Service<BunningsClient>()(
-  "app/BunningsClient",
-  {
-    scoped: RpcClient.make(Rpcs),
-    dependencies: [
-      RpcClient.layerProtocolSocket({ retryTransientErrors: true }).pipe(
-        Layer.provide(RpcSerialization.layerJson),
-        Layer.provide(SocketLayer),
-        Layer.provide(Socket.layerWebSocketConstructorGlobal),
-      ),
-      AuthLayer,
-    ],
-  },
-) {}
+export const rpcAtom = AtomRpc.make(Rpcs, {
+  runtime: Atom.runtime(
+    RpcClient.layerProtocolSocket({ retryTransientErrors: true }).pipe(
+      Layer.provide(RpcSerialization.layerJson),
+      Layer.provide(SocketLayer),
+      Layer.provide(Socket.layerWebSocketConstructorGlobal),
+      Layer.merge(AuthLayer),
+      Layer.orDie,
+    ),
+  ),
+})
 
 export class BaseInfoKey extends Data.Class<{
   id: string
