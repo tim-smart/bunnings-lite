@@ -2,12 +2,14 @@ import { rpcAtom } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
 import { Atom } from "@effect-atom/atom-react"
 import * as Array from "effect/Array"
-import * as Chunk from "effect/Chunk"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
-import { Facet } from "../../server/src/domain/Bunnings"
+import { Facet, ProductBaseInfo } from "../../server/src/domain/Bunnings"
+import * as Mailbox from "effect/Mailbox"
+import { Unauthorized } from "server/src/domain/Auth"
+import * as RpcClientError from "@effect/rpc/RpcClientError"
 
 export const queryAtom = Atom.searchParam("query")
 
@@ -126,29 +128,32 @@ export const resultsAtom = Atom.pull(
     if (query !== get.once(facetsAtom).forQuery) {
       resetFilters(get)
     }
-    return Stream.paginateChunkEffect(0, (offset) =>
-      Effect.map(
-        client("search", {
+    const mailbox = yield* Mailbox.make<
+      ProductBaseInfo,
+      Unauthorized | RpcClientError.RpcClientError
+    >(32)
+    yield* Effect.gen(function* () {
+      let offset = 0
+      while (true) {
+        const data = yield* client("search", {
           query,
           offset,
           priceRange: get(allFilters.priceRange.value),
           ratingRange: get(allFilters.ratingRange.value),
-        }),
-        (data) => {
-          if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
-            resetFilterUi(get)
-            get.set(facetsAtom, { forQuery: query, facets: data.facets })
-          }
-          return [
-            Chunk.unsafeFromArray(data.results),
-            Option.some(data.results.length + offset).pipe(
-              Option.filter((len) => len < data.totalCount),
-            ),
-          ] as const
-        },
-      ),
-    )
-  }, Stream.unwrap),
+        })
+        if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
+          resetFilterUi(get)
+          get.set(facetsAtom, { forQuery: query, facets: data.facets })
+        }
+        yield* mailbox.offerAll(data.results)
+        offset += data.results.length
+        if (offset >= data.totalCount) {
+          break
+        }
+      }
+    }).pipe(Mailbox.into(mailbox), Effect.forkScoped)
+    return Mailbox.toStream(mailbox)
+  }, Stream.unwrapScoped),
 ).pipe(Atom.keepAlive)
 
 export const loadingAtom = Atom.map(resultsAtom, (_) => _.waiting)
