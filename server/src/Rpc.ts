@@ -2,13 +2,13 @@ import { RpcServer, RpcSerialization } from "@effect/rpc"
 import { Rpcs } from "./domain/Rpc"
 import { Effect, Layer, Option, Stream } from "effect"
 import { AuthLayer } from "./Auth"
-import { HttpMiddleware, HttpRouter, HttpServer } from "@effect/platform"
 import { NodeHttpServer } from "@effect/platform-node"
 import { createServer } from "node:http"
 import { Bunnings } from "./Bunnings"
 import { Bazaar } from "./Bazaar"
 import { CurrentSession, FulfillmentInfoWithLocation } from "./domain/Bunnings"
 import { Sessions } from "./Sessions"
+import * as HttpLayerRouter from "@effect/platform/HttpLayerRouter"
 
 const Handlers = Rpcs.toLayer(
   Effect.gen(function* () {
@@ -47,19 +47,16 @@ const Handlers = Rpcs.toLayer(
   }),
 ).pipe(Layer.provide([Bunnings.Default, Bazaar.Default, Sessions.Default]))
 
-const RpcLayer = RpcServer.layer(Rpcs).pipe(
+const RpcRoute = RpcServer.layerHttpRouter({
+  group: Rpcs,
+  path: "/rpc",
+}).pipe(
   Layer.provide(Handlers),
   Layer.provide(AuthLayer),
-  Layer.provide(RpcServer.layerProtocolWebsocket({ path: "/rpc" })),
   Layer.provide(RpcSerialization.layerJson),
+  Layer.provide(HttpLayerRouter.cors()),
 )
 
-export const HttpLayer = HttpRouter.Default.unwrap((router) =>
-  HttpRouter.use(router, HttpMiddleware.cors()).pipe(
-    HttpServer.serve(HttpMiddleware.logger),
-  ),
-).pipe(
-  HttpServer.withLogAddress,
-  Layer.provide(RpcLayer),
+export const HttpLayer = HttpLayerRouter.serve(RpcRoute).pipe(
   Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
 )
