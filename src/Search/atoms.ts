@@ -117,12 +117,14 @@ const resetFilterUi = (get: Atom.Context) => {
   }
 }
 
+export class EmptyQueryError extends Data.TaggedError("EmptyQueryError") {}
+
 export const resultsAtom = Atom.pull(
   Effect.fnUntraced(function* (get) {
     const client = yield* get.result(rpcAtom.client)
     const query = get(queryTrimmedAtom)
     if (query === "") {
-      return Stream.empty
+      return Stream.fail(new EmptyQueryError())
     }
     yield* Effect.sleep(150)
     if (query !== get.once(facetsAtom).forQuery) {
@@ -130,7 +132,7 @@ export const resultsAtom = Atom.pull(
     }
     const mailbox = yield* Mailbox.make<
       ProductBaseInfo,
-      Unauthorized | RpcClientError.RpcClientError
+      Unauthorized | RpcClientError.RpcClientError | EmptyQueryError
     >(32)
     yield* Effect.gen(function* () {
       let offset = 0

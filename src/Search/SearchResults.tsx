@@ -43,7 +43,7 @@ export function SearchResults() {
   })
 
   if (!queryIsSet) {
-    return <NoResults />
+    return <StoreAndFavourites />
   }
 
   return (
@@ -54,7 +54,8 @@ export function SearchResults() {
       {Result.builder(results)
         .onSuccess(({ items }) => <ResultsGrid results={items} />)
         .onInitial(() => <ResultsSkeleton />)
-        .onErrorTag("NoSuchElementException", () => <ResultsSkeleton />)
+        .onErrorTag("EmptyQueryError", () => <ResultsSkeleton />)
+        .onErrorTag("NoSuchElementException", () => <NoResults />)
         .onFailure((cause) => (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="text-red-500">
@@ -235,6 +236,16 @@ function SkeletonCard() {
 }
 
 function NoResults() {
+  const focus = useAtomSet(focusAtom)
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div className="text-gray-500">No results found.</div>
+      <Button onClick={() => focus()}>Try another search</Button>
+    </div>
+  )
+}
+
+function StoreAndFavourites() {
   return (
     <div className="flex flex-col items-start py-10 gap-10">
       <div className="flex flex-col max-w-sm w-full">
