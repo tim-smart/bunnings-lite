@@ -8,7 +8,12 @@ import {
   useAtomSubscribe,
   Atom,
 } from "@effect-atom/atom-react"
-import { focusAtom, loadingAtom, queryIsSetAtom, queryAtom } from "@/Search/atoms"
+import {
+  focusAtom,
+  loadingAtom,
+  queryIsSetAtom,
+  queryAtom,
+} from "@/Search/atoms"
 import React, { useCallback, useState } from "react"
 import { cn } from "@/lib/utils"
 import { locationAtom } from "@/Router"
@@ -94,9 +99,9 @@ function SearchInput() {
   useAtomSubscribe(focusAtom, (i) => {
     if (!inputRef.current || i === 0) return
     inputRef.current.focus({ preventScroll: true })
-    inputRef.current.scrollIntoView({
+    window.scroll({
+      top: 0,
       behavior: "smooth",
-      block: "center",
     })
   })
 
