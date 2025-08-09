@@ -1,4 +1,10 @@
-import { Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import {
+  Atom,
+  RegistryContext,
+  Result,
+  useAtomSet,
+  useAtomValue,
+} from "@effect-atom/atom-react"
 import { focusAtom, queryIsSetAtom, resultsAtom } from "./atoms"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import {
@@ -8,9 +14,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link, useElementScrollRestoration } from "@tanstack/react-router"
 import { preloadAtom } from "@/Product/atoms"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
@@ -25,6 +31,8 @@ import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
 import { Filters } from "./Filters"
 import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
+import { router } from "@/Router"
+import { useWindowVirtualizer } from "@tanstack/react-virtual"
 
 export function SearchResults() {
   const queryIsSet = useAtomValue(queryIsSetAtom)
@@ -43,45 +51,121 @@ export function SearchResults() {
       <div className="h-4" />
       {Result.isSuccess(results) && <Filters />}
       <div className="h-4" />
-      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {Result.builder(results)
-          .onSuccess(({ items }) =>
-            items.map((result) => (
-              <ResultCard key={result.id} product={result} />
-            )),
-          )
-          .onInitial(() => Array.makeBy(9, (i) => <SkeletonCard key={i} />))
-          .onErrorTag("NoSuchElementException", () =>
-            Array.makeBy(9, (i) => <SkeletonCard key={i} />),
-          )
-          .onFailure((cause) => (
-            <div>
-              <div className="text-red-500">
-                An error occurred while fetching results.
-              </div>
-              {Cause.pretty(cause)}
+      {Result.builder(results)
+        .onSuccess(({ items }) => <ResultsGrid results={items} />)
+        .onInitial(() => <ResultsSkeleton />)
+        .onErrorTag("NoSuchElementException", () => <ResultsSkeleton />)
+        .onFailure((cause) => (
+          <div className="flex flex-col items-center justify-center h-full gap-4">
+            <div className="text-red-500">
+              An error occurred while fetching results.
             </div>
-          ))
-          .render()}
-        <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
-          <BackToTop />
-          <div className="h-6" />
-        </div>
+            {Cause.pretty(cause)}
+          </div>
+        ))
+        .render()}
+      <div className="fixed bottom-0 right-0 p-6 pb-safe flex flex-col transform-gpu">
+        <BackToTop />
+        <div className="h-6" />
       </div>
     </>
   )
 }
 
+function ResultsGrid({
+  results,
+}: {
+  readonly results: Array<ProductBaseInfo>
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const columns = useAtomValue(columnsAtom)
+  const scrollRestoration = useElementScrollRestoration({
+    getElement: () => window,
+  })
+
+  const virtualizer = useWindowVirtualizer({
+    initialOffset: scrollRestoration?.scrollY,
+    count: Math.ceil(results.length / columns.length),
+    estimateSize: () => 350,
+    overscan: 3,
+    scrollMargin: ref.current?.offsetTop ?? 0,
+  })
+
+  return (
+    <div ref={ref} className="relative">
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: "100%",
+          position: "relative",
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => (
+          <div
+            className="flex gap-2 pb-2"
+            key={item.key}
+            ref={virtualizer.measureElement}
+            data-index={item.index}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              transform: `translateY(${
+                item.start - virtualizer.options.scrollMargin
+              }px)`,
+            }}
+          >
+            {columns.map((col) => {
+              const index = item.index * columns.length + col
+              const product = results[index]
+              if (!product) return <div key={index} className="flex-1" />
+              return <ResultCard key={index} product={product} />
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const getColumns = (width: number): Array<number> => {
+  if (width >= 1024) return Array.range(0, 3)
+  if (width >= 768) return Array.range(0, 2)
+  return Array.range(0, 1)
+}
+
+const columnsAtom = Atom.make((get) => {
+  const onResize = () => {
+    get.setSelf(getColumns(window.innerWidth))
+  }
+  window.addEventListener("resize", onResize)
+  get.addFinalizer(() => window.removeEventListener("resize", onResize))
+  return getColumns(window.innerWidth)
+})
+
+function ResultsSkeleton() {
+  return (
+    <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {Array.makeBy(9, (i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  )
+}
+
 function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
-  const navigate = useNavigate()
-  const preload = useAtomSet(preloadAtom)
+  const regisry = useContext(RegistryContext)
 
   const onPointerDown = useCallback(() => {
-    preload(new BaseInfoKey({ id: product.id, result: product }))
+    regisry.set(
+      preloadAtom,
+      new BaseInfoKey({ id: product.id, result: product }),
+    )
   }, [product])
 
   const onPointerUp = useCallback(() => {
-    navigate({
+    router.navigate({
       to: `/product/$id`,
       params: { id: product.id },
       search: (current) => current,
@@ -90,6 +174,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
 
   return (
     <Link
+      className="flex-1"
       to={`/product/$id`}
       params={{ id: product.id }}
       search={(current) => current}
