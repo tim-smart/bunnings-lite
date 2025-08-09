@@ -72,6 +72,8 @@ export function SearchResults() {
   )
 }
 
+let lastRowHeight = 350
+
 function ResultsGrid({
   results,
 }: {
@@ -86,7 +88,7 @@ function ResultsGrid({
   const virtualizer = useWindowVirtualizer({
     initialOffset: scrollRestoration?.scrollY,
     count: Math.ceil(results.length / columns.length),
-    estimateSize: () => 350,
+    estimateSize: () => lastRowHeight,
     overscan: 3,
     scrollMargin: ref.current?.offsetTop ?? 0,
   })
@@ -104,7 +106,11 @@ function ResultsGrid({
           <div
             className="flex gap-2 pb-2"
             key={item.key}
-            ref={virtualizer.measureElement}
+            ref={(el) => {
+              if (!el) return
+              lastRowHeight = el.scrollHeight
+              return virtualizer.measureElement(el)
+            }}
             data-index={item.index}
             style={{
               position: "absolute",
