@@ -193,7 +193,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
               Option.filter(Arr.isNonEmptyReadonlyArray),
             ),
           ),
-          Effect.catchTag("ParseError", () => Option.none()),
+          Effect.catchTag("ParseError", () => Effect.succeedNone),
         )
     })
 
