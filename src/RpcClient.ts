@@ -11,7 +11,7 @@ import * as Layer from "effect/Layer"
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
 import { AuthMiddleware } from "../server/src/domain/Auth"
 import { Rpcs } from "../server/src/domain/Rpc"
-import { Atom, AtomRpc } from "@effect-atom/atom-react"
+import { AtomRpc } from "@effect-atom/atom-react"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
@@ -39,17 +39,21 @@ const SocketLayer = Layer.unwrapEffect(
   }),
 )
 
-export const rpcAtom = AtomRpc.make(Rpcs, {
-  runtime: Atom.runtime(
-    RpcClient.layerProtocolSocket({ retryTransientErrors: true }).pipe(
+export class BunningsClient extends AtomRpc.Tag<BunningsClient>()(
+  "BunningsClient",
+  {
+    group: Rpcs,
+    protocol: RpcClient.layerProtocolSocket({
+      retryTransientErrors: true,
+    }).pipe(
       Layer.provide(RpcSerialization.layerJson),
       Layer.provide(SocketLayer),
       Layer.provide(Socket.layerWebSocketConstructorGlobal),
       Layer.merge(AuthLayer),
       Layer.orDie,
     ),
-  ),
-})
+  },
+) {}
 
 export class BaseInfoKey extends Data.Class<{
   id: string

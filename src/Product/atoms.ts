@@ -1,5 +1,5 @@
 import { Result, Atom } from "@effect-atom/atom-react"
-import { BaseInfoKey, rpcAtom } from "@/RpcClient"
+import { BaseInfoKey, BunningsClient } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
 import { ProductBaseInfo } from "server/src/domain/Bunnings"
 import * as Effect from "effect/Effect"
@@ -23,10 +23,10 @@ export const productAtom = Atom.family((key: BaseInfoKey) =>
 )
 
 export const productFullInfoAtom = (id: string) =>
-  rpcAtom.query("productInfo", { id }, { timeToLive: "10 minutes" })
+  BunningsClient.query("productInfo", { id }, { timeToLive: "10 minutes" })
 
 export const productReviewStatsAtom = Atom.family((id: string) =>
-  rpcAtom.query("productReviewStats", { id }).pipe(
+  BunningsClient.query("productReviewStats", { id }).pipe(
     Atom.map((_) => Option.flatten(Result.value(_))),
     Atom.setIdleTTL("10 minutes"),
   ),
@@ -51,14 +51,16 @@ export const productRatingAtom = Atom.family((product: ProductBaseInfo) =>
 )
 
 export const productReviewsAtom = (id: string) =>
-  rpcAtom.query("productReviews", { id }, { timeToLive: "5 minutes" })
+  BunningsClient.query("productReviews", { id }, { timeToLive: "5 minutes" })
 
 export const productFulfillmentAtom = Atom.family((id: string) =>
-  Atom.make(
-    Effect.fnUntraced(function* (get) {
-      get(currentLocationAtom)
-      const products = yield* get.result(rpcAtom.client)
-      return yield* products("fulfillment", { id })
-    }),
-  ).pipe(Atom.setIdleTTL("15 minutes")),
+  BunningsClient.runtime
+    .atom(
+      Effect.fnUntraced(function* (get) {
+        get(currentLocationAtom)
+        const products = yield* BunningsClient
+        return yield* products("fulfillment", { id })
+      }),
+    )
+    .pipe(Atom.setIdleTTL("15 minutes")),
 )

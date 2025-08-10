@@ -1,4 +1,4 @@
-import { rpcAtom } from "@/RpcClient"
+import { BunningsClient } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
 import { Atom } from "@effect-atom/atom-react"
 import * as Array from "effect/Array"
@@ -18,9 +18,9 @@ export const queryIsSetAtom = Atom.map(
   (query) => query.trim() !== "",
 )
 
-export const loginAtom = Atom.make(
+export const loginAtom = BunningsClient.runtime.atom(
   Effect.fnUntraced(function* (get) {
-    const client = yield* get.result(rpcAtom.client)
+    const client = yield* BunningsClient
     const location = get(currentLocationAtom)
     yield* client("login", { location })
   }),
@@ -119,44 +119,46 @@ const resetFilterUi = (get: Atom.Context) => {
 
 export class EmptyQueryError extends Data.TaggedError("EmptyQueryError") {}
 
-export const resultsAtom = Atom.pull(
-  Effect.fnUntraced(function* (get) {
-    const client = yield* get.result(rpcAtom.client)
-    const query = get(queryTrimmedAtom)
-    if (query === "") {
-      return Stream.fail(new EmptyQueryError())
-    }
-    yield* Effect.sleep(150)
-    if (query !== get.once(facetsAtom).forQuery) {
-      resetFilters(get)
-    }
-    const mailbox = yield* Mailbox.make<
-      ProductBaseInfo,
-      Unauthorized | RpcClientError.RpcClientError | EmptyQueryError
-    >(32)
-    yield* Effect.gen(function* () {
-      let offset = 0
-      while (true) {
-        const data = yield* client("search", {
-          query,
-          offset,
-          priceRange: get(allFilters.priceRange.value),
-          ratingRange: get(allFilters.ratingRange.value),
-        })
-        if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
-          resetFilterUi(get)
-          get.set(facetsAtom, { forQuery: query, facets: data.facets })
-        }
-        yield* mailbox.offerAll(data.results)
-        offset += data.results.length
-        if (offset >= data.totalCount) {
-          break
-        }
+export const resultsAtom = BunningsClient.runtime
+  .pull(
+    Effect.fnUntraced(function* (get) {
+      const client = yield* BunningsClient
+      const query = get(queryTrimmedAtom)
+      if (query === "") {
+        return Stream.fail(new EmptyQueryError())
       }
-    }).pipe(Mailbox.into(mailbox), Effect.forkScoped)
-    return Mailbox.toStream(mailbox)
-  }, Stream.unwrapScoped),
-).pipe(Atom.keepAlive)
+      yield* Effect.sleep(150)
+      if (query !== get.once(facetsAtom).forQuery) {
+        resetFilters(get)
+      }
+      const mailbox = yield* Mailbox.make<
+        ProductBaseInfo,
+        Unauthorized | RpcClientError.RpcClientError | EmptyQueryError
+      >(32)
+      yield* Effect.gen(function* () {
+        let offset = 0
+        while (true) {
+          const data = yield* client("search", {
+            query,
+            offset,
+            priceRange: get(allFilters.priceRange.value),
+            ratingRange: get(allFilters.ratingRange.value),
+          })
+          if (offset === 0 && get.once(facetsAtom).forQuery !== query) {
+            resetFilterUi(get)
+            get.set(facetsAtom, { forQuery: query, facets: data.facets })
+          }
+          yield* mailbox.offerAll(data.results)
+          offset += data.results.length
+          if (offset >= data.totalCount) {
+            break
+          }
+        }
+      }).pipe(Mailbox.into(mailbox), Effect.forkScoped)
+      return Mailbox.toStream(mailbox)
+    }, Stream.unwrapScoped),
+  )
+  .pipe(Atom.keepAlive)
 
 export const loadingAtom = Atom.map(resultsAtom, (_) => _.waiting)
 
