@@ -12,19 +12,19 @@
   "license": "MIT",
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
-    "@effect/experimental": "^0.54.6",
-    "@effect/language-service": "^0.40.0",
-    "@effect/opentelemetry": "^0.56.6",
-    "@effect/platform": "^0.90.9",
-    "@effect/platform-node": "^0.96.1",
-    "@effect/rpc": "^0.69.2",
-    "effect": "^3.17.13",
-    "prettier": "^3.6.2",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "@effect/experimental": "^0.58.0",
+    "@effect/language-service": "^0.72.0",
+    "@effect/opentelemetry": "^0.61.0",
+    "@effect/platform": "^0.94.2",
+    "@effect/platform-node": "^0.104.1",
+    "@effect/rpc": "^0.73.0",
+    "effect": "^3.19.15",
+    "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "playwright": "^1.55.0"
+    "playwright": "^1.58.1"
   }
 }

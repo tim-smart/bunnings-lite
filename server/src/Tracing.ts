@@ -1,6 +1,7 @@
 import { NodeHttpClient } from "@effect/platform-node"
 import * as OtlpTracer from "@effect/opentelemetry/OtlpTracer"
 import { Config, Effect, Layer, Option, Redacted } from "effect"
+import * as OtlpSerialization from "@effect/opentelemetry/OtlpSerialization"
 
 export const TracerLayer = Layer.unwrapEffect(
   Effect.gen(function* () {
@@ -19,6 +20,8 @@ export const TracerLayer = Layer.unwrapEffect(
       resource: {
         serviceName: "bunnings-api",
       },
-    }).pipe(Layer.provide(NodeHttpClient.layerUndici))
+    }).pipe(
+      Layer.provide([NodeHttpClient.layerUndici, OtlpSerialization.layerJson]),
+    )
   }),
 )

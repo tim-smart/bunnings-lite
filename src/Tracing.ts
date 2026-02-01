@@ -1,3 +1,4 @@
+import * as OtlpSerialization from "@effect/opentelemetry/OtlpSerialization"
 import * as OtlpTracer from "@effect/opentelemetry/OtlpTracer"
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient"
 import * as Config from "effect/Config"
@@ -23,6 +24,6 @@ export const TracerLayer = Layer.unwrapEffect(
       resource: {
         serviceName: "bunnings-client",
       },
-    }).pipe(Layer.provide(FetchHttpClient.layer))
+    }).pipe(Layer.provide([OtlpSerialization.layerJson, FetchHttpClient.layer]))
   }),
 )
