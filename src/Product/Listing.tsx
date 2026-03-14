@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Result, Atom, useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ArrowLeft, ArrowRight, Share } from "lucide-react"
 import { ProductReview } from "server/src/domain/Bazaar"
 import Markdown from "react-markdown"
 import {
@@ -91,6 +91,18 @@ export function ProductListing({
                 Open in Bunnings
                 <ArrowRight />
               </a>
+            </Button>
+            <Button
+              onClick={() => {
+                if (!navigator.share) return
+                navigator.share({
+                  title: product.title,
+                  url: product.url,
+                })
+              }}
+            >
+              <Share />
+              Share
             </Button>
           </div>
 

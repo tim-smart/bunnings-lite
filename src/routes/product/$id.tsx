@@ -14,7 +14,11 @@ export function ProductScreen() {
   const product = useAtomValue(productAtom(new BaseInfoKey({ id })))
   const fullInfo = Result.value(useAtomValue(productFullInfoAtom(id)))
   if (product._tag !== "Success") {
-    return null
+    return (
+      <div className="flex h-full items-center justify-center text-2xl text-gray-500 pt-20">
+        Loading product...
+      </div>
+    )
   }
   return (
     <ProductListing

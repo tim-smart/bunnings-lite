@@ -24,7 +24,7 @@ export function FavoriteButton({
             isFavorite ? "fill-white" : "fill-none",
           )}
         />
-        {isFavorite ? "Remove from favorites" : "Add to favorites"}
+        {isFavorite ? "Unfavorite" : "Favorite"}
       </Button>
     )
   }
