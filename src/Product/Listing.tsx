@@ -86,12 +86,6 @@ export function ProductListing({
 
           <div className="flex gap-2 items-center flex-wrap">
             <FavoriteButton product={product} />
-            <Button asChild>
-              <a href={product.url} target="_blank" rel="noopener noreferrer">
-                Open in Bunnings
-                <ArrowRight />
-              </a>
-            </Button>
             <Button
               onClick={() => {
                 if (!navigator.share) return
@@ -104,6 +98,12 @@ export function ProductListing({
             >
               <Share />
               Share
+            </Button>
+            <Button asChild>
+              <a href={product.url} target="_blank" rel="noopener noreferrer">
+                Open in Bunnings
+                <ArrowRight />
+              </a>
             </Button>
           </div>
 
