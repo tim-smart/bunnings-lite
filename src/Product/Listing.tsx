@@ -95,9 +95,10 @@ export function ProductListing({
             <Button
               onClick={() => {
                 if (!navigator.share) return
+                const url = location.origin + "/product/" + product.id
                 navigator.share({
                   title: product.title,
-                  url: product.url,
+                  url,
                 })
               }}
             >
