@@ -5,9 +5,9 @@ import {
 } from "effect/unstable/http"
 import { Array, Effect, Option, Stream } from "effect"
 import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar.ts"
-import { NodeHttpClient } from "@effect/platform-node"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"
+import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient"
 
 export class Bazaar extends Context.Service<Bazaar>()("api/Bazaar", {
   make: Effect.gen(function* () {
@@ -92,6 +92,6 @@ export class Bazaar extends Context.Service<Bazaar>()("api/Bazaar", {
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(
-    Layer.provide(NodeHttpClient.layerUndici),
+    Layer.provide(FetchHttpClient.layer),
   )
 }

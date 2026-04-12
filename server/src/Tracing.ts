@@ -1,5 +1,5 @@
-import { NodeHttpClient } from "@effect/platform-node"
 import { Config, Effect, Layer, Option, Redacted } from "effect"
+import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient"
 import { OtlpSerialization, OtlpTracer } from "effect/unstable/observability"
 
 export const TracerLayer = Layer.unwrap(
@@ -19,8 +19,6 @@ export const TracerLayer = Layer.unwrap(
       resource: {
         serviceName: "bunnings-api",
       },
-    }).pipe(
-      Layer.provide([NodeHttpClient.layerUndici, OtlpSerialization.layerJson]),
-    )
+    }).pipe(Layer.provide([FetchHttpClient.layer, OtlpSerialization.layerJson]))
   }),
 )
