@@ -30,7 +30,9 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
     const makeSession = Effect.fn("Bunnings.makeSession")(function* (
       id: string,
     ) {
-      yield* Page.with((page) => page.goto("https://www.bunnings.co.nz/"))
+      yield* Page.with((page) =>
+        page.goto("https://www.bunnings.co.nz/", { waitUntil: "commit" }),
+      )
 
       let tokenCookie: { value: string } | undefined = undefined
       while (!tokenCookie) {
