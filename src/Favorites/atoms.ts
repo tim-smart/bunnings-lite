@@ -35,6 +35,7 @@ export const toggleFavoriteAtom = EventLogClient.runtime.fn(
       yield* client("FavoriteAdd", product)
     }
   }),
+  { concurrent: true },
 )
 
 export const useFavoritesToggle = () => {
