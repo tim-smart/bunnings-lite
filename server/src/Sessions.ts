@@ -1,4 +1,4 @@
-import { Cache, DateTime, Effect, Exit } from "effect"
+import { DateTime, Effect, Exit } from "effect"
 import { Bunnings } from "./Bunnings.ts"
 import { Session, SessionLocation } from "./domain/Bunnings.ts"
 import * as Context from "effect/Context"
@@ -13,23 +13,24 @@ export class Sessions extends Context.Service<Sessions>()("api/Sessions", {
     const bunnings = yield* Bunnings
     const locations = new Map<string, SessionLocation>()
 
+    const ttl = (exit: Exit.Exit<Session>) => {
+      if (Exit.isFailure(exit)) {
+        return Duration.zero
+      }
+      return DateTime.nowUnsafe().pipe(
+        DateTime.distance(
+          DateTime.subtract(exit.value.token.expires, { hours: 1 }),
+        ),
+      )
+    }
+
     const sessions = yield* PersistedCache.make(
       ({ sessionId }: SessionLookup) =>
         bunnings.makeSession(sessionId).pipe(Effect.orDie),
       {
         storeId: "sessions",
-        inMemoryTTL: (exit) =>
-          exit._tag === "Failure" ? Duration.zero : Duration.days(1),
-        timeToLive(exit) {
-          if (Exit.isFailure(exit)) {
-            return Duration.zero
-          }
-          return DateTime.nowUnsafe().pipe(
-            DateTime.distance(
-              DateTime.subtract(exit.value.token.expires, { hours: 1 }),
-            ),
-          )
-        },
+        inMemoryTTL: ttl,
+        timeToLive: ttl,
       },
     )
 
