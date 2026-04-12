@@ -1,9 +1,9 @@
-import { ProductBaseInfo } from "server/src/domain/Bunnings"
+import { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import { isFavoriteAtom, useFavoritesToggle } from "./atoms"
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useAtomValue } from "@effect-atom/atom-react"
+import { useAtomValue } from "@effect/atom-react"
 
 export function FavoriteButton({
   product,

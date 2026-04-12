@@ -1,12 +1,6 @@
-import {
-  Atom,
-  RegistryContext,
-  Result,
-  useAtomSet,
-  useAtomValue,
-} from "@effect-atom/atom-react"
+import { RegistryContext, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { focusAtom, queryIsSetAtom, resultsAtom } from "./atoms"
-import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
+import { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import {
   Card,
   CardDescription,
@@ -33,6 +27,8 @@ import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
 import { router } from "@/Router"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
+import * as Atom from "effect/unstable/reactivity/Atom"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
 
 export function SearchResults() {
   const queryIsSet = useAtomValue(queryIsSetAtom)
@@ -49,9 +45,9 @@ export function SearchResults() {
   return (
     <>
       <div className="h-4" />
-      {Result.isSuccess(results) && <Filters />}
+      {AsyncResult.isSuccess(results) && <Filters />}
       <div className="h-4" />
-      {Result.builder(results)
+      {AsyncResult.builder(results)
         .onSuccess(({ items }) => <ResultsGrid results={items} />)
         .onInitial(() => <ResultsSkeleton />)
         .onErrorTag("EmptyQueryError", () => <ResultsSkeleton />)
@@ -267,7 +263,7 @@ function StoreAndFavourites() {
 function FavoritesList() {
   const favorites = useAtomValue(
     favoritesAtom,
-    Result.getOrElse(() => []),
+    AsyncResult.getOrElse(() => []),
   )
   const clear = useAtomSet(clearFavoritesAtom)
 

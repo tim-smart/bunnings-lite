@@ -1,9 +1,4 @@
-import {
-  RegistryContext,
-  Result,
-  useAtomSet,
-  useAtomValue,
-} from "@effect-atom/atom-react"
+import { RegistryContext, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { currentLocationAtom, storesAtom } from "./atoms"
 import { MapPin } from "lucide-react"
 import {
@@ -19,7 +14,8 @@ import { useContext, useState } from "react"
 import { SessionLocation } from "../../server/src/domain/Bunnings"
 import { Skeleton } from "@/components/ui/skeleton"
 import * as Option from "effect/Option"
-import * as Chunk from "effect/Chunk"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as Array from "effect/Array"
 
 export function StoreSelector() {
   const registry = useContext(RegistryContext)
@@ -37,8 +33,8 @@ export function StoreSelector() {
         })}
         onValueChange={(value) => {
           registry.get(storesAtom).pipe(
-            Result.value,
-            Option.flatMap(Chunk.findFirst((store) => store.name === value)),
+            AsyncResult.value,
+            Option.flatMap(Array.findFirst((store) => store.name === value)),
             Option.map((store) => {
               setLocation(Option.some(SessionLocation.fromStore(store)))
             }),
@@ -81,10 +77,10 @@ function StoreItems({
 }: {
   readonly currentLocation: Option.Option<SessionLocation>
 }) {
-  return Result.builder(useAtomValue(storesAtom))
+  return AsyncResult.builder(useAtomValue(storesAtom))
     .onSuccess((stores) => (
       <>
-        {Array.from(stores, (store) => (
+        {Array.Array.from(stores, (store) => (
           <SelectItem
             key={store.name}
             value={store.name}
@@ -108,7 +104,7 @@ function StoreItems({
             </SelectItem>
           ),
         })}
-        {Array.from({ length: 5 }, (_, i) => (
+        {Array.makeBy(5, (i) => (
           <Skeleton key={i} className="h-8 flex-1 m-2" />
         ))}
       </>

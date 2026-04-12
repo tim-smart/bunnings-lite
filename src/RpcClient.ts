@@ -1,45 +1,45 @@
-import * as Socket from "@effect/platform/Socket"
-import * as RpcClient from "@effect/rpc/RpcClient"
-import * as RpcMiddleware from "@effect/rpc/RpcMiddleware"
-import * as RpcSerialization from "@effect/rpc/RpcSerialization"
+import * as Socket from "effect/unstable/socket/Socket"
+import * as RpcClient from "effect/unstable/rpc/RpcClient"
+import * as RpcMiddleware from "effect/unstable/rpc/RpcMiddleware"
+import * as RpcSerialization from "effect/unstable/rpc/RpcSerialization"
 import * as Config from "effect/Config"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
 import * as Hash from "effect/Hash"
 import * as Layer from "effect/Layer"
-import { ProductBaseInfo } from "server/src/domain/Bunnings"
+import { ProductBaseInfo } from "../server/src/domain/Bunnings.ts"
 import { AuthMiddleware } from "../server/src/domain/Auth"
-import { Rpcs } from "../server/src/domain/Rpc"
-import { AtomRpc } from "@effect-atom/atom-react"
+import { Rpcs } from "../server/src/domain/Rpc.ts"
+import * as AtomRpc from "effect/unstable/reactivity/AtomRpc"
+import * as BrowserSocket from "@effect/platform-browser/BrowserSocket"
 
 const AuthLayer = RpcMiddleware.layerClient(
   AuthMiddleware,
-  Effect.gen(function* () {
+  Effect.sync(() => {
     const sessionId =
       localStorage.getItem("sessionId") ??
       String(Math.round(Math.random() * 10000000000))
     localStorage.setItem("sessionId", sessionId)
-    return Effect.fnUntraced(function* ({ request }) {
-      return {
+    return ({ request, next }) =>
+      next({
         ...request,
         headers: {
           ...request.headers,
           "session-id": sessionId,
         },
-      }
-    })
+      })
   }),
 )
 
-const SocketLayer = Layer.unwrapEffect(
+const SocketLayer = Layer.unwrap(
   Effect.gen(function* () {
     const url = yield* Config.string("VITE_API_URL")
-    return Socket.layerWebSocket(url)
+    return BrowserSocket.layerWebSocket(url)
   }),
 )
 
-export class BunningsClient extends AtomRpc.Tag<BunningsClient>()(
+export class BunningsClient extends AtomRpc.Service<BunningsClient>()(
   "BunningsClient",
   {
     group: Rpcs,

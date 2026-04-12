@@ -6,8 +6,7 @@ import {
   useAtom,
   useAtomSet,
   useAtomSubscribe,
-  Atom,
-} from "@effect-atom/atom-react"
+} from "@effect/atom-react"
 import {
   focusAtom,
   loadingAtom,
@@ -29,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { identityStringAtom, remoteUrlAtom } from "@/EventLog"
 import * as Option from "effect/Option"
+import * as Atom from "effect/unstable/reactivity/Atom"
 
 export const Route = createRootRoute({
   component: () => (

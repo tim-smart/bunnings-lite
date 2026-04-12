@@ -1,20 +1,22 @@
-import { Result, Atom, useAtomSet } from "@effect-atom/atom-react"
+import { useAtomSet } from "@effect/atom-react"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import { useCallback } from "react"
 import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import { FavoritesRepo } from "@/Favorites"
 import { EventLogClient } from "@/EventLog"
+import * as Atom from "effect/unstable/reactivity/Atom"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
 
 export const favoritesAtom = FavoritesRepo.runtime.atom(
-  FavoritesRepo.use((_) => _.allReactive).pipe(Stream.unwrap),
+  FavoritesRepo.useSync((_) => _.allReactive).pipe(Stream.unwrap),
 )
 
 export const isFavoriteAtom = Atom.family((id: string) =>
   Atom.map(favoritesAtom, (result) =>
     result.pipe(
-      Result.map((favorites) => favorites.some((p) => p.id === id)),
-      Result.getOrElse(() => false),
+      AsyncResult.map((favorites) => favorites.some((p) => p.id === id)),
+      AsyncResult.getOrElse(() => false),
     ),
   ),
 )

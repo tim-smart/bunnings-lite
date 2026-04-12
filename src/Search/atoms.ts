@@ -1,17 +1,20 @@
 import { BunningsClient } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
-import { Atom } from "@effect-atom/atom-react"
 import * as Array from "effect/Array"
 import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import { Facet, ProductBaseInfo } from "../../server/src/domain/Bunnings"
-import * as Mailbox from "effect/Mailbox"
-import { Unauthorized } from "server/src/domain/Auth"
-import * as RpcClientError from "@effect/rpc/RpcClientError"
+import { Unauthorized } from "../../server/src/domain/Auth.ts"
+import * as Atom from "effect/unstable/reactivity/Atom"
+import * as Queue from "effect/Queue"
+import * as RpcClientError from "effect/unstable/rpc/RpcClientError"
+import * as Cause from "effect/Cause"
 
-export const queryAtom = Atom.searchParam("query")
+export const queryAtom = Atom.searchParam(
+  "query",
+) as any as Atom.Writable<string>
 
 export const queryIsSetAtom = Atom.map(
   queryAtom,
@@ -56,7 +59,7 @@ const filterAtom = Atom.family((filter: Filter) => {
       : Atom.make((get) => {
           const facets = get(facetsAtom).facets
           return Array.findFirst(facets, (g) => g.facetId === filter.id).pipe(
-            Option.flatMapNullable((_) => _.values[0]),
+            Option.flatMapNullishOr((_) => _.values[0]),
           )
         }),
     min: Atom.writable(
@@ -105,12 +108,12 @@ export const allFilters = {
   ),
 }
 
-const resetFilters = (get: Atom.Context) => {
+const resetFilters = (get: Atom.AtomContext) => {
   for (const filter of Object.values(allFilters)) {
     get.set(filter.value, Option.none())
   }
 }
-const resetFilterUi = (get: Atom.Context) => {
+const resetFilterUi = (get: Atom.AtomContext) => {
   for (const filter of Object.values(allFilters)) {
     get.refresh(filter.min)
     get.refresh(filter.max)
@@ -131,9 +134,12 @@ export const resultsAtom = BunningsClient.runtime
       if (query !== get.once(facetsAtom).forQuery) {
         resetFilters(get)
       }
-      const mailbox = yield* Mailbox.make<
+      const mailbox = yield* Queue.bounded<
         ProductBaseInfo,
-        Unauthorized | RpcClientError.RpcClientError | EmptyQueryError
+        | Unauthorized
+        | RpcClientError.RpcClientError
+        | EmptyQueryError
+        | Cause.Done
       >(32)
       yield* Effect.gen(function* () {
         let offset = 0
@@ -148,15 +154,15 @@ export const resultsAtom = BunningsClient.runtime
             resetFilterUi(get)
             get.set(facetsAtom, { forQuery: query, facets: data.facets })
           }
-          yield* mailbox.offerAll(data.results)
+          yield* Queue.offerAll(mailbox, data.results)
           offset += data.results.length
           if (offset >= data.totalCount) {
             break
           }
         }
-      }).pipe(Mailbox.into(mailbox), Effect.forkScoped)
-      return Mailbox.toStream(mailbox)
-    }, Stream.unwrapScoped),
+      }).pipe(Queue.into(mailbox), Effect.forkScoped)
+      return Stream.fromQueue(mailbox)
+    }, Stream.unwrap),
   )
   .pipe(Atom.keepAlive)
 

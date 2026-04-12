@@ -1,4 +1,4 @@
-import { AuthMiddleware } from "./Auth"
+import { AuthMiddleware } from "./Auth.ts"
 import {
   FulfillmentInfoWithLocation,
   ProductPriceInfo,
@@ -6,8 +6,8 @@ import {
   Session,
   SessionLocation,
   Store,
-} from "./Bunnings"
-import { ProductReview, ReviewStats } from "./Bazaar"
+} from "./Bunnings.ts"
+import { ProductReview, ReviewStats } from "./Bazaar.ts"
 import * as RpcGroup from "effect/unstable/rpc/RpcGroup"
 import * as Rpc from "effect/unstable/rpc/Rpc"
 import * as Schema from "effect/Schema"

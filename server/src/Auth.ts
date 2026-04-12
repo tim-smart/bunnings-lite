@@ -1,7 +1,7 @@
 import { Effect, Layer, pipe } from "effect"
-import { AuthMiddleware, Unauthorized } from "./domain/Auth"
-import { Sessions } from "./Sessions"
-import { CurrentSession } from "./domain/Bunnings"
+import { AuthMiddleware, Unauthorized } from "./domain/Auth.ts"
+import { Sessions } from "./Sessions.ts"
+import { CurrentSession } from "./domain/Bunnings.ts"
 
 export const AuthLayer = Layer.effect(
   AuthMiddleware,
@@ -16,6 +16,7 @@ export const AuthLayer = Layer.effect(
         }
         const session = yield* pipe(
           sessions.get(sessionId),
+          Effect.tapCause(Effect.log),
           Effect.mapError(() => new Unauthorized()),
         )
         return yield* Effect.provideService(effect, CurrentSession, session)

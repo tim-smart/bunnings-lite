@@ -1,8 +1,9 @@
 import { Cache, DateTime, Effect, Exit } from "effect"
-import { Bunnings } from "./Bunnings"
-import { SessionLocation } from "./domain/Bunnings"
+import { Bunnings } from "./Bunnings.ts"
+import { SessionLocation } from "./domain/Bunnings.ts"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"
+import * as Duration from "effect/Duration"
 
 export class Sessions extends Context.Service<Sessions>()("api/Sessions", {
   make: Effect.gen(function* () {
@@ -15,10 +16,12 @@ export class Sessions extends Context.Service<Sessions>()("api/Sessions", {
         capacity: Number.MAX_SAFE_INTEGER,
         timeToLive(exit) {
           if (Exit.isFailure(exit)) {
-            return "1 minute"
+            return Duration.zero
           }
-          return DateTime.subtract(exit.value.token.expires, { hours: 1 }).pipe(
-            DateTime.distance(DateTime.nowUnsafe()),
+          return DateTime.nowUnsafe().pipe(
+            DateTime.distance(
+              DateTime.subtract(exit.value.token.expires, { hours: 1 }),
+            ),
           )
         },
       },

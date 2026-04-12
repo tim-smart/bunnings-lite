@@ -1,7 +1,7 @@
 import { BunningsClient } from "@/RpcClient"
-import { Atom } from "@effect-atom/atom-react"
 import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
 import * as Geolocation from "@effect/platform-browser/Geolocation"
+import * as Atom from "effect/unstable/reactivity/Atom"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
 import * as Schema from "effect/Schema"
@@ -9,8 +9,8 @@ import * as Stream from "effect/Stream"
 import { SessionLocation } from "../../server/src/domain/Bunnings"
 import * as Layer from "effect/Layer"
 
-const runtime = Atom.runtime(
-  Geolocation.layer.pipe(Layer.merge(BunningsClient.layer)),
+const runtime = Atom.runtime((get) =>
+  Geolocation.layer.pipe(Layer.merge(get(BunningsClient.runtime.layer))),
 )
 
 export const geoAtom = runtime.atom(
@@ -33,7 +33,7 @@ export const storesAtom = runtime
   )
   .pipe(Atom.keepAlive)
 
-export const currentLocationAtom = Atom.kvs<Option.Option<SessionLocation>>({
+export const currentLocationAtom = Atom.kvs({
   runtime: Atom.runtime(BrowserKeyValueStore.layerLocalStorage),
   key: "currentLocation",
   schema: Schema.Option(SessionLocation),

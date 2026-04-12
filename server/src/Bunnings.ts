@@ -11,7 +11,7 @@ import {
   SessionToken,
   SessionUnsetLocation,
   StoresResponse,
-} from "./domain/Bunnings"
+} from "./domain/Bunnings.ts"
 import {
   HttpBody,
   HttpClient,
@@ -19,7 +19,7 @@ import {
   HttpClientResponse,
 } from "effect/unstable/http"
 import { NodeHttpClient } from "@effect/platform-node"
-import { Page } from "./Playwright"
+import { Page } from "./Playwright.ts"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"
 

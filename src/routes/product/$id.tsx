@@ -1,9 +1,10 @@
 import { ProductListing } from "@/Product/Listing"
 import { productFullInfoAtom, productAtom } from "@/Product/atoms"
 import { BaseInfoKey } from "@/RpcClient"
-import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { useAtomValue } from "@effect/atom-react"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Option from "effect/Option"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductScreen,
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/product/$id")({
 export function ProductScreen() {
   const { id } = Route.useParams()
   const product = useAtomValue(productAtom(new BaseInfoKey({ id })))
-  const fullInfo = Result.value(useAtomValue(productFullInfoAtom(id)))
+  const fullInfo = AsyncResult.value(useAtomValue(productFullInfoAtom(id)))
   if (product._tag !== "Success") {
     return (
       <div className="flex h-full items-center justify-center text-2xl text-gray-500 pt-20">

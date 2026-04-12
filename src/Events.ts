@@ -1,4 +1,4 @@
-import * as EventLog from "@effect/experimental/EventLog"
 import { FavoriteEvents } from "./Favorites/Events"
+import * as EventLog from "effect/unstable/eventlog/EventLog"
 
-export class AllEvents extends EventLog.schema(FavoriteEvents) {}
+export const AllEvents = EventLog.schema(FavoriteEvents)

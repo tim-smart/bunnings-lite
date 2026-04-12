@@ -1,5 +1,5 @@
-import * as Effect from "effect/Effect"
 import * as S from "effect/Schema"
+import * as SchemaGetter from "effect/SchemaGetter"
 
 class RatingDistribution extends S.Class<RatingDistribution>(
   "RatingDistribution",
@@ -10,7 +10,10 @@ class RatingDistribution extends S.Class<RatingDistribution>(
 
 class ReviewStatistics extends S.Class<ReviewStatistics>("ReviewStatistics")({
   AverageOverallRating: S.optional(S.NullOr(S.Number)).pipe(
-    S.withDecodingDefault(Effect.succeed(0)),
+    S.decodeTo(S.Number, {
+      decode: SchemaGetter.transform((n) => n ?? 0),
+      encode: SchemaGetter.passthrough(),
+    }),
   ),
   FeaturedReviewCount: S.Number,
   RatingsOnlyReviewCount: S.Number,

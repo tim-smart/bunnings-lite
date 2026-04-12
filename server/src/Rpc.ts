@@ -1,13 +1,16 @@
 import { RpcServer, RpcSerialization } from "effect/unstable/rpc"
-import { Rpcs } from "./domain/Rpc"
+import { Rpcs } from "./domain/Rpc.ts"
 import { Effect, Layer, Option, Stream } from "effect"
-import { AuthLayer } from "./Auth"
+import { AuthLayer } from "./Auth.ts"
 import { NodeHttpServer } from "@effect/platform-node"
 import { createServer } from "node:http"
-import { Bunnings } from "./Bunnings"
-import { Bazaar } from "./Bazaar"
-import { CurrentSession, FulfillmentInfoWithLocation } from "./domain/Bunnings"
-import { Sessions } from "./Sessions"
+import { Bunnings } from "./Bunnings.ts"
+import { Bazaar } from "./Bazaar.ts"
+import {
+  CurrentSession,
+  FulfillmentInfoWithLocation,
+} from "./domain/Bunnings.ts"
+import { Sessions } from "./Sessions.ts"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 
 const Handlers = Rpcs.toLayer(
@@ -58,5 +61,10 @@ const RpcRoute = RpcServer.layerHttp({
 )
 
 export const HttpLayer = HttpRouter.serve(RpcRoute).pipe(
-  Layer.provide(NodeHttpServer.layer(createServer, { port: 3000 })),
+  Layer.provide(
+    NodeHttpServer.layer(createServer, {
+      port: 3000,
+      disablePreemptiveShutdown: true,
+    }),
+  ),
 )

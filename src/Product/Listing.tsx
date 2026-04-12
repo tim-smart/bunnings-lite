@@ -1,12 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { ProductBaseInfo, ProductPriceInfo } from "server/src/domain/Bunnings"
+import {
+  ProductBaseInfo,
+  ProductPriceInfo,
+} from "../../server/src/domain/Bunnings.ts"
 import { StarRating } from "@/components/ui/star-rating"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Result, Atom, useAtom, useAtomValue } from "@effect-atom/atom-react"
+import { useAtom, useAtomValue } from "@effect/atom-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, Share } from "lucide-react"
-import { ProductReview } from "server/src/domain/Bazaar"
+import { ProductReview } from "../../server/src/domain/Bazaar.ts"
 import Markdown from "react-markdown"
 import {
   productRatingAtom,
@@ -20,6 +23,8 @@ import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
 import * as DateTime from "effect/DateTime"
 import * as Option from "effect/Option"
+import * as Atom from "effect/unstable/reactivity/Atom"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
 
 export function ProductListing({
   product,
@@ -29,7 +34,7 @@ export function ProductListing({
   readonly fullInfo: Option.Option<ProductPriceInfo>
 }) {
   const pointers = fullInfo.pipe(
-    Option.flatMapNullable((info) => info.info.feature.pointers),
+    Option.flatMapNullishOr((info) => info.info.feature.pointers),
   )
 
   const description = (
@@ -258,8 +263,8 @@ function SkeletonRatings() {
 function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
   const [result, pullReviews] = useAtom(productReviewsAtom(product.id))
 
-  const reviews = Result.map(result, (_) => _.items).pipe(
-    Result.getOrElse(() => []),
+  const reviews = AsyncResult.map(result, (_) => _.items).pipe(
+    AsyncResult.getOrElse(() => []),
   )
 
   useScrollBottom(() => {

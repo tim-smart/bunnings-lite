@@ -1,9 +1,10 @@
-import { Result, Atom } from "@effect-atom/atom-react"
 import { BaseInfoKey, BunningsClient } from "@/RpcClient"
 import { currentLocationAtom } from "@/Stores/atoms"
-import { ProductBaseInfo } from "server/src/domain/Bunnings"
+import { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import * as Effect from "effect/Effect"
 import * as Option from "effect/Option"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as Atom from "effect/unstable/reactivity/Atom"
 
 export const preloadAtom = Atom.fnSync((key: BaseInfoKey, get) => {
   get(productAtom(key))
@@ -16,9 +17,9 @@ export const productAtom = Atom.family((key: BaseInfoKey) =>
   Atom.make((get) => {
     const fullInfo = get(productFullInfoAtom(key.id))
     if (key.result && fullInfo._tag !== "Success") {
-      return Result.success(key.result)
+      return AsyncResult.success(key.result)
     }
-    return Result.map(fullInfo, (_) => _.asBaseInfo)
+    return AsyncResult.map(fullInfo, (_) => _.asBaseInfo)
   }).pipe(Atom.setIdleTTL("5 minutes")),
 )
 
@@ -27,7 +28,7 @@ export const productFullInfoAtom = (id: string) =>
 
 export const productReviewStatsAtom = Atom.family((id: string) =>
   BunningsClient.query("productReviewStats", { id }).pipe(
-    Atom.map((_) => Option.flatten(Result.value(_))),
+    Atom.map((_) => Option.flatten(AsyncResult.value(_))),
     Atom.setIdleTTL("10 minutes"),
   ),
 )

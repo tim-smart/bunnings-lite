@@ -1,9 +1,10 @@
-import { ProductBaseInfo } from "server/src/domain/Bunnings"
-import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import { productFulfillmentAtom } from "./atoms"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 import * as Option from "effect/Option"
+import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import { useAtomValue } from "@effect/atom-react"
 
 export function FulfillmentBadge({
   product,
@@ -12,7 +13,7 @@ export function FulfillmentBadge({
   readonly product: ProductBaseInfo
   readonly showAvailable?: boolean
 }) {
-  const maybeResult = Result.getOrElse(
+  const maybeResult = AsyncResult.getOrElse(
     useAtomValue(productFulfillmentAtom(product.id)),
     Option.none,
   )

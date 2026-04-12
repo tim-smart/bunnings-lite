@@ -1,23 +1,24 @@
-import { Atom } from "@effect-atom/atom-react"
 import { ProductBaseInfo } from "../server/src/domain/Bunnings"
 import * as Schema from "effect/Schema"
 import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
-import { EventLog } from "@effect/experimental"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import { FavoriteEvents } from "./Favorites/Events"
-import * as KeyValueStore from "@effect/platform/KeyValueStore"
 import * as Option from "effect/Option"
-import * as Reactivity from "@effect/experimental/Reactivity"
 import * as Array from "effect/Array"
+import * as Context from "effect/Context"
+import * as Reactivity from "effect/unstable/reactivity/Reactivity"
+import * as KeyValueStore from "effect/unstable/persistence/KeyValueStore"
+import * as Atom from "effect/unstable/reactivity/Atom"
+import * as EventLog from "effect/unstable/eventlog/EventLog"
 
-export class FavoritesRepo extends Effect.Service<FavoritesRepo>()(
+export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
   "FavoritesRepo",
   {
-    dependencies: [BrowserKeyValueStore.layerLocalStorage, Reactivity.layer],
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const reactivity = yield* Reactivity.Reactivity
-      const store = (yield* KeyValueStore.KeyValueStore).forSchema(
+      const store = KeyValueStore.toSchemaStore(
+        yield* KeyValueStore.KeyValueStore,
         Schema.Array(ProductBaseInfo),
       )
       const map = (yield* store.get("favorites")).pipe(
@@ -54,7 +55,10 @@ export class FavoritesRepo extends Effect.Service<FavoritesRepo>()(
     }),
   },
 ) {
-  static runtime = Atom.runtime(this.Default)
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide([BrowserKeyValueStore.layerLocalStorage, Reactivity.layer]),
+  )
+  static runtime = Atom.runtime(this.layer)
 }
 
 const FavoritesEventsLayer = EventLog.group(
@@ -67,7 +71,7 @@ const FavoritesEventsLayer = EventLog.group(
       .handle("FavoriteRemove", ({ payload }) => repo.remove(payload))
       .handle("FavoritesClear", () => repo.clear)
   }),
-).pipe(Layer.provide(FavoritesRepo.Default))
+).pipe(Layer.provide(FavoritesRepo.layer))
 
 const FavoritesCompactionLive = EventLog.groupCompaction(
   FavoriteEvents,

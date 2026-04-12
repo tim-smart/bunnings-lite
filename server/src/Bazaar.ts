@@ -4,7 +4,7 @@ import {
   HttpClientResponse,
 } from "effect/unstable/http"
 import { Array, Effect, Option, Stream } from "effect"
-import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar"
+import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar.ts"
 import { NodeHttpClient } from "@effect/platform-node"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"

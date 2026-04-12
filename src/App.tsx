@@ -1,6 +1,6 @@
 import { RouterProvider } from "@tanstack/react-router"
 import { useRegisterSW } from "virtual:pwa-register/react"
-import { RegistryProvider, useAtomMount } from "@effect-atom/atom-react"
+import { RegistryProvider, useAtomMount } from "@effect/atom-react"
 import { loginAtom } from "./Search/atoms"
 import { router } from "./Router"
 import { EventLogClient } from "./EventLog"

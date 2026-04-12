@@ -1,4 +1,4 @@
-import { useAtom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { useAtom, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { allFilters } from "./atoms"
 import { useRef } from "react"
 import { Label } from "@/components/ui/label"

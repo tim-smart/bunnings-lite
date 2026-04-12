@@ -122,11 +122,8 @@ const ImageUrl = Schema.optional(Schema.String).pipe(
     encode: SchemaGetter.passthrough(),
   }),
 )
-const NumberOrZero = Schema.optional(Schema.Number).pipe(
-  Schema.decodeTo(Schema.Number, {
-    decode: SchemaGetter.withDefault(Effect.succeed(0)),
-    encode: SchemaGetter.passthrough(),
-  }),
+const NumberOrZero = Schema.Number.pipe(
+  Schema.withDecodingDefault(Effect.succeed(0)),
 )
 
 export class SearchResult extends Schema.Class<SearchResult>("SearchResult")({

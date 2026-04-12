@@ -1,7 +1,7 @@
-import { EventGroup } from "@effect/experimental"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings"
+import * as EventGroup from "effect/unstable/eventlog/EventGroup"
 
-export class FavoriteEvents extends EventGroup.empty
+export const FavoriteEvents = EventGroup.empty
   .add({
     tag: "FavoriteAdd",
     primaryKey: () => "",
@@ -15,4 +15,4 @@ export class FavoriteEvents extends EventGroup.empty
   .add({
     tag: "FavoritesClear",
     primaryKey: () => "",
-  }) {}
+  })
