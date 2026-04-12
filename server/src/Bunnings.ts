@@ -17,13 +17,14 @@ import {
   HttpClient,
   HttpClientRequest,
   HttpClientResponse,
-} from "@effect/platform"
+} from "effect/unstable/http"
 import { NodeHttpClient } from "@effect/platform-node"
 import { Page } from "./Playwright"
+import * as Context from "effect/Context"
+import * as Layer from "effect/Layer"
 
-export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
-  dependencies: [NodeHttpClient.layerUndici],
-  effect: Effect.gen(function* () {
+export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
+  make: Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient
 
     const makeSession = Effect.fn("Bunnings.makeSession")(function* (
@@ -46,7 +47,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         token,
         location: SessionUnsetLocation.default,
       })
-    }, Effect.provide(Page.Default))
+    }, Effect.provide(Page.layer))
 
     const apiClient = Effect.fnUntraced(function* (version = "v1") {
       const session = yield* CurrentSession
@@ -83,7 +84,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
         const client = yield* apiClient()
         const session = yield* CurrentSession
         const res = yield* client.post("/coveo/search", {
-          body: HttpBody.unsafeJson(searchPayload(session, options)),
+          body: HttpBody.jsonUnsafe(searchPayload(session, options)),
         })
         const results =
           yield* HttpClientResponse.schemaBodyJson(SearchResponse)(res)
@@ -133,7 +134,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
       const client = yield* apiClient("v2")
       return yield* client
         .post(`/products/${id}/fulfillment`, {
-          body: HttpBody.unsafeJson({
+          body: HttpBody.jsonUnsafe({
             includeVariantStock: true,
             isToggled: true,
             locationCode: session.location.code,
@@ -145,7 +146,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
             HttpClientResponse.schemaBodyJson(FulfillmentResponse),
           ),
           Effect.map((_) => Option.some(_.data)),
-          Effect.catchTag("ParseError", () => Effect.succeedNone),
+          Effect.catchTag("SchemaError", () => Effect.succeedNone),
         )
     })
 
@@ -190,10 +191,10 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
           ),
           Effect.map((_) =>
             Option.some(_.data.flatMap((_) => _.inStoreLocations)).pipe(
-              Option.filter(Arr.isNonEmptyReadonlyArray),
+              Option.filter(Arr.isArrayNonEmpty),
             ),
           ),
-          Effect.catchTag("ParseError", () => Effect.succeedNone),
+          Effect.catchTag("SchemaError", () => Effect.succeedNone),
         )
     })
 
@@ -201,7 +202,7 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
       readonly latitude: number
       readonly longitude: number
     }) =>
-      Stream.paginateChunkEffect(
+      Stream.paginate(
         0,
         Effect.fnUntraced(function* (page) {
           const result = yield* storesPage({
@@ -228,7 +229,11 @@ export class Bunnings extends Effect.Service<Bunnings>()("api/Bunnings", {
       productLocation,
     } as const
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(NodeHttpClient.layerUndici),
+  )
+}
 
 const searchPayload = (
   session: Session,

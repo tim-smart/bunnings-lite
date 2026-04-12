@@ -8,12 +8,11 @@ export class PlaywrightError extends Data.TaggedError("PlaywrightError")<{
   readonly cause: unknown
 }> {}
 
-export class Browser extends Context.Tag("Playwright/Browser")<
-  Browser,
-  Api.Browser
->() {
+export class Browser extends Context.Service<Browser, Api.Browser>()(
+  "Playwright/Browser",
+) {
   static readonly layerChromium = (options?: Api.LaunchOptions) =>
-    Layer.scoped(
+    Layer.effect(
       this,
       Effect.acquireRelease(
         Effect.tryPromise({
@@ -25,7 +24,7 @@ export class Browser extends Context.Tag("Playwright/Browser")<
     )
 
   static readonly layerWebkit = (options?: Api.LaunchOptions) =>
-    Layer.scoped(
+    Layer.effect(
       this,
       Effect.acquireRelease(
         Effect.tryPromise({
@@ -36,8 +35,8 @@ export class Browser extends Context.Tag("Playwright/Browser")<
       ),
     )
 
-  static Live = Layer.unwrapEffect(
-    Effect.gen(this, function* () {
+  static Live = Layer.unwrap(
+    Effect.gen({ self: this }, function* () {
       const isProd = yield* Config.string("NODE_ENV").pipe(
         Config.map((env) => env === "production"),
         Config.withDefault(false),
@@ -51,14 +50,14 @@ export class Browser extends Context.Tag("Playwright/Browser")<
   )
 }
 
-export class BrowserContext extends Context.Tag("Playwright/BrowserContext")<
+export class BrowserContext extends Context.Service<
   BrowserContext,
   Api.BrowserContext
->() {
-  static layer = (options?: Api.BrowserContextOptions) =>
-    Layer.scoped(
+>()("Playwright/BrowserContext") {
+  static layerWith = (options?: Api.BrowserContextOptions) =>
+    Layer.effect(
       this,
-      Effect.flatMap(Browser, (browser) =>
+      Browser.use((browser) =>
         Effect.acquireRelease(
           Effect.tryPromise({
             try: () => browser.newContext(options),
@@ -69,11 +68,11 @@ export class BrowserContext extends Context.Tag("Playwright/BrowserContext")<
       ),
     )
 
-  static Live = this.layer().pipe(Layer.provide(Browser.Live))
+  static layer = this.layerWith().pipe(Layer.provide(Browser.Live))
 }
 
-export class Page extends Effect.Service<Page>()("Playwright/Page", {
-  scoped: Effect.gen(function* () {
+export class Page extends Context.Service<Page>()("Playwright/Page", {
+  make: Effect.gen(function* () {
     const context = yield* BrowserContext
     const page = yield* Effect.acquireRelease(
       Effect.tryPromise({
@@ -93,16 +92,24 @@ export class Page extends Effect.Service<Page>()("Playwright/Page", {
           try: () => f(page),
           catch: (cause) => new PlaywrightError({ cause }),
         }).pipe(
-          Effect.withSpan("Playwright/Page.with", {
-            captureStackTrace: () => trace.stack,
-          }),
+          Effect.withSpan(
+            "Playwright/Page.with",
+            {},
+            {
+              captureStackTrace: () => trace.stack,
+            },
+          ),
         )
       },
     }
   }),
-  dependencies: [BrowserContext.Live],
 }) {
+  static readonly layerNoDeps = Layer.effect(this, this.make)
+  static readonly layer = this.layerNoDeps.pipe(
+    Layer.provide(BrowserContext.layer),
+  )
+
   static with<A>(f: (page: Api.Page) => Promise<A>) {
-    return Effect.flatMap(Page, (p) => p.with(f))
+    return Page.use((p) => p.with(f))
   }
 }

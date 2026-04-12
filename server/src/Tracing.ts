@@ -1,9 +1,8 @@
 import { NodeHttpClient } from "@effect/platform-node"
-import * as OtlpTracer from "@effect/opentelemetry/OtlpTracer"
 import { Config, Effect, Layer, Option, Redacted } from "effect"
-import * as OtlpSerialization from "@effect/opentelemetry/OtlpSerialization"
+import { OtlpSerialization, OtlpTracer } from "effect/unstable/observability"
 
-export const TracerLayer = Layer.unwrapEffect(
+export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {
     const apiKey = yield* Config.redacted("HONEYCOMB_API_KEY").pipe(
       Config.option,

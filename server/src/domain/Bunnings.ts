@@ -1,12 +1,12 @@
 import * as Context from "effect/Context"
 import * as DateTime from "effect/DateTime"
 import * as Effect from "effect/Effect"
-import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
+import * as SchemaGetter from "effect/SchemaGetter"
 
-export class CurrentSession extends Context.Tag(
+export class CurrentSession extends Context.Service<CurrentSession, Session>()(
   "domain/Bunnings/CurrentSession",
-)<CurrentSession, Session>() {}
+) {}
 
 export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
   "domain/Bunnings/SessionLocation",
@@ -86,21 +86,21 @@ export class SessionUnsetLocation extends Schema.TaggedClass<SessionUnsetLocatio
 export class SessionToken extends Schema.Class<SessionToken>(
   "domain/Bunnings/SessionToken",
 )({
-  expires: Schema.DateTimeUtcFromNumber,
+  expires: Schema.DateTimeUtcFromMillis,
   token: Schema.String,
 }) {
-  static fromJson = Schema.decode(Schema.parseJson(SessionToken))
+  static fromJson = Schema.decodeEffect(Schema.fromJsonString(SessionToken))
 }
 
 export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   id: Schema.String,
   token: SessionToken,
-  location: Schema.Union(SessionLocation, SessionUnsetLocation),
+  location: Schema.Union([SessionLocation, SessionUnsetLocation]),
 }) {
   get expired() {
     return this.token.expires.pipe(
       DateTime.subtract({ hours: 1 }),
-      DateTime.unsafeIsPast,
+      DateTime.isPastUnsafe,
     )
   }
 
@@ -112,22 +112,31 @@ export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   }
 }
 
-const ImageUrl = Schema.optionalWith(Schema.String, {
-  default: () => "https://www.bunnings.co.nz/static/icons/notFoundImage.svg",
-})
+const ImageUrl = Schema.optional(Schema.String).pipe(
+  Schema.decodeTo(Schema.String, {
+    decode: SchemaGetter.withDefault(
+      Effect.succeed(
+        "https://www.bunnings.co.nz/static/icons/notFoundImage.svg",
+      ),
+    ),
+    encode: SchemaGetter.passthrough(),
+  }),
+)
+const NumberOrZero = Schema.optional(Schema.Number).pipe(
+  Schema.decodeTo(Schema.Number, {
+    decode: SchemaGetter.withDefault(Effect.succeed(0)),
+    encode: SchemaGetter.passthrough(),
+  }),
+)
 
 export class SearchResult extends Schema.Class<SearchResult>("SearchResult")({
   thumbnailimageurl: ImageUrl,
   isactive: Schema.String,
-  ratingcount: Schema.optionalWith(Schema.Number, {
-    default: () => 0,
-  }),
+  ratingcount: NumberOrZero,
   permanentid: Schema.String,
   title: Schema.String,
   productroutingurl: Schema.String,
-  rating: Schema.optionalWith(Schema.Number, {
-    default: () => 0,
-  }),
+  rating: NumberOrZero,
   size: Schema.Number,
   name: Schema.String,
   price: Schema.Number,
@@ -161,14 +170,14 @@ export class SearchResultWrap extends Schema.Class<SearchResultWrap>(
 }) {}
 
 export class ImageElement extends Schema.Class<ImageElement>("ImageElement")({
-  altText: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
-  format: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
-  imageType: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  altText: Schema.optional(Schema.NullOr(Schema.String)),
+  format: Schema.optional(Schema.NullOr(Schema.String)),
+  imageType: Schema.optional(Schema.NullOr(Schema.String)),
   mime: Schema.String,
   sequence: Schema.String,
   thumbnailUrl: ImageUrl,
   url: ImageUrl,
-  videoId: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  videoId: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class ProductBaseInfo extends Schema.Class<ProductBaseInfo>(
@@ -210,12 +219,10 @@ export class SearchResponseData extends Schema.Class<SearchResponseData>(
   results: Schema.Array(ProductBaseInfo),
 }) {}
 
-export const SearchResponseDataRemapped = Schema.transformOrFail(
-  Schema.Object,
-  SearchResponseDataRaw,
-  {
-    decode(data: any) {
-      return Effect.map(CurrentSession, (session) => ({
+export const SearchResponseDataRemapped = Schema.Json.pipe(
+  Schema.decodeTo(SearchResponseDataRaw, {
+    decode: SchemaGetter.transformOrFail((data: any) =>
+      CurrentSession.useSync((session) => ({
         totalCount: data.totalCount,
         facets: data.facets.map((facet: any) => ({
           ...facet,
@@ -227,23 +234,19 @@ export const SearchResponseDataRemapped = Schema.transformOrFail(
             price: result.raw[`price_${session.location.code}`],
           },
         })),
-      }))
-    },
-    encode(toI) {
-      return ParseResult.succeed(toI)
-    },
-  },
-).pipe(
-  Schema.transform(SearchResponseData, {
-    decode(fromA) {
-      return new SearchResponseData({
-        ...fromA,
-        results: fromA.results.map((_) => _.raw.asBaseInfo),
-      })
-    },
-    encode(_toI) {
-      throw new Error("Not implemented")
-    },
+      })),
+    ),
+    encode: SchemaGetter.passthrough(),
+  }),
+  Schema.decodeTo(SearchResponseData, {
+    decode: SchemaGetter.transform(
+      (fromA) =>
+        new SearchResponseData({
+          ...fromA,
+          results: fromA.results.map((_) => _.raw.asBaseInfo),
+        }),
+    ),
+    encode: SchemaGetter.forbidden(() => "Decode only"),
   }),
 )
 
@@ -253,7 +256,7 @@ export const SearchResponse = Schema.Struct({
 
 export class GuideDocument extends Schema.Class<GuideDocument>("GuideDocument")(
   {
-    altText: Schema.optionalWith(Schema.String, { nullable: true }),
+    altText: Schema.optional(Schema.NullOr(Schema.String)),
     docType: Schema.String,
     mime: Schema.String,
     sequence: Schema.String,
@@ -272,7 +275,7 @@ export class Product extends Schema.Class<Product>("Product")({
   depth: Schema.String,
   height: Schema.String,
   width: Schema.String,
-  label: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  label: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class Package extends Schema.Class<Package>("Package")({
@@ -282,13 +285,13 @@ export class Package extends Schema.Class<Package>("Package")({
 }) {}
 
 export class Dimension extends Schema.Class<Dimension>("Dimension")({
-  packages: Schema.optionalWith(Schema.Array(Package), {
-    default: () => [],
-  }),
-  product: Schema.optionalWith(Schema.Array(Product), {
-    default: () => [],
-  }),
-  dimensionTerm: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  packages: Schema.Array(Package).pipe(
+    Schema.withDecodingDefault(Effect.succeed([])),
+  ),
+  product: Schema.Array(Product).pipe(
+    Schema.withDecodingDefault(Effect.succeed([])),
+  ),
+  dimensionTerm: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class FeatureValue extends Schema.Class<FeatureValue>("FeatureValue")({
@@ -309,8 +312,8 @@ export class Classification extends Schema.Class<Classification>(
   "Classification",
 )({
   features: Schema.Array(FeatureElement),
-  code: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
-  name: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  code: Schema.optional(Schema.NullOr(Schema.String)),
+  name: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class BrandImage extends Schema.Class<BrandImage>("BrandImage")({
@@ -318,7 +321,7 @@ export class BrandImage extends Schema.Class<BrandImage>("BrandImage")({
   sequence: Schema.String,
   thumbnailUrl: ImageUrl,
   url: ImageUrl,
-  disclaimer: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  disclaimer: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class Brand extends Schema.Class<Brand>("Brand")({
@@ -342,7 +345,7 @@ export class BasePaint extends Schema.Class<BasePaint>("BasePaint")({
 }) {}
 
 export class Selected extends Schema.Class<Selected>("Selected")({
-  basePaint: Schema.optional(Schema.Union(BasePaint, Schema.Null)),
+  basePaint: Schema.optional(Schema.NullOr(BasePaint)),
   code: Schema.String,
   itemNumber: Schema.String,
   productValues: Schema.Array(ProductValue),
@@ -359,15 +362,13 @@ export class AllCategory extends Schema.Class<AllCategory>("AllCategory")({
   displayName: Schema.String,
   internalPath: Schema.String,
   level: Schema.Number,
-  workShopCategory: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  workShopCategory: Schema.optional(Schema.NullOr(Schema.String)),
 }) {}
 
 export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   allCategories: Schema.Array(AllCategory),
   availableForDelivery: Schema.Boolean,
-  averageRating: Schema.optionalWith(Schema.Number, {
-    default: () => 0,
-  }),
+  averageRating: NumberOrZero,
   baseOptions: Schema.Array(BaseOption),
   bestSeller: Schema.Boolean,
   brand: Brand,
@@ -385,7 +386,7 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   isTradeOnly: Schema.Boolean,
   isWorkflowRequired: Schema.Boolean,
   itemNumber: Schema.String,
-  manufacturer: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  manufacturer: Schema.optional(Schema.NullOr(Schema.String)),
   name: Schema.String,
   newArrival: Schema.Boolean,
   numberOfReviews: Schema.Number,
@@ -399,9 +400,7 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   visible: Schema.Boolean,
   warrantyReturns: Schema.String,
   weight: Schema.optional(Schema.String),
-  guideDocument: Schema.optional(
-    Schema.Union(Schema.Array(GuideDocument), Schema.Null),
-  ),
+  guideDocument: Schema.optional(Schema.NullOr(Schema.Array(GuideDocument))),
 }) {}
 
 export class ProductResponse extends Schema.Class<ProductResponse>(
@@ -460,13 +459,13 @@ class Address extends Schema.Class<Address>("Address")({
   creationtime: Schema.String,
   defaultAddress: Schema.Boolean,
   email: Schema.String,
-  fax: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  fax: Schema.optional(Schema.NullOr(Schema.String)),
   firstName: Schema.String,
   formattedAddress: Schema.String,
   id: Schema.String,
   isPoBoxAddress: Schema.Boolean,
   line1: Schema.String,
-  line2: Schema.optional(Schema.Union(Schema.Null, Schema.String)),
+  line2: Schema.optional(Schema.NullOr(Schema.String)),
   phone: Schema.String,
   postalCode: Schema.String,
   shippingAddress: Schema.Boolean,
@@ -506,7 +505,7 @@ export class StoresData extends Schema.Class<StoresData>("StoresData")({
   pagination: Pagination,
   sourceLatitude: Schema.Number,
   sourceLongitude: Schema.Number,
-  stores: Schema.Chunk(Store),
+  stores: Schema.Array(Store),
 }) {}
 
 export class StoresResponse extends Schema.Class<StoresResponse>(
@@ -521,7 +520,7 @@ export class InStorePickUpData extends Schema.Class<InStorePickUpData>(
   "InStorePickUpData",
 )({
   inStoreStockMsg: Schema.String,
-  stock: Schema.optionalWith(Schema.Number, { default: () => 0 }),
+  stock: NumberOrZero,
 }) {}
 
 export class FulfillmentInfo extends Schema.Class<FulfillmentInfo>(
@@ -569,7 +568,7 @@ export class FulfillmentInfoWithLocation extends Schema.Class<FulfillmentInfoWit
   "FulfillmentInfoWithLocation",
 )({
   fulfillment: FulfillmentInfo,
-  location: Schema.Option(InStoreLocation),
+  location: Schema.OptionFromOptionalNullOr(InStoreLocation),
 }) {
   get isAvailable() {
     return (

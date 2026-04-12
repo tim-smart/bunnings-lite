@@ -8,8 +8,8 @@ import {
   Store,
 } from "./Bunnings"
 import { ProductReview, ReviewStats } from "./Bazaar"
-import * as RpcGroup from "@effect/rpc/RpcGroup"
-import * as Rpc from "@effect/rpc/Rpc"
+import * as RpcGroup from "effect/unstable/rpc/RpcGroup"
+import * as Rpc from "effect/unstable/rpc/Rpc"
 import * as Schema from "effect/Schema"
 
 export class Rpcs extends RpcGroup.make(
@@ -23,8 +23,8 @@ export class Rpcs extends RpcGroup.make(
     payload: {
       query: Schema.String,
       offset: Schema.Number,
-      priceRange: Schema.Option(Schema.Tuple(Schema.Number, Schema.Number)),
-      ratingRange: Schema.Option(Schema.Tuple(Schema.Number, Schema.Number)),
+      priceRange: Schema.Option(Schema.Tuple([Schema.Number, Schema.Number])),
+      ratingRange: Schema.Option(Schema.Tuple([Schema.Number, Schema.Number])),
     },
     success: SearchResponseData,
   }),

@@ -1,17 +1,18 @@
 import * as Schema from "effect/Schema"
 import { CurrentSession } from "./Bunnings"
-import * as RpcMiddleware from "@effect/rpc/RpcMiddleware"
+import * as RpcMiddleware from "effect/unstable/rpc/RpcMiddleware"
 
-export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
+export class Unauthorized extends Schema.TaggedErrorClass<Unauthorized>()(
   "Unauthorized",
   {},
 ) {}
 
-export class AuthMiddleware extends RpcMiddleware.Tag<AuthMiddleware>()(
-  "app/Auth/AuthMiddleware",
+export class AuthMiddleware extends RpcMiddleware.Service<
+  AuthMiddleware,
   {
-    provides: CurrentSession,
-    failure: Unauthorized,
-    requiredForClient: true,
-  },
-) {}
+    provides: CurrentSession
+  }
+>()("app/Auth/AuthMiddleware", {
+  error: Unauthorized,
+  requiredForClient: true,
+}) {}

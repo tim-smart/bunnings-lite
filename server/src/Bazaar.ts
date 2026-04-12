@@ -2,14 +2,15 @@ import {
   HttpClient,
   HttpClientRequest,
   HttpClientResponse,
-} from "@effect/platform"
-import { Array, Chunk, Effect, Option, Stream } from "effect"
+} from "effect/unstable/http"
+import { Array, Effect, Option, Stream } from "effect"
 import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar"
 import { NodeHttpClient } from "@effect/platform-node"
+import * as Context from "effect/Context"
+import * as Layer from "effect/Layer"
 
-export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
-  dependencies: [NodeHttpClient.layerUndici],
-  effect: Effect.gen(function* () {
+export class Bazaar extends Context.Service<Bazaar>()("api/Bazaar", {
+  make: Effect.gen(function* () {
     const client = (yield* HttpClient.HttpClient).pipe(
       HttpClient.mapRequest(
         HttpClientRequest.prependUrl("https://api.bazaarvoice.com/data"),
@@ -68,7 +69,7 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
         )
 
     const reviews = (id: string) =>
-      Stream.paginateChunkEffect(0, (offset) =>
+      Stream.paginate(0, (offset) =>
         reviewsPage(id, offset).pipe(
           Effect.map(
             (res) =>
@@ -84,10 +85,13 @@ export class Bazaar extends Effect.Service<Bazaar>()("api/Bazaar", {
 
     const allReviews = (id: string) =>
       Stream.runCollect(reviews(id)).pipe(
-        Effect.map(Chunk.toReadonlyArray),
         Effect.withSpan("Bazaar.allReviews", { attributes: { id } }),
       )
 
     return { overview, reviews, allReviews } as const
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(NodeHttpClient.layerUndici),
+  )
+}
