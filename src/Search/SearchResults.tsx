@@ -51,7 +51,7 @@ export function SearchResults() {
         .onSuccess(({ items }) => <ResultsGrid results={items} />)
         .onInitial(() => <ResultsSkeleton />)
         .onErrorTag("EmptyQueryError", () => <ResultsSkeleton />)
-        .onErrorTag("NoSuchElementException", () => <NoResults />)
+        .onErrorTag("NoSuchElementError", () => <NoResults />)
         .onFailure((cause) => (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="text-red-500">

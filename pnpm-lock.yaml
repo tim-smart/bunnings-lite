@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@effect/atom-react':
         specifier: 4.0.0-beta.47
-        version: 4.0.0-beta.47(effect@4.0.0-beta.47)(react@19.2.5)(scheduler@0.27.0)
+        version: 4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)(react@19.2.5)(scheduler@0.27.0)
       '@effect/platform-browser':
         specifier: 4.0.0-beta.47
-        version: 4.0.0-beta.47(effect@4.0.0-beta.47)
+        version: 4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.1(react@19.2.5))
@@ -51,8 +51,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       effect:
-        specifier: 4.0.0-beta.47
-        version: 4.0.0-beta.47
+        specifier: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
+        version: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       lucide-react:
         specifier: ^1.8.0
         version: 1.8.0(react@19.2.5)
@@ -659,6 +659,7 @@ packages:
 
   '@effect/atom-react@4.0.0-beta.47':
     resolution: {integrity: sha512-jCMf5/TvgVHsd+pzfb5UCvtlxZLN/hokLj5x9yzGe6YAztR7zteDEki/Qm6f4Gn6E5PKsmaoi0WlwzZG4rsD7A==}
+    version: 4.0.0-beta.47
     peerDependencies:
       effect: ^4.0.0-beta.47
       react: ^19.2.4
@@ -670,6 +671,7 @@ packages:
 
   '@effect/platform-browser@4.0.0-beta.47':
     resolution: {integrity: sha512-1SG/4QwP1ritpBQ+Q7wh8eQDaRF710tKcujIKQyaxwGkFe0idtbGgRMOspb7c1WDpOeSBKFrK9rxXMDAJPrA0g==}
+    version: 4.0.0-beta.47
     peerDependencies:
       effect: ^4.0.0-beta.47
 
@@ -2094,8 +2096,9 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
-  effect@4.0.0-beta.47:
-    resolution: {integrity: sha512-MRrAO6Oof5TTgEo0Tb37d5G+vSRHopBhEImYiGjMDEpuBzHr4nKg5BeAwQGV1kdjZ9/DhxKVuFZKsF4Uw+KJog==}
+  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8:
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8}
+    version: 4.0.0-beta.47
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -4174,17 +4177,17 @@ snapshots:
 
   '@canvas/image-data@1.1.0': {}
 
-  '@effect/atom-react@4.0.0-beta.47(effect@4.0.0-beta.47)(react@19.2.5)(scheduler@0.27.0)':
+  '@effect/atom-react@4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)(react@19.2.5)(scheduler@0.27.0)':
     dependencies:
-      effect: 4.0.0-beta.47
+      effect: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       react: 19.2.5
       scheduler: 0.27.0
 
   '@effect/language-service@0.85.1': {}
 
-  '@effect/platform-browser@4.0.0-beta.47(effect@4.0.0-beta.47)':
+  '@effect/platform-browser@4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)':
     dependencies:
-      effect: 4.0.0-beta.47
+      effect: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       multipasta: 0.2.7
 
   '@emnapi/core@1.9.2':
@@ -5454,7 +5457,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  effect@4.0.0-beta.47:
+  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.6.0

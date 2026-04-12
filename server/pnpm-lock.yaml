@@ -17,10 +17,10 @@ importers:
         version: 0.85.1
       '@effect/platform-node':
         specifier: 4.0.0-beta.47
-        version: 4.0.0-beta.47(effect@4.0.0-beta.47)(ioredis@5.10.1)
+        version: 4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)(ioredis@5.10.1)
       effect:
-        specifier: 4.0.0-beta.47
-        version: 4.0.0-beta.47
+        specifier: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
+        version: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       prettier:
         specifier: ^3.8.2
         version: 3.8.2
@@ -42,12 +42,14 @@ packages:
 
   '@effect/platform-node-shared@4.0.0-beta.47':
     resolution: {integrity: sha512-LjE961nmzZdXGNtixULdAkTxbACYp8gA28bPEitgdxqclXfdiC18XkOhb2Z/X8cKPDZPVsQ3Q5gnRnQztH0XsA==}
+    version: 4.0.0-beta.47
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: ^4.0.0-beta.47
 
   '@effect/platform-node@4.0.0-beta.47':
     resolution: {integrity: sha512-JViYuFroxYwBonlubGQNsAkuzgdEILFuBRjH9lnsYsryIlFKkhUnQh4ixDq3ezt973xqItso4dKgT7pp9VC4BA==}
+    version: 4.0.0-beta.47
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: ^4.0.0-beta.47
@@ -446,8 +448,9 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  effect@4.0.0-beta.47:
-    resolution: {integrity: sha512-MRrAO6Oof5TTgEo0Tb37d5G+vSRHopBhEImYiGjMDEpuBzHr4nKg5BeAwQGV1kdjZ9/DhxKVuFZKsF4Uw+KJog==}
+  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8:
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8}
+    version: 4.0.0-beta.47
 
   esbuild@0.27.7:
     resolution: {integrity: sha512-IxpibTjyVnmrIQo5aqNpCgoACA/dTKLTlhMHihVHhdkxKyPO1uBBthumT0rdHmcsk9uMonIWS0m4FljWzILh3w==}
@@ -730,19 +733,19 @@ snapshots:
 
   '@effect/language-service@0.85.1': {}
 
-  '@effect/platform-node-shared@4.0.0-beta.47(effect@4.0.0-beta.47)':
+  '@effect/platform-node-shared@4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)':
     dependencies:
       '@types/ws': 8.18.1
-      effect: 4.0.0-beta.47
+      effect: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       ws: 8.20.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.47(effect@4.0.0-beta.47)(ioredis@5.10.1)':
+  '@effect/platform-node@4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)(ioredis@5.10.1)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.47(effect@4.0.0-beta.47)
-      effect: 4.0.0-beta.47
+      '@effect/platform-node-shared': 4.0.0-beta.47(effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8)
+      effect: https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8
       ioredis: 5.10.1
       mime: 4.1.0
       undici: 7.24.7
@@ -981,7 +984,7 @@ snapshots:
   detect-libc@2.1.2:
     optional: true
 
-  effect@4.0.0-beta.47:
+  effect@https://pkg.pr.new/Effect-TS/effect-smol/effect@f1ba5b8:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.6.0

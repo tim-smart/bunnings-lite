@@ -68,16 +68,12 @@ export const identityAtom = Atom.kvs({
     ),
 })
 
-const IdentityString = Schema.StringFromBase64.pipe(
-  Schema.decodeTo(Schema.fromJsonString(EventLog.IdentitySchema)),
-)
-const encodeIdentityString = Schema.encodeSync(IdentityString)
-const decodeIdentityString = Schema.decodeSync(IdentityString)
-
 export const identityStringAtom = Atom.writable(
   (get) =>
-    encodeIdentityString(get(identityAtom) as EventLog.Identity["Service"]),
-  (ctx, s: string) => ctx.set(identityAtom, decodeIdentityString(s)),
+    EventLog.encodeIdentityString(
+      get(identityAtom) as EventLog.Identity["Service"],
+    ),
+  (ctx, s: string) => ctx.set(identityAtom, EventLog.decodeIdentityString(s)),
 )
 
 export const remoteUrlAtom = Atom.kvs({
