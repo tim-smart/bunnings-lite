@@ -41,4 +41,4 @@ RUN ./node_modules/.bin/playwright install-deps chromium && \
     ./node_modules/.bin/playwright install chromium
 
 COPY --from=build /app/dist ./dist
-CMD [ "node", "dist/main.js" ]
+CMD [ "node", "dist/main.cjs" ]
