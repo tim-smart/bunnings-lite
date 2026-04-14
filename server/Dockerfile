@@ -1,21 +1,22 @@
-FROM node:25 AS deps
-RUN mkdir -p /app && corepack enable
+FROM node:25 AS base
+RUN mkdir -p /app && npm i -g --force corepack && corepack enable
 WORKDIR /app
+
+
+FROM base AS deps
 COPY package.json .
 COPY pnpm-lock.yaml .
 RUN pnpm i --frozen-lockfile
 
 
-FROM node:25 AS deps-prod
-RUN mkdir -p /app && corepack enable
-WORKDIR /app
+FROM base AS deps-prod
 COPY package.json .
 COPY pnpm-lock.yaml .
 COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm prune --prod
 
 
-FROM node:25 AS build
+FROM base AS build
 RUN mkdir -p /app && corepack enable
 WORKDIR /app
 COPY package.json .
