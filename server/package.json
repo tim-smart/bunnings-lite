@@ -14,8 +14,8 @@
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
     "@effect/language-service": "^0.85.1",
-    "@effect/platform-node": "https://pkg.pr.new/Effect-TS/effect-smol/@effect/platform-node@4da56ec",
-    "effect": "https://pkg.pr.new/Effect-TS/effect-smol/effect@4da56ec",
+    "@effect/platform-node": "4.0.0-beta.48",
+    "effect": "4.0.0-beta.48",
     "prettier": "^3.8.2",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",

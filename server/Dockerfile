@@ -1,4 +1,4 @@
-FROM node:24 AS deps
+FROM node:25 AS deps
 RUN mkdir -p /app && corepack enable
 WORKDIR /app
 COPY package.json .
@@ -6,7 +6,7 @@ COPY pnpm-lock.yaml .
 RUN pnpm i --frozen-lockfile
 
 
-FROM node:24 AS deps-prod
+FROM node:25 AS deps-prod
 RUN mkdir -p /app && corepack enable
 WORKDIR /app
 COPY package.json .
@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm prune --prod
 
 
-FROM node:24 AS build
+FROM node:25 AS build
 RUN mkdir -p /app && corepack enable
 WORKDIR /app
 COPY package.json .
@@ -26,7 +26,7 @@ RUN pnpm build
 
 
 # Runtime image
-FROM node:24
+FROM node:25
 WORKDIR /app
 ENV NODE_ENV=production
 ENV TINI_VERSION=v0.19.0

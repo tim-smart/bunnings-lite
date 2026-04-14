@@ -21,7 +21,7 @@ import {
 import { Page } from "./Playwright.ts"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"
-import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient"
+import { NodeHttpClient } from "@effect/platform-node"
 
 export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
   make: Effect.gen(function* () {
@@ -233,7 +233,7 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make).pipe(
-    Layer.provide(FetchHttpClient.layer),
+    Layer.provide(NodeHttpClient.layerUndici),
   )
 }
 
