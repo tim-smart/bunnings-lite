@@ -123,7 +123,7 @@ function ResultsGrid({
               const index = item.index * columns.length + col
               const product = results[index]
               if (!product) return <div key={index} className="flex-1" />
-              return <ResultCard key={index} product={product} />
+              return <ResultCard key={product.id ?? index} product={product} />
             })}
           </div>
         ))}
@@ -196,7 +196,6 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         </div>
         <div className="h-32 sm:h-48">
           <img
-            key={product.id}
             src={product.images[0].thumbnailUrl}
             alt={product.title}
             className="h-full mx-auto"
