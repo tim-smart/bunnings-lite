@@ -1,0 +1,13 @@
+diff --git a/unpack.js b/unpack.js
+index 8f4a986cca9f10bb687eed2930f0119e699e57b1..175771206e36f94fa1aca60b98d4a25385cbed80 100644
+--- a/unpack.js
++++ b/unpack.js
+@@ -1032,7 +1032,7 @@ currentExtensions[0x42] = data => {
+ 			if (length <= 40) {
+ 				let out = view.getBigUint64(start)
+ 				for (let i = start + 8; i < end; i += 8) {
+-					out <<= BigInt(64n)
++					out <<= BigInt(64)
+ 					out |= view.getBigUint64(i)
+ 				}
+ 				return out
