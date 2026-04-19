@@ -1,4 +1,4 @@
-import { Layer } from "effect"
+import * as Layer from "effect/Layer"
 import { HttpLayer } from "./Rpc.ts"
 import { NodeRuntime } from "@effect/platform-node"
 import { TracerLayer } from "./Tracing.ts"

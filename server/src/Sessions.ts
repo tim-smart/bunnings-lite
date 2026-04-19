@@ -1,4 +1,6 @@
-import { DateTime, Effect, Exit } from "effect"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as DateTime from "effect/DateTime"
 import { Bunnings } from "./Bunnings.ts"
 import { Session, SessionLocation } from "./domain/Bunnings.ts"
 import * as Context from "effect/Context"

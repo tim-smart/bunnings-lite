@@ -1,6 +1,11 @@
-import { NodeHttpClient } from "@effect/platform-node"
-import { Config, Effect, Layer, Option, Redacted } from "effect"
-import { OtlpSerialization, OtlpTracer } from "effect/unstable/observability"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import * as Redacted from "effect/Redacted"
+import * as OtlpSerialization from "effect/unstable/observability/OtlpSerialization"
+import * as OtlpTracer from "effect/unstable/observability/OtlpTracer"
+import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
 
 export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {

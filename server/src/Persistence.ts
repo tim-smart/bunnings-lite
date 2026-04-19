@@ -1,7 +1,9 @@
 import { KeyValueStore, Persistence } from "effect/unstable/persistence"
 import { NodeRedis, NodeServices } from "@effect/platform-node"
-import { Config, Effect, Layer } from "effect"
-import { Option } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
+import * as Config from "effect/Config"
 
 export const PersistenceLayer = Layer.unwrap(
   Effect.gen(function* () {

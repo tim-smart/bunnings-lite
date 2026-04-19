@@ -1,4 +1,7 @@
-import { Array as Arr, Effect, Option, Stream } from "effect"
+import * as Arr from "effect/Array"
+import * as Effect from "effect/Effect"
+import * as Option from "effect/Option"
+import * as Stream from "effect/Stream"
 import {
   CurrentSession,
   FulfillmentResponse,

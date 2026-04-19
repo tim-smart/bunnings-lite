@@ -1,8 +1,12 @@
 /**
  * @since 1.0.0
  */
-import { Config, Context, Data, Effect, Layer } from "effect"
 import * as Api from "playwright"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Data from "effect/Data"
+import * as Context from "effect/Context"
+import * as Config from "effect/Config"
 
 export class PlaywrightError extends Data.TaggedError("PlaywrightError")<{
   readonly cause: unknown

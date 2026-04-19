@@ -1,4 +1,6 @@
-import { Effect, Layer, pipe } from "effect"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import { pipe } from "effect/Function"
 import { AuthMiddleware, Unauthorized } from "./domain/Auth.ts"
 import { Sessions } from "./Sessions.ts"
 import { CurrentSession } from "./domain/Bunnings.ts"
