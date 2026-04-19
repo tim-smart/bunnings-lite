@@ -3,3 +3,6 @@ onlyBuiltDependencies:
   - esbuild
   - msgpackr-extract
   - sharp
+
+patchedDependencies:
+  msgpackr: patches/msgpackr.patch

@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  msgpackr:
+    hash: 17739c77859ea4aba755287f4d721b46386b05c601e5e7132c30a08fa2e965eb
+    path: patches/msgpackr.patch
+
 importers:
 
   .:
@@ -5443,7 +5448,7 @@ snapshots:
       find-my-way-ts: 0.1.6
       ini: 6.0.0
       kubernetes-types: 1.30.0
-      msgpackr: 1.11.9
+      msgpackr: 1.11.9(patch_hash=17739c77859ea4aba755287f4d721b46386b05c601e5e7132c30a08fa2e965eb)
       multipasta: 0.2.7
       toml: 4.1.1
       uuid: 13.0.0
@@ -6302,7 +6307,7 @@ snapshots:
       '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.3
     optional: true
 
-  msgpackr@1.11.9:
+  msgpackr@1.11.9(patch_hash=17739c77859ea4aba755287f4d721b46386b05c601e5e7132c30a08fa2e965eb):
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
