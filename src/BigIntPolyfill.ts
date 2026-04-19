@@ -1,3 +1,9 @@
+import ResizeObserver from "resize-observer-polyfill"
+
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = ResizeObserver
+}
+
 if (typeof globalThis.BigInt === "undefined") {
   globalThis.BigInt = ((input: string | number | bigint) => {
     return Math.floor(Number(input))
