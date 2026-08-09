@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "test": "playwright test"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@effect/atom-react": "4.0.0-beta.106",
@@ -40,7 +39,6 @@
   },
   "devDependencies": {
     "@effect/language-service": "^0.87.2",
-    "@playwright/test": "1.59.1",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/router-devtools": "^1.166.13",
