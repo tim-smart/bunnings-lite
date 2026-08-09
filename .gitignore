@@ -4,3 +4,6 @@ node_modules/
 dist/
 .wrangler/
 .env
+*.tsbuildinfo
+test-results/
+playwright-report/
