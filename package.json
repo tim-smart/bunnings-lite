@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@effect/atom-react": "4.0.0-beta.51",
-    "@effect/platform-browser": "4.0.0-beta.51",
+    "@effect/atom-react": "4.0.0-beta.106",
+    "@effect/platform-browser": "4.0.0-beta.106",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
@@ -23,20 +23,22 @@
     "@tanstack/react-virtual": "^3.13.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "4.0.0-beta.51",
+    "effect": "4.0.0-beta.106",
     "lucide-react": "^1.8.0",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "react-hook-form": "^7.72.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.14.0",
     "rehype-raw": "^7.0.0",
     "resize-observer-polyfill": "^1.5.1",
     "tailwind-merge": "^3.5.0",
-    "vaul": "^1.1.2"
+    "vaul": "^1.1.2",
+    "workbox-precaching": "^7.4.0",
+    "workbox-routing": "^7.4.0"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.85.1",
+    "@effect/language-service": "^0.87.2",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/router-devtools": "^1.166.13",
