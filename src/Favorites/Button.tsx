@@ -35,11 +35,11 @@ export function FavoriteButton({
       onMouseDownCapture={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        toggleFavorite(product)
       }}
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
+        toggleFavorite(product)
       }}
       aria-label="Toggle favorite"
     >
