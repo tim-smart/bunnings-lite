@@ -5,7 +5,6 @@ import { FavoritesLayer } from "./Favorites"
 import { kvsRuntime } from "./atoms/kvs"
 import * as Schema from "effect/Schema"
 import * as Option from "effect/Option"
-import * as Function from "effect/Function"
 import * as EventLog from "effect/unstable/eventlog/EventLog"
 import * as EventLogEncryption from "effect/unstable/eventlog/EventLogEncryption"
 import * as EventLogRemote from "effect/unstable/eventlog/EventLogRemote"
@@ -30,23 +29,8 @@ export class EventLogClient extends Context.Service<EventLogClient>()(
 ) {
   static readonly layer = Layer.effect(this, this.make)
 
-  static runtime = Atom.runtime((get) => {
-    const remoteUrl = get(remoteUrlAtom)
-    return this.layer.pipe(
-      Option.isSome(remoteUrl)
-        ? Layer.provide(
-            EventLogRemote.layerEncrypted.pipe(
-              Layer.provide(EventLog.layerRegistry),
-              Layer.provide(
-                RpcClient.layerProtocolSocket({ retryTransientErrors: true }),
-              ),
-              Layer.provide(RpcSerialization.layerMsgPack),
-              Layer.provide(
-                BrowserSocket.layerWebSocket(remoteUrl.value.toString()),
-              ),
-            ),
-          )
-        : Function.identity,
+  static runtime = Atom.runtime((get) =>
+    this.layer.pipe(
       Layer.provideMerge(EventLogLayer),
       Layer.provide(
         Layer.succeed(
@@ -54,8 +38,8 @@ export class EventLogClient extends Context.Service<EventLogClient>()(
           get(identityAtom) as EventLog.Identity["Service"],
         ),
       ),
-    )
-  })
+    ),
+  )
 }
 
 export const identityAtom = Atom.kvs({
@@ -83,3 +67,18 @@ export const remoteUrlAtom = Atom.kvs({
   schema: Schema.Option(Schema.URL),
   defaultValue: Option.none,
 })
+
+export const EventLogRemoteRuntime = Atom.runtime((get) =>
+  Option.match(get(remoteUrlAtom), {
+    onNone: () => Layer.empty,
+    onSome: (remoteUrl) =>
+      EventLogRemote.layerEncrypted.pipe(
+        Layer.provide(EventLog.layerRegistry),
+        Layer.provide(
+          RpcClient.layerProtocolSocket({ retryTransientErrors: true }),
+        ),
+        Layer.provide(RpcSerialization.layerMsgPack),
+        Layer.provide(BrowserSocket.layerWebSocket(remoteUrl.toString())),
+      ),
+  }),
+)

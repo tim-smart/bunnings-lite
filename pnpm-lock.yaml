@@ -5039,7 +5039,7 @@ snapshots:
 
   '@rollup/pluginutils@5.3.0(rollup@4.62.4)':
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       estree-walker: 2.0.2
       picomatch: 4.0.4
     optionalDependencies:

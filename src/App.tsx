@@ -3,7 +3,7 @@ import { useRegisterSW } from "virtual:pwa-register/react"
 import { RegistryProvider, useAtomMount } from "@effect/atom-react"
 import { loginAtom } from "./Search/atoms"
 import { router } from "./Router"
-import { EventLogClient } from "./EventLog"
+import { EventLogClient, EventLogRemoteRuntime } from "./EventLog"
 
 export default function App() {
   useRegisterSW({
@@ -21,5 +21,6 @@ export default function App() {
 function Session() {
   useAtomMount(loginAtom)
   useAtomMount(EventLogClient.runtime)
+  useAtomMount(EventLogRemoteRuntime)
   return null
 }

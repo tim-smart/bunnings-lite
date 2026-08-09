@@ -1,8 +1,9 @@
 node_modules/
-*.tsbuildinfo
 .DS_Store
 .direnv/
 dist/
-test-results/
 .wrangler/
 .env
+*.tsbuildinfo
+test-results/
+playwright-report/
