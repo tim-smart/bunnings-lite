@@ -59,6 +59,7 @@ export default defineConfig({
   },
 
   resolve: {
+    dedupe: ["effect"],
     alias: {
       "@": path.resolve(__dirname, "src"),
     },

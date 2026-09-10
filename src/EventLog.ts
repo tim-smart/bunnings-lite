@@ -77,7 +77,7 @@ export const EventLogRemoteRuntime = Atom.runtime((get) =>
         Layer.provide(
           RpcClient.layerProtocolSocket({ retryTransientErrors: true }),
         ),
-        Layer.provide(RpcSerialization.layerMsgPack),
+        Layer.provide(RpcSerialization.layerSchemaBinary()),
         Layer.provide(BrowserSocket.layerWebSocket(remoteUrl.toString())),
       ),
   }),

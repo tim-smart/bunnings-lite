@@ -3,4 +3,3 @@ ignoredBuiltDependencies:
 
 onlyBuiltDependencies:
   - esbuild
-  - msgpackr-extract

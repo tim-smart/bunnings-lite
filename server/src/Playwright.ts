@@ -41,7 +41,7 @@ export class Browser extends Context.Service<Browser, Api.Browser>()(
 
   static Live = Layer.unwrap(
     Effect.gen({ self: this }, function* () {
-      const isProd = yield* Config.string("NODE_ENV").pipe(
+      const isProd = yield* Config.String("NODE_ENV").pipe(
         Config.map((env) => env === "production"),
         Config.withDefault(false),
       )

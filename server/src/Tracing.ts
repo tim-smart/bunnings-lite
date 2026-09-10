@@ -9,7 +9,7 @@ import * as NodeHttpClient from "@effect/platform-node/NodeHttpClient"
 
 export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {
-    const apiKey = yield* Config.redacted("HONEYCOMB_API_KEY").pipe(
+    const apiKey = yield* Config.Redacted("HONEYCOMB_API_KEY").pipe(
       Config.option,
     )
     if (Option.isNone(apiKey)) {

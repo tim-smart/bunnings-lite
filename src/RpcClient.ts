@@ -34,7 +34,7 @@ const AuthLayer = RpcMiddleware.layerClient(
 
 const SocketLayer = Layer.unwrap(
   Effect.gen(function* () {
-    const url = yield* Config.string("VITE_API_URL")
+    const url = yield* Config.String("VITE_API_URL")
     return BrowserSocket.layerWebSocket(url)
   }),
 )

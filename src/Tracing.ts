@@ -9,7 +9,7 @@ import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient"
 
 export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {
-    const apiKey = yield* Config.redacted("VITE_HONEYCOMB_API_KEY").pipe(
+    const apiKey = yield* Config.Redacted("VITE_HONEYCOMB_API_KEY").pipe(
       Config.option,
     )
     if (Option.isNone(apiKey)) {

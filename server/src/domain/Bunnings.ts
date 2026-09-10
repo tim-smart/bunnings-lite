@@ -218,7 +218,7 @@ export class SearchResponseData extends Schema.Class<SearchResponseData>(
 
 export const SearchResponseDataRemapped = Schema.Json.pipe(
   Schema.decodeTo(SearchResponseDataRaw, {
-    decode: SchemaGetter.transformOrFail((data: any) =>
+    decode: SchemaGetter.transformEffect((data: any) =>
       CurrentSession.useSync((session) => ({
         totalCount: data.totalCount,
         facets: data.facets.map((facet: any) => ({
