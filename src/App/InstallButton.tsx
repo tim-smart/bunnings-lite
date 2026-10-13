@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { installPromptAtom } from "./atoms"
 import { Home } from "lucide-react"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 import { useAtomValue } from "@effect/atom-react"
 
 export function InstallButton() {

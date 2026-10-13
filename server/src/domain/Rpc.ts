@@ -8,8 +8,8 @@ import {
   Store,
 } from "./Bunnings.ts"
 import { ProductReview, ReviewStats } from "./Bazaar.ts"
-import * as RpcGroup from "effect/unstable/rpc/RpcGroup"
-import * as Rpc from "effect/unstable/rpc/Rpc"
+import * as RpcGroup from "effect/rpc/RpcGroup"
+import * as Rpc from "effect/rpc/Rpc"
 import * as Schema from "effect/Schema"
 
 export class Rpcs extends RpcGroup.make(

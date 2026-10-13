@@ -1,4 +1,4 @@
-import { RpcServer, RpcSerialization } from "effect/unstable/rpc"
+import { RpcServer, RpcSerialization } from "effect/rpc"
 import { Rpcs } from "./domain/Rpc.ts"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
@@ -14,7 +14,7 @@ import {
   FulfillmentInfoWithLocation,
 } from "./domain/Bunnings.ts"
 import { Sessions } from "./Sessions.ts"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpRouter from "effect/http/HttpRouter"
 
 const Handlers = Rpcs.toLayer(
   Effect.gen(function* () {

@@ -27,8 +27,8 @@ import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
 import { router } from "@/Router"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
-import * as Atom from "effect/unstable/reactivity/Atom"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as Atom from "effect/reactivity/Atom"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 
 export function SearchResults() {
   const queryIsSet = useAtomValue(queryIsSetAtom)

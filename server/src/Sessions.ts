@@ -6,8 +6,8 @@ import { Session, SessionLocation } from "./domain/Bunnings.ts"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"
 import * as Duration from "effect/Duration"
-import * as Persistable from "effect/unstable/persistence/Persistable"
-import * as PersistedCache from "effect/unstable/persistence/PersistedCache"
+import * as Persistable from "effect/persistence/Persistable"
+import * as PersistedCache from "effect/persistence/PersistedCache"
 import { PersistenceLayer } from "./Persistence.ts"
 
 export class Sessions extends Context.Service<Sessions>()("api/Sessions", {

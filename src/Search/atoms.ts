@@ -7,9 +7,9 @@ import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 import { Facet, ProductBaseInfo } from "../../server/src/domain/Bunnings"
 import { Unauthorized } from "../../server/src/domain/Auth.ts"
-import * as Atom from "effect/unstable/reactivity/Atom"
+import * as Atom from "effect/reactivity/Atom"
 import * as Queue from "effect/Queue"
-import * as RpcClientError from "effect/unstable/rpc/RpcClientError"
+import * as RpcClientError from "effect/rpc/RpcClientError"
 import * as Cause from "effect/Cause"
 
 export const queryAtom = Atom.searchParam(

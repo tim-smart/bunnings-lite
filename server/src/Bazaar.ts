@@ -1,8 +1,4 @@
-import {
-  HttpClient,
-  HttpClientRequest,
-  HttpClientResponse,
-} from "effect/unstable/http"
+import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/http"
 import { ProductsResponse, ReviewsResponse } from "./domain/Bazaar.ts"
 import * as Array from "effect/Array"
 import * as Effect from "effect/Effect"
