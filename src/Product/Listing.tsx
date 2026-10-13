@@ -23,8 +23,8 @@ import { useScrollBottom } from "@/lib/useScrollBottom"
 import { FulfillmentBadge } from "./FulfillmentBadge"
 import * as DateTime from "effect/DateTime"
 import * as Option from "effect/Option"
-import * as Atom from "effect/unstable/reactivity/Atom"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as Atom from "effect/reactivity/Atom"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 
 export function ProductListing({
   product,

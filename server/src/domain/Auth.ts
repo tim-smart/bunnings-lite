@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema"
 import { CurrentSession } from "./Bunnings.ts"
-import * as RpcMiddleware from "effect/unstable/rpc/RpcMiddleware"
+import * as RpcMiddleware from "effect/rpc/RpcMiddleware"
 
 export class Unauthorized extends Schema.TaggedError<Unauthorized>()(
   "Unauthorized",

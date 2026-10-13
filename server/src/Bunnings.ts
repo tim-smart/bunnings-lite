@@ -20,7 +20,7 @@ import {
   HttpClient,
   HttpClientRequest,
   HttpClientResponse,
-} from "effect/unstable/http"
+} from "effect/http"
 import { Page } from "./Playwright.ts"
 import * as Context from "effect/Context"
 import * as Layer from "effect/Layer"

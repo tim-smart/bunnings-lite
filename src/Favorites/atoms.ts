@@ -5,8 +5,8 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import { FavoritesRepo } from "@/Favorites"
 import { EventLogClient } from "@/EventLog"
-import * as Atom from "effect/unstable/reactivity/Atom"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as Atom from "effect/reactivity/Atom"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 
 export const favoritesAtom = FavoritesRepo.runtime.atom(
   FavoritesRepo.useSync((_) => _.allReactive).pipe(Stream.unwrap),

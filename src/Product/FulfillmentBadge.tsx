@@ -3,7 +3,7 @@ import { productFulfillmentAtom } from "./atoms"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
 import * as Option from "effect/Option"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 import { useAtomValue } from "@effect/atom-react"
 
 export function FulfillmentBadge({

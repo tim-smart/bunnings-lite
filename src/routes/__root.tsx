@@ -28,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { identityStringAtom, remoteUrlAtom } from "@/EventLog"
 import * as Option from "effect/Option"
-import * as Atom from "effect/unstable/reactivity/Atom"
+import * as Atom from "effect/reactivity/Atom"
 
 export const Route = createRootRoute({
   component: () => (

@@ -4,7 +4,7 @@ import { BaseInfoKey } from "@/RpcClient"
 import { useAtomValue } from "@effect/atom-react"
 import { createFileRoute } from "@tanstack/react-router"
 import * as Option from "effect/Option"
-import * as AsyncResult from "effect/unstable/reactivity/AsyncResult"
+import * as AsyncResult from "effect/reactivity/AsyncResult"
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductScreen,

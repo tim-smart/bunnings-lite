@@ -3,9 +3,9 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as Redacted from "effect/Redacted"
-import * as OtlpSerialization from "effect/unstable/observability/OtlpSerialization"
-import * as OtlpTracer from "effect/unstable/observability/OtlpTracer"
-import * as FetchHttpClient from "effect/unstable/http/FetchHttpClient"
+import * as OtlpSerialization from "effect/observability/OtlpSerialization"
+import * as OtlpTracer from "effect/observability/OtlpTracer"
+import * as FetchHttpClient from "effect/http/FetchHttpClient"
 
 export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {

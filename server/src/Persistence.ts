@@ -1,4 +1,4 @@
-import { KeyValueStore, Persistence } from "effect/unstable/persistence"
+import { KeyValueStore, Persistence } from "effect/persistence"
 import { NodeRedis, NodeServices } from "@effect/platform-node"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"

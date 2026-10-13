@@ -7,10 +7,10 @@ import { FavoriteEvents } from "./Favorites/Events"
 import * as Option from "effect/Option"
 import * as Array from "effect/Array"
 import * as Context from "effect/Context"
-import * as Reactivity from "effect/unstable/reactivity/Reactivity"
-import * as KeyValueStore from "effect/unstable/persistence/KeyValueStore"
-import * as Atom from "effect/unstable/reactivity/Atom"
-import * as EventLog from "effect/unstable/eventlog/EventLog"
+import * as Reactivity from "effect/reactivity/Reactivity"
+import * as KeyValueStore from "effect/persistence/KeyValueStore"
+import * as Atom from "effect/reactivity/Atom"
+import * as EventLog from "effect/eventlog/EventLog"
 
 export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
   "FavoritesRepo",
