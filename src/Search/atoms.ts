@@ -74,10 +74,7 @@ const filterAtom = Atom.family((filter: Filter) => {
         ctx.setSelf(Option.some(value))
       },
     ).pipe(Atom.keepAlive),
-    // resultsAtom reads this after its build, so it must already be initialized
-    value: Atom.make(Option.none<readonly [number, number]>()).pipe(
-      Atom.keepAlive,
-    ),
+    value: Atom.make(Option.none<readonly [number, number]>()),
     reset: Atom.fnSync((_: void, get) => {
       get.set(self.value, Option.none())
       get.refresh(self.min)
