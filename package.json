@@ -11,8 +11,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@effect/atom-react": "4.0.4",
-    "@effect/platform-browser": "4.0.4",
+    "@effect/atom-react": "4.0.5",
+    "@effect/platform-browser": "4.0.5",
     "@hookform/resolvers": "^5.9.1",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-label": "^2.1.15",
@@ -25,7 +25,7 @@
     "@tanstack/react-virtual": "^3.14.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "4.0.4",
+    "effect": "4.0.5",
     "lucide-react": "^1.43.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
