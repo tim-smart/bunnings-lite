@@ -86,32 +86,32 @@ export const join = (invite: Invite) => {
   location.reload()
 }
 
-const deleteJournal = Effect.callback<void, unknown>((resume) => {
-  const request = indexedDB.deleteDatabase(journalDatabase)
-  request.onsuccess = () => resume(Effect.void)
-  request.onerror = () => resume(Effect.fail(request.error))
-})
+const deleteJournal = (onBlocked: () => void) =>
+  Effect.callback<void, unknown>((resume) => {
+    const request = indexedDB.deleteDatabase(journalDatabase)
+    request.onblocked = onBlocked
+    request.onsuccess = () => resume(Effect.void)
+    request.onerror = () => resume(Effect.fail(request.error))
+  })
 
 // Safe to re-run, so a join interrupted by closing the page finishes next time
-export const applyPendingJoin = Effect.gen(function* () {
-  const kvs = yield* KeyValueStore.KeyValueStore
-  const encoded = yield* kvs.get(pendingJoinKey)
-  if (encoded === undefined) return
-  const decoded = Schema.decodeOption(InviteString)(encoded)
-  if (Option.isNone(decoded)) return yield* kvs.remove(pendingJoinKey)
-  const invite = decoded.value
-  yield* deleteJournal
-  yield* kvs.remove("favorites")
-  yield* KeyValueStore.toSchemaStore(kvs, EventLog.IdentitySchema).set(
-    "identity",
-    invite.identity,
-  )
-  yield* KeyValueStore.toSchemaStore(kvs, Schema.Option(Schema.URL)).set(
-    "remoteUrl",
-    Option.some(invite.remoteUrl),
-  )
-  yield* kvs.remove(pendingJoinKey)
-}).pipe(
-  Effect.catchCause(Effect.logError),
-  Effect.provide(BrowserKeyValueStore.layerLocalStorage),
-)
+export const applyPendingJoin = (onBlocked: () => void) =>
+  Effect.gen(function* () {
+    const kvs = yield* KeyValueStore.KeyValueStore
+    const encoded = yield* kvs.get(pendingJoinKey)
+    if (encoded === undefined) return
+    const decoded = Schema.decodeOption(InviteString)(encoded)
+    if (Option.isNone(decoded)) return yield* kvs.remove(pendingJoinKey)
+    const invite = decoded.value
+    yield* deleteJournal(onBlocked)
+    yield* kvs.remove("favorites")
+    yield* KeyValueStore.toSchemaStore(kvs, EventLog.IdentitySchema).set(
+      "identity",
+      invite.identity,
+    )
+    yield* KeyValueStore.toSchemaStore(kvs, Schema.Option(Schema.URL)).set(
+      "remoteUrl",
+      Option.some(invite.remoteUrl),
+    )
+    yield* kvs.remove(pendingJoinKey)
+  }).pipe(Effect.provide(BrowserKeyValueStore.layerLocalStorage))
