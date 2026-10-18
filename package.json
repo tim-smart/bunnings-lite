@@ -40,6 +40,7 @@
     "workbox-routing": "^7.4.0"
   },
   "devDependencies": {
+    "@effect/platform-node": "4.0.5",
     "@effect/tsgo": "0.51.1",
     "@playwright/test": "1.59.1",
     "@tailwindcss/typography": "^0.5.20",
