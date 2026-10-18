@@ -146,7 +146,7 @@ const mockApi = (context: BrowserContext) =>
     })
   })
 
-test("an already-synced device that joins another identity on the same server keeps and shares its favorites", async ({
+test("joining another identity on the same server discards this device's favorites", async ({
   browser,
 }) => {
   const openDevice = async (remoteUrl?: string) => {
@@ -173,19 +173,19 @@ test("an already-synced device that joins another identity on the same server ke
     await page.getByRole("button", { name: "Close" }).click()
     return link
   }
-  const join = async (page: Page, link: string) => {
+  const openInvite = async (page: Page, link: string) => {
     await page.goto(link)
-    const prompt = page.getByRole("dialog", { name: "Join shared sync?" })
+    return page.getByRole("dialog", { name: "Join shared sync?" })
+  }
+  const join = async (page: Page, link: string) => {
+    const prompt = await openInvite(page, link)
     await prompt.getByRole("button", { name: "Join" }).click()
     await expect(prompt).toBeHidden()
-  }
-  const expectFavorites = async (page: Page) => {
-    await expect(page.getByText("Shared Hammer")).toBeVisible()
-    await expect(page.getByText("Friend Drill")).toBeVisible()
   }
 
   const owner = await openDevice(syncServer)
   await favorite(owner, "Shared Hammer")
+  const invite = await copyInviteLink(owner)
 
   const friend = await openDevice(syncServer)
   await favorite(friend, "Friend Drill")
@@ -196,10 +196,24 @@ test("an already-synced device that joins another identity on the same server ke
   await join(checker, await copyInviteLink(friend))
   await expect(checker.getByText("Friend Drill")).toBeVisible()
 
-  await join(friend, await copyInviteLink(owner))
-  await expectFavorites(friend)
-  await expectFavorites(owner)
-
+  const prompt = await openInvite(friend, invite)
+  await expect(prompt).toContainText(/discard/i)
+  await prompt.getByRole("button", { name: "Cancel" }).click()
   await friend.reload()
-  await expectFavorites(friend)
+  await expect(friend.getByText("Friend Drill")).toBeVisible()
+
+  await join(friend, invite)
+  await expect(friend.getByText("Shared Hammer")).toBeVisible()
+  await expect(friend.getByText("Friend Drill")).toBeHidden()
+  await friend.reload()
+  await expect(friend.getByText("Shared Hammer")).toBeVisible()
+  await expect(friend.getByText("Friend Drill")).toBeHidden()
+
+  // Once the friend's new favorite reaches the owner, anything else the friend
+  // uploaded would have arrived too.
+  await favorite(friend, "Joined Saw")
+  await expect(owner.getByText("Joined Saw")).toBeVisible()
+  await expect(owner.getByText("Friend Drill")).toBeHidden()
+  // The friend's old identity keeps its data on the server
+  await expect(checker.getByText("Friend Drill")).toBeVisible()
 })
