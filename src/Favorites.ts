@@ -12,6 +12,11 @@ import * as KeyValueStore from "effect/persistence/KeyValueStore"
 import * as Atom from "effect/reactivity/Atom"
 import * as EventLog from "effect/eventlog/EventLog"
 
+export const FavoritesStore = {
+  key: "favorites",
+  schema: Schema.Array(ProductBaseInfo),
+}
+
 export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
   "FavoritesRepo",
   {
@@ -19,9 +24,9 @@ export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
       const reactivity = yield* Reactivity.Reactivity
       const store = KeyValueStore.toSchemaStore(
         yield* KeyValueStore.KeyValueStore,
-        Schema.Array(ProductBaseInfo),
+        FavoritesStore.schema,
       )
-      const map = (yield* store.get("favorites")).pipe(
+      const map = (yield* store.get(FavoritesStore.key)).pipe(
         Option.map(
           (products) => new Map(products.map((p) => [p.id, p] as const)),
         ),
@@ -34,7 +39,7 @@ export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
         Effect.suspend(() => {
           map.set(product.id, product)
           return store
-            .set("favorites", Array.fromIterable(map.values()))
+            .set(FavoritesStore.key, Array.fromIterable(map.values()))
             .pipe(Effect.orDie)
         })
       const remove = (id: string) =>
@@ -44,12 +49,12 @@ export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
           }
           map.delete(id)
           return store
-            .set("favorites", Array.fromIterable(map.values()))
+            .set(FavoritesStore.key, Array.fromIterable(map.values()))
             .pipe(Effect.orDie)
         })
       const clear = Effect.suspend(() => {
         map.clear()
-        return store.set("favorites", []).pipe(Effect.orDie)
+        return store.set(FavoritesStore.key, []).pipe(Effect.orDie)
       })
       return { all, allReactive, add, remove, clear } as const
     }),

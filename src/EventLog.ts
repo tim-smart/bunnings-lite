@@ -15,8 +15,10 @@ import * as BrowserSocket from "@effect/platform-browser/BrowserSocket"
 import * as RpcClient from "effect/rpc/RpcClient"
 import * as RpcSerialization from "effect/rpc/RpcSerialization"
 
+export const journalDatabase = "effect_event_journal"
+
 const EventLogLayer = EventLog.layer(AllEvents, FavoritesLayer).pipe(
-  Layer.provide(EventJournal.layerIndexedDb()),
+  Layer.provide(EventJournal.layerIndexedDb({ database: journalDatabase })),
 )
 
 const makeClient = EventLog.makeClient(AllEvents)
@@ -42,10 +44,24 @@ export class EventLogClient extends Context.Service<EventLogClient>()(
   )
 }
 
-export const identityAtom = Atom.kvs({
-  runtime: kvsRuntime,
+// Storage shared by the atoms and the join, which writes them before the
+// atoms exist
+export const IdentityStore = {
   key: "identity",
   schema: EventLog.IdentitySchema,
+}
+
+export const RemoteUrlStore = {
+  key: "remoteUrl",
+  schema: Schema.Option(Schema.URL),
+}
+
+// Only changes across a reload, in `applyPendingJoin`. Changing it in a
+// running page would rebuild `EventLogClient.runtime` on the old journal and
+// re-run the last `runtime.fn` mutation under the new identity.
+export const identityAtom = Atom.kvs({
+  runtime: kvsRuntime,
+  ...IdentityStore,
   defaultValue: () =>
     EventLog.makeIdentity.pipe(
       Effect.provide(EventLogEncryption.layerSubtle),
@@ -53,18 +69,15 @@ export const identityAtom = Atom.kvs({
     ),
 })
 
-export const identityStringAtom = Atom.writable(
-  (get) =>
-    EventLog.encodeIdentityString(
-      get(identityAtom) as EventLog.Identity["Service"],
-    ),
-  (ctx, s: string) => ctx.set(identityAtom, EventLog.decodeIdentityString(s)),
+export const identityStringAtom = Atom.make((get) =>
+  EventLog.encodeIdentityString(
+    get(identityAtom) as EventLog.Identity["Service"],
+  ),
 )
 
 export const remoteUrlAtom = Atom.kvs({
   runtime: kvsRuntime,
-  key: "remoteUrl",
-  schema: Schema.Option(Schema.URL),
+  ...RemoteUrlStore,
   defaultValue: Option.none,
 })
 
