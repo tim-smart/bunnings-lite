@@ -89,8 +89,26 @@ export class SessionToken extends Schema.Class<SessionToken>(
   expires: Schema.DateTimeUtcFromMillis,
   token: Schema.String,
 }) {
-  static fromJson = Schema.decodeEffect(Schema.fromJsonString(SessionToken))
+  static fromFragment = Effect.fnUntraced(function* (fragment: string) {
+    const { access_token, expires_in } = yield* decodeTokenFragment(
+      new URLSearchParams(fragment),
+    )
+    const now = yield* DateTime.now
+    return new SessionToken({
+      token: access_token,
+      expires: DateTime.add(now, { seconds: expires_in }),
+    })
+  })
 }
+
+const decodeTokenFragment = Schema.decodeEffect(
+  Schema.fromURLSearchParams(
+    Schema.Struct({
+      access_token: Schema.String,
+      expires_in: Schema.FiniteFromString,
+    }),
+  ),
+)
 
 export class Session extends Schema.Class<Session>("domain/Bunnings/Session")({
   id: Schema.String,

@@ -27,6 +27,8 @@
           "@effect/experimental"
         ],
         "diagnosticSeverity": {
+          "unstableApiUsage": "off",
+          "experimentalApiUsage": "off",
           "abortControllerInEffect": "warning",
           "asyncFunction": "warning",
           "cryptoRandomUUID": "warning",

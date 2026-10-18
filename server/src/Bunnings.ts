@@ -16,43 +16,69 @@ import {
   StoresResponse,
 } from "./domain/Bunnings.ts"
 import {
+  Cookies,
   HttpBody,
   HttpClient,
   HttpClientRequest,
   HttpClientResponse,
 } from "effect/http"
-import { Page } from "./Playwright.ts"
 import * as Context from "effect/Context"
+import * as Data from "effect/Data"
 import * as Layer from "effect/Layer"
 import { NodeHttpClient } from "@effect/platform-node"
+// @effect-diagnostics-next-line nodeBuiltinImport:off
+import { randomBytes, randomUUID } from "node:crypto"
+
+export class GuestTokenError extends Data.TaggedError("GuestTokenError") {}
 
 export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
   make: Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient
 
+    // Replays the site's hidden iframe OAuth implicit flow. The redirect chain
+    // sets cookies on each hop, and the token arrives in the fragment of the
+    // final redirect back to bunnings.co.nz.
     const makeSession = Effect.fn("Bunnings.makeSession")(function* (
       id: string,
     ) {
-      yield* Page.with((page) =>
-        page.goto("https://www.bunnings.co.nz/", { waitUntil: "commit" }),
+      let cookies = Cookies.empty
+      let request = HttpClientRequest.get(
+        "https://authorisation.api.bunnings.co.nz/connect/authorize",
+        {
+          urlParams: {
+            response_type: "token",
+            scope: "chk:exec cm:access ecom:access chk:pub vch:public bsk:pub",
+            client_id: "budp_guest_user_nz",
+            redirect_uri: "https://www.bunnings.co.nz/static/guest.html",
+            nonce: randomBytes(9).toString("hex"),
+            acr_values: `adtid:${randomUUID()}`,
+          },
+        },
       )
-
-      let tokenCookie: { value: string } | undefined = undefined
-      while (!tokenCookie) {
-        tokenCookie = yield* Page.with((page) =>
-          page
-            .context()
-            .cookies()
-            .then((_) => _.find((_) => _.name === "guest-token-storage")),
+      for (let redirects = 0; redirects < 10; redirects++) {
+        const response = yield* defaultClient.execute(
+          HttpClientRequest.setHeader(
+            request,
+            "cookie",
+            Cookies.toCookieHeader(cookies),
+          ),
         )
+        const location = response.headers.location
+        if (!location) break
+        const url = new URL(location, response.request.url)
+        if (url.origin === "https://www.bunnings.co.nz") {
+          const token = yield* SessionToken.fromFragment(url.hash.slice(1))
+          return new Session({
+            id,
+            token,
+            location: SessionUnsetLocation.default,
+          })
+        }
+        cookies = Cookies.merge(cookies, response.cookies)
+        request = HttpClientRequest.get(url)
       }
-      const token = yield* SessionToken.fromJson(tokenCookie.value)
-      return new Session({
-        id,
-        token,
-        location: SessionUnsetLocation.default,
-      })
-    }, Effect.provide(Page.layer))
+      return yield* new GuestTokenError()
+    })
 
     const apiClient = Effect.fnUntraced(function* (version = "v1") {
       const session = yield* CurrentSession
