@@ -26,10 +26,12 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
-import { identityStringAtom, remoteUrlAtom } from "@/EventLog"
+import { remoteUrlAtom } from "@/EventLog"
 import * as Option from "effect/Option"
 import * as Atom from "effect/reactivity/Atom"
+import * as EventLog from "effect/eventlog/EventLog"
 import { CopyInviteButton, InviteDialog } from "@/Sync/Invite"
+import { identityStringAtom, switchIdentityAtom } from "@/Sync/atoms"
 
 export const Route = createRootRoute({
   component: () => (
@@ -139,7 +141,8 @@ function SearchInput() {
 }
 
 function SettingsPanel() {
-  const [identityString, setIdentityString] = useAtom(identityStringAtom)
+  const identityString = useAtomValue(identityStringAtom)
+  const switchIdentity = useAtomSet(switchIdentityAtom)
   const [remoteUrlReal, setRemoteUrlReal] = useAtom(remoteUrlAtom)
   const remoteUrlString = Option.match(remoteUrlReal, {
     onNone: () => "",
@@ -189,7 +192,9 @@ function SettingsPanel() {
             <Input
               id="identity"
               value={identityString}
-              onChange={(e) => setIdentityString(e.target.value)}
+              onChange={(e) =>
+                switchIdentity(EventLog.decodeIdentityString(e.target.value))
+              }
             />
           </label>
 

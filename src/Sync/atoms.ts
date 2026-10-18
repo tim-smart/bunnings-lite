@@ -1,8 +1,12 @@
-import * as EventLog from "effect/eventlog/EventLog"
 import * as Option from "effect/Option"
 import * as Atom from "effect/reactivity/Atom"
 import * as Schema from "effect/Schema"
-import { identityAtom, remoteUrlAtom } from "@/EventLog"
+import * as Effect from "effect/Effect"
+import * as Array from "effect/Array"
+import * as EventLog from "effect/eventlog/EventLog"
+import { identityAtom, remoteUrlAtom, withEventLog } from "@/EventLog"
+import { AllEvents } from "@/Events"
+import { favoritesAtom } from "@/Favorites/atoms"
 
 const RemoteUrl = Schema.URLFromString.check(
   Schema.makeFilter(
@@ -71,4 +75,38 @@ export const inviteLinkAtom = Atom.make((get) =>
     })
     return `${location.origin}/#invite=${encoded}`
   }),
+)
+
+// Each identity has its own journal, so the favorites on this device are
+// written to the new identity's log to carry them over and sync them there.
+// Kept alive so it finishes after the join prompt unmounts.
+export const switchIdentityAtom = Atom.fn(
+  Effect.fnUntraced(function* (
+    identity: typeof EventLog.IdentitySchema.Type,
+    get: Atom.FnContext,
+  ) {
+    if (get(identityAtom).publicKey === identity.publicKey) return
+    // Oldest first, so other devices list them in the same order
+    const favorites = Array.reverse(yield* get.result(favoritesAtom))
+    get.set(identityAtom, identity)
+    if (!Array.isReadonlyArrayNonEmpty(favorites)) return
+    yield* withEventLog(
+      get,
+      EventLog.EventLog.use((log) =>
+        log.writeMany({
+          schema: AllEvents,
+          events: Array.map(favorites, (product) => ({
+            event: "FavoriteAdd" as const,
+            payload: product,
+          })),
+        }),
+      ),
+    )
+  }),
+).pipe(Atom.keepAlive)
+
+export const identityStringAtom = Atom.make((get) =>
+  EventLog.encodeIdentityString(
+    get(identityAtom) as EventLog.Identity["Service"],
+  ),
 )

@@ -11,8 +11,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { identityAtom, remoteUrlAtom } from "@/EventLog"
-import { inviteLinkAtom, pendingInviteAtom, type Invite } from "./atoms"
+import { remoteUrlAtom } from "@/EventLog"
+import {
+  inviteLinkAtom,
+  pendingInviteAtom,
+  switchIdentityAtom,
+  type Invite,
+} from "./atoms"
 
 export function CopyInviteButton() {
   const link = useAtomValue(inviteLinkAtom)
@@ -90,7 +95,7 @@ function JoinPrompt({
   readonly onDone: () => void
 }) {
   const [currentRemote, setRemoteUrl] = useAtom(remoteUrlAtom)
-  const setIdentity = useAtomSet(identityAtom)
+  const switchIdentity = useAtomSet(switchIdentityAtom)
 
   return (
     <>
@@ -136,7 +141,7 @@ function JoinPrompt({
         <Button
           onClick={() => {
             setRemoteUrl(Option.some(invite.remoteUrl))
-            setIdentity(invite.identity)
+            switchIdentity(invite.identity)
             onDone()
           }}
         >

@@ -17,9 +17,14 @@ export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
   {
     make: Effect.gen(function* () {
       const reactivity = yield* Reactivity.Reactivity
+      const kvs = yield* KeyValueStore.KeyValueStore
       const store = KeyValueStore.toSchemaStore(
-        yield* KeyValueStore.KeyValueStore,
+        kvs,
         Schema.Array(ProductBaseInfo),
+      )
+      const addedAtStore = KeyValueStore.toSchemaStore(
+        kvs,
+        Schema.Record(Schema.String, Schema.Finite),
       )
       const map = (yield* store.get("favorites")).pipe(
         Option.map(
@@ -27,30 +32,58 @@ export class FavoritesRepo extends Context.Service<FavoritesRepo>()(
         ),
         Option.getOrElse(() => new Map<string, ProductBaseInfo>()),
       )
+      // When each favorite was last added. Synced events can arrive after
+      // newer local ones, e.g. an identity's history after this device's
+      // favorites were carried over to it, so a remove or clear only applies
+      // to favorites added before it.
+      const addedAt = (yield* addedAtStore.get("favoritesAddedAt")).pipe(
+        Option.map((record) => new Map(Object.entries(record))),
+        Option.getOrElse(() => new Map<string, number>()),
+      )
+      const addedBefore = (id: string, at: number) =>
+        (addedAt.get(id) ?? 0) <= at
+
+      const save = Effect.suspend(() =>
+        Effect.all([
+          store.set("favorites", Array.fromIterable(map.values())),
+          addedAtStore.set("favoritesAddedAt", Object.fromEntries(addedAt)),
+        ]),
+      ).pipe(
+        Effect.orDie,
+        Effect.andThen(reactivity.invalidate(["favorites"])),
+      )
 
       const all = Effect.sync(() => Array.reverse(map.values()))
       const allReactive = reactivity.stream(["favorites"], all)
-      const add = (product: ProductBaseInfo) =>
+      const add = (product: ProductBaseInfo, at: number) =>
         Effect.suspend(() => {
           map.set(product.id, product)
-          return store
-            .set("favorites", Array.fromIterable(map.values()))
-            .pipe(Effect.orDie)
+          // Clamp other devices' clocks, so later local removes always apply
+          addedAt.set(
+            product.id,
+            Math.max(addedAt.get(product.id) ?? 0, Math.min(at, Date.now())),
+          )
+          return save
         })
-      const remove = (id: string) =>
+      const remove = (id: string, at: number) =>
         Effect.suspend(() => {
-          if (!map.has(id)) {
+          if (!map.has(id) || !addedBefore(id, at)) {
             return Effect.void
           }
           map.delete(id)
-          return store
-            .set("favorites", Array.fromIterable(map.values()))
-            .pipe(Effect.orDie)
+          addedAt.delete(id)
+          return save
         })
-      const clear = Effect.suspend(() => {
-        map.clear()
-        return store.set("favorites", []).pipe(Effect.orDie)
-      })
+      const clear = (at: number) =>
+        Effect.suspend(() => {
+          for (const id of map.keys()) {
+            if (addedBefore(id, at)) {
+              map.delete(id)
+              addedAt.delete(id)
+            }
+          }
+          return save
+        })
       return { all, allReactive, add, remove, clear } as const
     }),
   },
@@ -67,11 +100,17 @@ const FavoritesEventsLayer = EventLog.group(
     const repo = yield* FavoritesRepo
 
     return handlers
-      .handle("FavoriteAdd", ({ payload }) => repo.add(payload))
-      .handle("FavoriteRemove", ({ payload }) => repo.remove(payload))
-      .handle("FavoritesClear", () => repo.clear)
+      .handle("FavoriteAdd", ({ payload, entry }) =>
+        repo.add(payload, entry.createdAtMillis),
+      )
+      .handle("FavoriteRemove", ({ payload, entry }) =>
+        repo.remove(payload, entry.createdAtMillis),
+      )
+      .handle("FavoritesClear", ({ entry }) =>
+        repo.clear(entry.createdAtMillis),
+      )
   }),
-).pipe(Layer.provide(FavoritesRepo.layer))
+)
 
 const FavoritesCompactionLive = EventLog.groupCompaction(
   FavoriteEvents,
@@ -113,12 +152,7 @@ const FavoritesCompactionLive = EventLog.groupCompaction(
   }),
 )
 
-const FavoritesReactivityLive = EventLog.groupReactivity(FavoriteEvents, [
-  "favorites",
-])
-
 export const FavoritesLayer = Layer.mergeAll(
   FavoritesEventsLayer,
   FavoritesCompactionLive,
-  FavoritesReactivityLive,
 )
