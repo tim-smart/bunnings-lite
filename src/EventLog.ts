@@ -44,20 +44,24 @@ export class EventLogClient extends Context.Service<EventLogClient>()(
   )
 }
 
-// Runs once against the current log. Unlike `EventLogClient.runtime.fn`, it
-// is not re-run with its last argument when the runtime is rebuilt.
-export const withEventLog = <A, E>(
-  get: Atom.FnContext,
-  effect: Effect.Effect<A, E, EventLogClient>,
-) =>
-  get
-    .result(EventLogClient.runtime, { suspendOnWaiting: true })
-    .pipe(Effect.flatMap((services) => Effect.provide(effect, services)))
-
-export const identityAtom = Atom.kvs({
-  runtime: kvsRuntime,
+// Storage shared by the atoms and the join, which writes them before the
+// atoms exist
+export const IdentityStore = {
   key: "identity",
   schema: EventLog.IdentitySchema,
+}
+
+export const RemoteUrlStore = {
+  key: "remoteUrl",
+  schema: Schema.Option(Schema.URL),
+}
+
+// Only changes across a reload, in `applyPendingJoin`. Changing it in a
+// running page would rebuild `EventLogClient.runtime` on the old journal and
+// re-run the last `runtime.fn` mutation under the new identity.
+export const identityAtom = Atom.kvs({
+  runtime: kvsRuntime,
+  ...IdentityStore,
   defaultValue: () =>
     EventLog.makeIdentity.pipe(
       Effect.provide(EventLogEncryption.layerSubtle),
@@ -73,8 +77,7 @@ export const identityStringAtom = Atom.make((get) =>
 
 export const remoteUrlAtom = Atom.kvs({
   runtime: kvsRuntime,
-  key: "remoteUrl",
-  schema: Schema.Option(Schema.URL),
+  ...RemoteUrlStore,
   defaultValue: Option.none,
 })
 

@@ -5,7 +5,14 @@ import * as Schema from "effect/Schema"
 import * as Effect from "effect/Effect"
 import * as KeyValueStore from "effect/persistence/KeyValueStore"
 import * as BrowserKeyValueStore from "@effect/platform-browser/BrowserKeyValueStore"
-import { identityAtom, journalDatabase, remoteUrlAtom } from "@/EventLog"
+import {
+  IdentityStore,
+  RemoteUrlStore,
+  identityAtom,
+  journalDatabase,
+  remoteUrlAtom,
+} from "@/EventLog"
+import { FavoritesStore } from "@/Favorites"
 
 const RemoteUrl = Schema.URLFromString.check(
   Schema.makeFilter(
@@ -104,13 +111,15 @@ export const applyPendingJoin = (onBlocked: () => void) =>
     if (Option.isNone(decoded)) return yield* kvs.remove(pendingJoinKey)
     const invite = decoded.value
     yield* deleteJournal(onBlocked)
-    yield* kvs.remove("favorites")
-    yield* KeyValueStore.toSchemaStore(kvs, EventLog.IdentitySchema).set(
-      "identity",
+    yield* kvs.remove(FavoritesStore.key)
+    // Awaited store writes rather than the atoms: `Atom.kvs` doesn't report a
+    // failed write, so the marker below would be removed anyway
+    yield* KeyValueStore.toSchemaStore(kvs, IdentityStore.schema).set(
+      IdentityStore.key,
       invite.identity,
     )
-    yield* KeyValueStore.toSchemaStore(kvs, Schema.Option(Schema.URL)).set(
-      "remoteUrl",
+    yield* KeyValueStore.toSchemaStore(kvs, RemoteUrlStore.schema).set(
+      RemoteUrlStore.key,
       Option.some(invite.remoteUrl),
     )
     yield* kvs.remove(pendingJoinKey)

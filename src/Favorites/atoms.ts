@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import { FavoritesRepo } from "@/Favorites"
-import { EventLogClient, withEventLog } from "@/EventLog"
+import { EventLogClient } from "@/EventLog"
 import * as Atom from "effect/reactivity/Atom"
 import * as AsyncResult from "effect/reactivity/AsyncResult"
 
@@ -21,27 +21,20 @@ export const isFavoriteAtom = Atom.family((id: string) =>
   ),
 )
 
-export const clearFavoritesAtom = Atom.fn((_: void, get) =>
-  withEventLog(
-    get,
-    EventLogClient.use((_) => _("FavoritesClear", void 0)),
-  ),
+export const clearFavoritesAtom = EventLogClient.runtime.fn(() =>
+  EventLogClient.use((_) => _("FavoritesClear", void 0)),
 )
 
-export const toggleFavoriteAtom = Atom.fn(
-  (product: ProductBaseInfo, get) =>
-    withEventLog(
-      get,
-      Effect.gen(function* () {
-        const client = yield* EventLogClient
-        const isFavorite = get(isFavoriteAtom(product.id))
-        if (isFavorite) {
-          yield* client("FavoriteRemove", product.id)
-        } else {
-          yield* client("FavoriteAdd", product)
-        }
-      }),
-    ),
+export const toggleFavoriteAtom = EventLogClient.runtime.fn(
+  Effect.fnUntraced(function* (product: ProductBaseInfo, get: Atom.FnContext) {
+    const client = yield* EventLogClient
+    const isFavorite = get(isFavoriteAtom(product.id))
+    if (isFavorite) {
+      yield* client("FavoriteRemove", product.id)
+    } else {
+      yield* client("FavoriteAdd", product)
+    }
+  }),
   { concurrent: true },
 )
 
