@@ -82,6 +82,64 @@ test("declining an invite keeps the device's existing sync settings", async ({
   await friend.close()
 })
 
+test("joining while another tab is open asks to close it, then finishes", async ({
+  context,
+  browser,
+}) => {
+  const { link, settings } = await createInvite(context)
+
+  const friend = await browser.newContext({ baseURL: link.origin })
+  const otherTab = await friend.newPage()
+  await otherTab.goto("/")
+  const page = await friend.newPage()
+  await page.goto(link.toString())
+  const prompt = page.getByRole("dialog", { name: "Join shared sync?" })
+  await prompt.getByRole("button", { name: "Join" }).click()
+
+  // The other tab keeps the old sync data open, so it can't be discarded yet
+  const waiting = page.getByText(/close .*tabs?/i)
+  await expect(waiting).toBeVisible()
+
+  await otherTab.close()
+  await expect(waiting).toBeHidden()
+  expect(await readSyncSettings(page)).toEqual(settings)
+  await friend.close()
+})
+
+test("a join that fails to save its settings can be retried", async ({
+  context,
+  browser,
+}) => {
+  const { link, settings } = await createInvite(context)
+
+  const friend = await browser.newContext({ baseURL: link.origin })
+  // Saving the invite's remote fails, like a full storage quota, until the
+  // tab allows it
+  await friend.addInitScript((remote) => {
+    const setItem = Storage.prototype.setItem
+    Storage.prototype.setItem = function (key, value) {
+      if (value.includes(remote) && !sessionStorage.getItem("allowWrites")) {
+        throw new DOMException("Storage is full", "QuotaExceededError")
+      }
+      return setItem.call(this, key, value)
+    }
+  }, new URL(sharedRemote).host)
+  const page = await friend.newPage()
+  await page.goto(link.toString())
+  const prompt = page.getByRole("dialog", { name: "Join shared sync?" })
+  await prompt.getByRole("button", { name: "Join" }).click()
+
+  // The app doesn't start with half the invite's settings
+  const retry = page.getByRole("button", { name: "Retry" })
+  await expect(retry).toBeVisible()
+  await expect(page.getByRole("button", { name: "Sync settings" })).toBeHidden()
+
+  await page.evaluate(() => sessionStorage.setItem("allowWrites", "1"))
+  await retry.click()
+  expect(await readSyncSettings(page)).toEqual(settings)
+  await friend.close()
+})
+
 // Started by playwright.config.ts from tests/support/sync-server.ts
 const syncServer = "ws://127.0.0.1:65533/"
 
