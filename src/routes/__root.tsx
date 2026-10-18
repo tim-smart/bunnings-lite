@@ -29,12 +29,14 @@ import { Button } from "@/components/ui/button"
 import { identityStringAtom, remoteUrlAtom } from "@/EventLog"
 import * as Option from "effect/Option"
 import * as Atom from "effect/reactivity/Atom"
+import { CopyInviteButton, InviteDialog } from "@/Sync/Invite"
 
 export const Route = createRootRoute({
   component: () => (
     <div className="flex min-h-screen flex-col bg-primary">
       <header>
         <SettingsPanel />
+        <InviteDialog />
 
         <div className="flex">
           <div className="flex-1"></div>
@@ -139,25 +141,23 @@ function SearchInput() {
 function SettingsPanel() {
   const [identityString, setIdentityString] = useAtom(identityStringAtom)
   const [remoteUrlReal, setRemoteUrlReal] = useAtom(remoteUrlAtom)
-  const [remoteUrl, setRemoteUrl] = useState(
-    Option.match(remoteUrlReal, {
-      onNone: () => "",
-      onSome: (url) => url.toString(),
-    }),
-  )
+  const remoteUrlString = Option.match(remoteUrlReal, {
+    onNone: () => "",
+    onSome: (url) => url.toString(),
+  })
+  const [remoteUrl, setRemoteUrl] = useState(remoteUrlString)
   return (
     <Drawer
-      onClose={() =>
-        setRemoteUrl(
-          Option.match(remoteUrlReal, {
-            onNone: () => "",
-            onSome: (url) => url.toString(),
-          }),
-        )
-      }
+      // Settings can change while closed, e.g. by accepting an invite
+      onOpenChange={(open) => {
+        if (open) setRemoteUrl(remoteUrlString)
+      }}
     >
-      <DrawerTrigger>
-        <Settings2 className="text-white absolute top-3 right-3 cursor-pointer" />
+      <DrawerTrigger
+        aria-label="Sync settings"
+        className="absolute top-3 right-3 cursor-pointer"
+      >
+        <Settings2 className="text-white" />
       </DrawerTrigger>
       <DrawerContent className="max-w-md mx-auto">
         <DrawerHeader>
@@ -167,7 +167,7 @@ function SettingsPanel() {
           <label className="text-sm">
             Remote URL
             <Input
-              id="identity"
+              id="remote-url"
               value={remoteUrl}
               onChange={(e) => {
                 const trimmed = e.target.value.trim()
@@ -192,6 +192,8 @@ function SettingsPanel() {
               onChange={(e) => setIdentityString(e.target.value)}
             />
           </label>
+
+          <CopyInviteButton />
         </div>
         <DrawerFooter>
           <DrawerClose asChild>
