@@ -139,7 +139,7 @@ function SearchInput() {
 }
 
 function SettingsPanel() {
-  const [identityString, setIdentityString] = useAtom(identityStringAtom)
+  const identityString = useAtomValue(identityStringAtom)
   const [remoteUrlReal, setRemoteUrlReal] = useAtom(remoteUrlAtom)
   const remoteUrlString = Option.match(remoteUrlReal, {
     onNone: () => "",
@@ -189,7 +189,9 @@ function SettingsPanel() {
             <Input
               id="identity"
               value={identityString}
-              onChange={(e) => setIdentityString(e.target.value)}
+              // Switching identity discards local data, so it goes through
+              // the invite prompt instead
+              readOnly
             />
           </label>
 

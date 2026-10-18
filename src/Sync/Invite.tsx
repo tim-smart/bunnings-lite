@@ -1,4 +1,4 @@
-import { useAtom, useAtomSet, useAtomValue } from "@effect/atom-react"
+import { useAtom, useAtomValue } from "@effect/atom-react"
 import { Check, Copy, TriangleAlert } from "lucide-react"
 import * as Option from "effect/Option"
 import { useRef, useState } from "react"
@@ -11,8 +11,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { identityAtom, remoteUrlAtom } from "@/EventLog"
-import { inviteLinkAtom, pendingInviteAtom, type Invite } from "./atoms"
+import { remoteUrlAtom } from "@/EventLog"
+import { inviteLinkAtom, join, pendingInviteAtom, type Invite } from "./atoms"
 
 export function CopyInviteButton() {
   const link = useAtomValue(inviteLinkAtom)
@@ -89,8 +89,7 @@ function JoinPrompt({
   readonly invite: Invite
   readonly onDone: () => void
 }) {
-  const [currentRemote, setRemoteUrl] = useAtom(remoteUrlAtom)
-  const setIdentity = useAtomSet(identityAtom)
+  const currentRemote = useAtomValue(remoteUrlAtom)
 
   return (
     <>
@@ -111,8 +110,10 @@ function JoinPrompt({
             access to read, change and clear them.
           </li>
           <li>
-            Favorites already on this device will sync to the new remote, where
-            the invite's creator can see them.
+            Joining discards this device's favorites and shows the shared ones
+            instead. Favorites already synced stay on the server under this
+            device's old identity, but you won't see them again unless you copy
+            an invite link for it first.
           </li>
           <li>Access can't be revoked later.</li>
           <li>
@@ -135,9 +136,8 @@ function JoinPrompt({
         </Button>
         <Button
           onClick={() => {
-            setRemoteUrl(Option.some(invite.remoteUrl))
-            setIdentity(invite.identity)
             onDone()
+            join(invite)
           }}
         >
           Join

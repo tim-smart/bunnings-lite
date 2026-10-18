@@ -7,6 +7,8 @@ import { TracerLayer } from "./Tracing.ts"
 import "./index.css"
 import * as Layer from "effect/Layer"
 import * as ConfigProvider from "effect/ConfigProvider"
+import * as Effect from "effect/Effect"
+import { applyPendingJoin } from "./Sync/atoms.ts"
 
 Atom.runtime.addGlobalLayer(
   TracerLayer.pipe(
@@ -18,6 +20,8 @@ Atom.runtime.addGlobalLayer(
     ),
   ),
 )
+
+await Effect.runPromise(applyPendingJoin)
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

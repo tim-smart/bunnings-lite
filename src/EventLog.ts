@@ -15,8 +15,10 @@ import * as BrowserSocket from "@effect/platform-browser/BrowserSocket"
 import * as RpcClient from "effect/rpc/RpcClient"
 import * as RpcSerialization from "effect/rpc/RpcSerialization"
 
+export const journalDatabase = "effect_event_journal"
+
 const EventLogLayer = EventLog.layer(AllEvents, FavoritesLayer).pipe(
-  Layer.provide(EventJournal.layerIndexedDb()),
+  Layer.provide(EventJournal.layerIndexedDb({ database: journalDatabase })),
 )
 
 const makeClient = EventLog.makeClient(AllEvents)
@@ -42,6 +44,16 @@ export class EventLogClient extends Context.Service<EventLogClient>()(
   )
 }
 
+// Runs once against the current log. Unlike `EventLogClient.runtime.fn`, it
+// is not re-run with its last argument when the runtime is rebuilt.
+export const withEventLog = <A, E>(
+  get: Atom.FnContext,
+  effect: Effect.Effect<A, E, EventLogClient>,
+) =>
+  get
+    .result(EventLogClient.runtime, { suspendOnWaiting: true })
+    .pipe(Effect.flatMap((services) => Effect.provide(effect, services)))
+
 export const identityAtom = Atom.kvs({
   runtime: kvsRuntime,
   key: "identity",
@@ -53,12 +65,10 @@ export const identityAtom = Atom.kvs({
     ),
 })
 
-export const identityStringAtom = Atom.writable(
-  (get) =>
-    EventLog.encodeIdentityString(
-      get(identityAtom) as EventLog.Identity["Service"],
-    ),
-  (ctx, s: string) => ctx.set(identityAtom, EventLog.decodeIdentityString(s)),
+export const identityStringAtom = Atom.make((get) =>
+  EventLog.encodeIdentityString(
+    get(identityAtom) as EventLog.Identity["Service"],
+  ),
 )
 
 export const remoteUrlAtom = Atom.kvs({
