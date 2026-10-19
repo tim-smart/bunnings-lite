@@ -12,9 +12,7 @@ import * as Queue from "effect/Queue"
 import * as RpcClientError from "effect/rpc/RpcClientError"
 import * as Cause from "effect/Cause"
 
-export const queryAtom = Atom.searchParam(
-  "query",
-) as any as Atom.Writable<string>
+export const queryAtom = Atom.searchParam("query")
 
 export const queryIsSetAtom = Atom.map(
   queryAtom,
