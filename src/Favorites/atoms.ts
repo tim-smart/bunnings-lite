@@ -22,7 +22,7 @@ export const isFavoriteAtom = Atom.family((id: string) =>
 )
 
 export const clearFavoritesAtom = EventLogClient.runtime.fn(() =>
-  EventLogClient.use((_) => _("FavoritesClear", void 0)),
+  EventLogClient.use((_) => _({ event: "FavoritesClear", payload: void 0 })),
 )
 
 export const toggleFavoriteAtom = EventLogClient.runtime.fn(
@@ -30,9 +30,9 @@ export const toggleFavoriteAtom = EventLogClient.runtime.fn(
     const client = yield* EventLogClient
     const isFavorite = get(isFavoriteAtom(product.id))
     if (isFavorite) {
-      yield* client("FavoriteRemove", product.id)
+      yield* client({ event: "FavoriteRemove", payload: product.id })
     } else {
-      yield* client("FavoriteAdd", product)
+      yield* client({ event: "FavoriteAdd", payload: product })
     }
   }),
   { concurrent: true },
