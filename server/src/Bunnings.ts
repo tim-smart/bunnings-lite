@@ -13,7 +13,10 @@ import {
   Session,
   SessionToken,
   SessionUnsetLocation,
+  sites,
+  StoresNotFound,
   StoresResponse,
+  type Site,
 } from "./domain/Bunnings.ts"
 import {
   Cookies,
@@ -25,6 +28,7 @@ import {
 import * as Context from "effect/Context"
 import * as Data from "effect/Data"
 import * as Layer from "effect/Layer"
+import * as Schema from "effect/Schema"
 import { NodeHttpClient } from "@effect/platform-node"
 // @effect-diagnostics-next-line nodeBuiltinImport:off
 import { randomBytes, randomUUID } from "node:crypto"
@@ -80,7 +84,10 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
       return yield* new GuestTokenError()
     })
 
-    const apiClient = Effect.fnUntraced(function* (version = "v1") {
+    const apiClient = Effect.fnUntraced(function* (
+      version = "v1",
+      locationHeaders?: Record<string, string>,
+    ) {
       const session = yield* CurrentSession
       return defaultClient.pipe(
         HttpClient.mapRequest(
@@ -97,7 +104,7 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
             "accept-language":
               "en-AU,en-NZ;q=0.9,en-GB;q=0.8,en-US;q=0.7,en;q=0.6,de;q=0.5",
             clientid: "mHPVWnzuBkrW7rmt56XGwKkb5Gp9BJMk",
-            ...session.location.httpHeaders,
+            ...(locationHeaders ?? session.location.httpHeaders),
             stream: "RETAIL",
             userid: "anonymous",
           }),
@@ -147,11 +154,16 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
 
     const productInfoWithPrice = Effect.fn("Bunnings.productInfoWithPrice")(
       function* (id: string) {
+        const session = yield* CurrentSession
         const [info, price] = yield* Effect.all(
           [productInfo(id), priceInfo(id)],
           { concurrency: 2 },
         )
-        return new ProductPriceInfo({ info, price })
+        return new ProductPriceInfo({
+          info,
+          price,
+          website: session.location.website,
+        })
       },
     )
 
@@ -182,11 +194,16 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
     })
 
     const storesPage = Effect.fn("Bunnings.stores")(function* (options: {
+      readonly site: Site
       readonly latitude: number
       readonly longitude: number
       readonly page: number
     }) {
-      const client = yield* apiClient("v1")
+      const client = yield* apiClient("v1", {
+        country: options.site.website,
+        currency: options.site.currency,
+        locale: options.site.locale,
+      })
       return yield* client
         .get("/stores", {
           urlParams: {
@@ -198,7 +215,18 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
             currentPage: options.page,
           },
         })
-        .pipe(Effect.flatMap(HttpClientResponse.schemaBodyJson(StoresResponse)))
+        .pipe(
+          Effect.flatMap(
+            HttpClientResponse.schemaBodyJson(
+              Schema.Union([StoresResponse, StoresNotFound]),
+            ),
+          ),
+          Effect.map((result) =>
+            "data" in result
+              ? result.data
+              : { stores: [], pagination: { totalPages: 0 } },
+          ),
+        )
     })
 
     const productLocation = Effect.fn("Bunnings.productLocation")(function* (
@@ -229,7 +257,8 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
         )
     })
 
-    const stores = (options: {
+    const storesForSite = (options: {
+      readonly site: Site
       readonly latitude: number
       readonly longitude: number
     }) =>
@@ -241,13 +270,24 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
             page,
           })
           return [
-            result.data.stores,
+            result.stores,
             Option.some(page + 1).pipe(
-              Option.filter((page) => page < result.data.pagination.totalPages),
+              Option.filter((page) => page < result.pagination.totalPages),
             ),
           ] as const
         }),
-      ).pipe(Stream.withSpan("Bunnings.stores"))
+      )
+
+    // Each request only returns stores from one country, so try each site in
+    // turn. The search radius is far smaller than the distance between them.
+    const stores = (options: {
+      readonly latitude: number
+      readonly longitude: number
+    }) =>
+      Stream.fromIterable(sites).pipe(
+        Stream.flatMap((site) => storesForSite({ ...options, site })),
+        Stream.withSpan("Bunnings.stores"),
+      )
 
     return {
       makeSession,
