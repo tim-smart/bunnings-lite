@@ -8,6 +8,31 @@ export class CurrentSession extends Context.Service<CurrentSession, Session>()(
   "domain/Bunnings/CurrentSession",
 ) {}
 
+export interface Site {
+  readonly website: string
+  readonly origin: string
+  readonly currency: string
+  readonly locale: string
+}
+
+export const sites: ReadonlyArray<Site> = [
+  {
+    website: "NZ",
+    origin: "https://www.bunnings.co.nz",
+    currency: "NZD",
+    locale: "en_NZ",
+  },
+  {
+    website: "AU",
+    origin: "https://www.bunnings.com.au",
+    currency: "AUD",
+    locale: "en_AU",
+  },
+]
+
+export const siteFor = (website: string): Site =>
+  sites.find((site) => site.website === website) ?? sites[0]
+
 export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
   "domain/Bunnings/SessionLocation",
 )("Set", {
@@ -33,12 +58,16 @@ export class SessionLocation extends Schema.TaggedClass<SessionLocation>(
     return this.region.toLowerCase()
   }
 
+  get site() {
+    return siteFor(this.website)
+  }
+
   httpHeaders = {
     locationcode: this.code,
     "x-region": this.region,
     country: this.website,
-    currency: "NZD",
-    locale: "en_NZ",
+    currency: this.site.currency,
+    locale: this.site.locale,
   }
 
   searchContext = {
@@ -71,10 +100,14 @@ export class SessionUnsetLocation extends Schema.TaggedClass<SessionUnsetLocatio
     return this.region.toLowerCase()
   }
 
+  get site() {
+    return siteFor(this.website)
+  }
+
   httpHeaders = {
     country: this.website,
-    currency: "NZD",
-    locale: "en_NZ",
+    currency: this.site.currency,
+    locale: this.site.locale,
   }
 
   searchContext = {
@@ -158,10 +191,10 @@ export class SearchResult extends Schema.Class<SearchResult>("SearchResult")({
   imageurl: ImageUrl,
   uri: Schema.String,
 }) {
-  get asBaseInfo() {
+  toBaseInfo(site: Site) {
     return new ProductBaseInfo({
       id: this.permanentid,
-      url: "https://bunnings.co.nz" + this.productroutingurl,
+      url: site.origin + this.productroutingurl,
       title: this.title,
       images: [
         new ImageElement({
@@ -254,12 +287,16 @@ export const SearchResponseDataRemapped = Schema.Json.pipe(
     encode: SchemaGetter.passthrough(),
   }),
   Schema.decodeTo(SearchResponseData, {
-    decode: SchemaGetter.transform(
-      (fromA) =>
-        new SearchResponseData({
-          ...fromA,
-          results: fromA.results.map((_) => _.raw.asBaseInfo),
-        }),
+    decode: SchemaGetter.transformEffect((fromA) =>
+      CurrentSession.useSync(
+        (session) =>
+          new SearchResponseData({
+            ...fromA,
+            results: fromA.results.map((_) =>
+              _.raw.toBaseInfo(session.location.site),
+            ),
+          }),
+      ),
     ),
     encode: SchemaGetter.forbidden(() => "Decode only"),
   }),
@@ -443,12 +480,14 @@ export class ProductPriceInfo extends Schema.Class<ProductPriceInfo>(
 )({
   info: ProductInfo,
   price: PriceInfo,
+  website: Schema.String.pipe(Schema.withDecodingDefault(Effect.succeed("NZ"))),
 }) {
   get asBaseInfo() {
     return new ProductBaseInfo({
       id: this.info.itemNumber,
       url:
-        "https://bunnings.co.nz" + this.info.baseOptions[0].selected.routingUrl,
+        siteFor(this.website).origin +
+        this.info.baseOptions[0].selected.routingUrl,
       title: this.info.name,
       images: this.info.images,
       price: this.price.value,
@@ -494,7 +533,7 @@ export class Store extends Schema.Class<Store>("Store")({
   formattedDistance: Schema.String,
   geoPoint: GeoPoint,
   isActiveLocation: Schema.Boolean,
-  mapUrl: Schema.String,
+  mapUrl: Schema.optional(Schema.String),
   name: Schema.String,
   pricingRegion: Schema.String,
   storeRegion: Schema.String,
@@ -527,6 +566,16 @@ export class StoresResponse extends Schema.Class<StoresResponse>(
   "StoresResponse",
 )({
   data: StoresData,
+}) {}
+
+// The stores endpoint only searches the country in the `country` header, and
+// responds with this error when that country has no stores nearby.
+export class StoresNotFound extends Schema.Class<StoresNotFound>(
+  "StoresNotFound",
+)({
+  statusDetails: Schema.Struct({
+    errorCode: Schema.Literal("BUS-4455"),
+  }),
 }) {}
 
 // fullfillment
