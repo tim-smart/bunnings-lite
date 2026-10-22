@@ -9,14 +9,14 @@ importers:
   .:
     devDependencies:
       '@effect/platform-node':
-        specifier: https://pkg.pr.new/@effect/platform-node@ffc4243
-        version: https://pkg.pr.new/@effect/platform-node@ffc4243(effect@https://pkg.pr.new/effect@ffc4243)(redis@6.2.1)
+        specifier: https://pkg.pr.new/@effect/platform-node@f73059d
+        version: https://pkg.pr.new/@effect/platform-node@f73059d(effect@https://pkg.pr.new/effect@f73059d)(redis@6.2.1)
       '@effect/tsgo':
         specifier: 0.51.1
         version: 0.51.1
       effect:
-        specifier: https://pkg.pr.new/effect@ffc4243
-        version: https://pkg.pr.new/effect@ffc4243
+        specifier: https://pkg.pr.new/effect@f73059d
+        version: https://pkg.pr.new/effect@f73059d
       prettier:
         specifier: ^3.9.6
         version: 3.9.6
@@ -32,19 +32,19 @@ importers:
 
 packages:
 
-  '@effect/platform-node-shared@https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@ffc4243':
-    resolution: {tarball: https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@ffc4243}
-    version: 4.0.5
+  '@effect/platform-node-shared@https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@f73059d':
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@f73059d}
+    version: 4.0.6
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.5
+      effect: ^4.0.6
 
-  '@effect/platform-node@https://pkg.pr.new/@effect/platform-node@ffc4243':
-    resolution: {tarball: https://pkg.pr.new/@effect/platform-node@ffc4243}
-    version: 4.0.5
+  '@effect/platform-node@https://pkg.pr.new/@effect/platform-node@f73059d':
+    resolution: {tarball: https://pkg.pr.new/@effect/platform-node@f73059d}
+    version: 4.0.6
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      effect: ^4.0.5
+      effect: ^4.0.6
       redis: '>=5.0.0 <7.0.0'
 
   '@effect/tsgo-darwin-arm64@0.51.1':
@@ -747,9 +747,9 @@ packages:
       supports-color:
         optional: true
 
-  effect@https://pkg.pr.new/effect@ffc4243:
-    resolution: {tarball: https://pkg.pr.new/effect@ffc4243}
-    version: 4.0.5
+  effect@https://pkg.pr.new/effect@f73059d:
+    resolution: {tarball: https://pkg.pr.new/effect@f73059d}
+    version: 4.0.6
 
   esbuild@0.27.7:
     resolution: {integrity: sha512-IxpibTjyVnmrIQo5aqNpCgoACA/dTKLTlhMHihVHhdkxKyPO1uBBthumT0rdHmcsk9uMonIWS0m4FljWzILh3w==}
@@ -954,19 +954,19 @@ packages:
 
 snapshots:
 
-  '@effect/platform-node-shared@https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@ffc4243(effect@https://pkg.pr.new/effect@ffc4243)':
+  '@effect/platform-node-shared@https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@f73059d(effect@https://pkg.pr.new/effect@f73059d)':
     dependencies:
       '@types/ws': 8.18.2
-      effect: https://pkg.pr.new/effect@ffc4243
+      effect: https://pkg.pr.new/effect@f73059d
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@https://pkg.pr.new/@effect/platform-node@ffc4243(effect@https://pkg.pr.new/effect@ffc4243)(redis@6.2.1)':
+  '@effect/platform-node@https://pkg.pr.new/@effect/platform-node@f73059d(effect@https://pkg.pr.new/effect@f73059d)(redis@6.2.1)':
     dependencies:
-      '@effect/platform-node-shared': https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@ffc4243(effect@https://pkg.pr.new/effect@ffc4243)
-      effect: https://pkg.pr.new/effect@ffc4243
+      '@effect/platform-node-shared': https://pkg.pr.new/Effect-TS/effect/@effect/platform-node-shared@f73059d(effect@https://pkg.pr.new/effect@f73059d)
+      effect: https://pkg.pr.new/effect@f73059d
       redis: 6.2.1
       undici: 8.12.3
     transitivePeerDependencies:
@@ -1366,7 +1366,7 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  effect@https://pkg.pr.new/effect@ffc4243: {}
+  effect@https://pkg.pr.new/effect@f73059d: {}
 
   esbuild@0.27.7:
     optionalDependencies:
