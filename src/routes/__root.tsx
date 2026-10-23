@@ -56,7 +56,7 @@ function Header() {
           "container mx-auto max-w-7xl grid grid-cols-[1fr_auto_1fr] items-center gap-x-6",
           minimize
             ? "py-3 gap-y-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:py-4"
-            : "pt-4 pb-10 gap-y-8 md:pb-16",
+            : "pt-4 pb-12 gap-y-10 md:pb-16 md:gap-y-12",
         )}
       >
         <div
@@ -64,15 +64,10 @@ function Header() {
             "row-start-1",
             minimize
               ? "col-start-1 justify-self-start"
-              : "col-start-2 justify-self-center pt-8 md:pt-14 flex flex-col items-center gap-4",
+              : "col-start-2 justify-self-center pt-8 md:pt-12",
           )}
         >
           <Logo />
-          {minimize ? null : (
-            <p className="text-center text-[15px] text-white/80 text-balance">
-              Search products, compare prices and find the aisle.
-            </p>
-          )}
         </div>
         <div className="col-start-3 row-start-1 self-start justify-self-end">
           <SettingsPanel />
