@@ -186,7 +186,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       }}
     >
       <Card className="@container/card relative h-full gap-0 overflow-hidden py-0 transition-[box-shadow] group-hover:ring-2 group-hover:ring-primary/15">
-        <div className="absolute top-2 left-2 z-10">
+        <div className="absolute top-1 left-1 z-10">
           <FavoriteButton product={product} variant="icon" />
         </div>
         <div className="flex h-36 items-center justify-center px-4 pt-10 pb-2 sm:h-52 sm:px-6">
@@ -304,10 +304,13 @@ function FavoritesList() {
       aria-labelledby="favourites-heading"
       className="w-full flex flex-col gap-4"
     >
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="favourites-heading" className="text-lg font-bold text-primary">
+      <div className="flex items-center justify-between gap-4">
+        <h2
+          id="favourites-heading"
+          className="flex items-center gap-2 text-lg font-bold text-primary"
+        >
           Favourites{" "}
-          <span className="font-normal text-muted-foreground tabular-nums">
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-xs font-semibold tabular-nums">
             {favorites.length}
           </span>
         </h2>
