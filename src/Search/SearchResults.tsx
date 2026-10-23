@@ -199,7 +199,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         <div className="flex flex-1 flex-col gap-2 px-3 pt-2 pb-3 sm:px-4 sm:pb-4">
           {/* Beside the favourite button when the card has room, otherwise
               above the title so neither squeezes the other */}
-          <div className="absolute top-2 right-2 z-10 empty:hidden @max-[11rem]/card:static">
+          <div className="absolute top-3 right-3 z-10 empty:hidden @max-[11rem]/card:static">
             <FulfillmentBadge product={product} />
           </div>
           <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh] text-sm sm:text-[15px] leading-snug font-medium text-foreground group-hover:text-primary">
@@ -304,10 +304,13 @@ function FavoritesList() {
       aria-labelledby="favourites-heading"
       className="w-full flex flex-col gap-4"
     >
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="favourites-heading" className="text-lg font-bold text-primary">
+      <div className="flex items-center justify-between gap-4">
+        <h2
+          id="favourites-heading"
+          className="flex items-center gap-2 text-lg font-bold text-primary"
+        >
           Favourites{" "}
-          <span className="font-normal text-muted-foreground tabular-nums">
+          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/10 px-2 text-xs font-semibold tabular-nums">
             {favorites.length}
           </span>
         </h2>
