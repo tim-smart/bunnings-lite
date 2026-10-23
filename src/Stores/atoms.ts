@@ -33,6 +33,16 @@ export const storesAtom = runtime
   )
   .pipe(Atom.keepAlive)
 
+// Every store, for searching by hand when geolocation is unavailable
+export const allStoresAtom = BunningsClient.runtime
+  .atom(
+    Effect.gen(function* () {
+      const client = yield* BunningsClient
+      return yield* Stream.runCollect(client("allStores", undefined))
+    }),
+  )
+  .pipe(Atom.keepAlive)
+
 export const currentLocationAtom = Atom.kvs({
   runtime: Atom.runtime(BrowserKeyValueStore.layerLocalStorage),
   key: "currentLocation",

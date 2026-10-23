@@ -61,4 +61,8 @@ export class Rpcs extends RpcGroup.make(
     stream: true,
     success: Store,
   }),
+  Rpc.make("allStores", {
+    stream: true,
+    success: Store,
+  }),
 ).middleware(AuthMiddleware) {}
