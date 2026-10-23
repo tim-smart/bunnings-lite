@@ -36,10 +36,17 @@ import * as Order from "effect/Order"
 // Select value for the item that opens the store search
 const searchValue = "search"
 
+// Radix focuses items on hover as well as from the keyboard, and the browser
+// counts both as focus-visible. Track which one is in use so hover stays a
+// neutral highlight and only keyboard focus gets a ring.
+const itemClassName =
+  "py-3 cursor-pointer focus:bg-gray-100 focus:text-primary [&>span:first-child_svg]:text-primary group-data-[input=keyboard]/stores:focus:ring-2 group-data-[input=keyboard]/stores:focus:ring-inset group-data-[input=keyboard]/stores:focus:ring-primary"
+
 export function StoreSelector() {
   const registry = useContext(RegistryContext)
   const [open, setOpen] = useState(false)
   const [searching, setSearching] = useState(false)
+  const [input, setInput] = useState<"keyboard" | "pointer">("pointer")
   const currentLocation = useAtomValue(currentLocationAtom)
   const setLocation = useAtomSet(currentLocationAtom)
   return (
@@ -65,13 +72,22 @@ export function StoreSelector() {
           )
         }}
       >
-        <SelectTrigger className="w-full border-2 border-primary text-primary rounded-md focus:ring-primary">
+        <SelectTrigger
+          className="w-full border-2 border-primary text-primary rounded-md focus:ring-primary"
+          onKeyDown={() => setInput("keyboard")}
+          onPointerDown={() => setInput("pointer")}
+        >
           <div className="flex items-center">
             <MapPin className="w-5 h-5 mr-2 text-secondary" />
             <SelectValue placeholder="Select your store" />
           </div>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          className="group/stores"
+          data-input={input}
+          onKeyDown={() => setInput("keyboard")}
+          onPointerMove={() => setInput("pointer")}
+        >
           <SelectGroup>
             <SelectLabel className="font-bold">Select your store</SelectLabel>
             {open ? (
@@ -81,10 +97,7 @@ export function StoreSelector() {
             )}
           </SelectGroup>
           <SelectSeparator />
-          <SelectItem
-            value={searchValue}
-            className="py-3 cursor-pointer hover:bg-gray-100"
-          >
+          <SelectItem value={searchValue} className={itemClassName}>
             <Search />
             Search all stores
           </SelectItem>
@@ -111,10 +124,7 @@ function CurrentLocationItem({
   return Option.match(currentLocation, {
     onNone: () => null,
     onSome: (location) => (
-      <SelectItem
-        value={location.code}
-        className="py-3 cursor-pointer hover:bg-gray-100"
-      >
+      <SelectItem value={location.code} className={itemClassName}>
         {location.city}
       </SelectItem>
     ),
@@ -142,7 +152,7 @@ function StoreItems({
           <SelectItem
             key={store.name}
             value={store.name}
-            className="py-3 cursor-pointer hover:bg-gray-100"
+            className={itemClassName}
           >
             {store.displayName}
           </SelectItem>
@@ -322,7 +332,7 @@ function StoreList({
                   type="button"
                   aria-current={selected ? "true" : undefined}
                   onClick={() => onSelect(store)}
-                  className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none"
+                  className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                 >
                   <MapPin className="size-4 shrink-0 text-secondary" />
                   <span className="flex min-w-0 flex-1 flex-col">
