@@ -33,7 +33,8 @@ export const storesAtom = runtime
   )
   .pipe(Atom.keepAlive)
 
-// Every store, for searching by hand when geolocation is unavailable
+// Every store, for searching by hand when geolocation is unavailable. Only
+// mounted while the search drawer is open, so cache it briefly after closing.
 export const allStoresAtom = BunningsClient.runtime
   .atom(
     Effect.gen(function* () {
@@ -41,7 +42,7 @@ export const allStoresAtom = BunningsClient.runtime
       return yield* Stream.runCollect(client("allStores", undefined))
     }),
   )
-  .pipe(Atom.keepAlive)
+  .pipe(Atom.setIdleTTL("10 minutes"))
 
 export const currentLocationAtom = Atom.kvs({
   runtime: Atom.runtime(BrowserKeyValueStore.layerLocalStorage),
