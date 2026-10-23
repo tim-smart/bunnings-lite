@@ -24,11 +24,15 @@ export function FulfillmentBadge({
 
   const fullfillment = maybeResult.value
   if (!fullfillment.isAvailable) {
-    return <Badge className="bg-orange-500 text-white">Out of stock</Badge>
+    return (
+      <Badge className="h-7 rounded-full border-0 bg-orange-100 px-2.5 text-orange-800">
+        Out of stock
+      </Badge>
+    )
   } else if (Option.isSome(fullfillment.location)) {
     const { aisle, bay } = fullfillment.location.value
     return (
-      <Badge variant="outline" className="bg-white/20 backdrop-blur-sm">
+      <Badge className="h-7 rounded-full border-0 bg-primary/10 px-2.5 text-primary tabular-nums">
         <MapPin />
         Aisle {aisle}/{bay}
       </Badge>
@@ -39,5 +43,9 @@ export function FulfillmentBadge({
     return null
   }
 
-  return <Badge className="bg-green-500 text-white">Available</Badge>
+  return (
+    <Badge className="h-7 rounded-full border-0 bg-green-100 px-2.5 text-green-800">
+      Available
+    </Badge>
+  )
 }

@@ -8,7 +8,7 @@ import * as Option from "effect/Option"
 
 export function Filters() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 px-2 md:px-0">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-3 rounded-xl bg-white px-4 py-3 sm:grid-cols-2 sm:gap-y-4 sm:px-6 sm:py-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,22rem)]">
       {Object.values(allFilters).map((filter) => (
         <FilterControl key={filter.filter.id} filter={filter} />
       ))}
@@ -31,23 +31,25 @@ function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
   return Option.match(range, {
     onNone: () => null,
     onSome: ({ start, end }) => (
-      <div className="flex flex-col">
-        <Label className="text-primary">
-          {filter.filter.name}:
+      <div className="flex flex-col gap-1.5">
+        <div className="flex min-h-5 items-center justify-between gap-2">
+          <Label className="text-foreground font-semibold">
+            {filter.filter.name}
+          </Label>
           {Option.match(value, {
             onNone: () => null,
             onSome: () => (
-              <span
+              <button
+                type="button"
                 onClick={() => reset()}
-                className="text-gray-600 cursor-pointer"
+                className="cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-secondary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 (clear)
-              </span>
+              </button>
             ),
           })}
-        </Label>
-        <div className="h-1" />
-        <div className="flex-1 flex items-center min-h-7">
+        </div>
+        <div className="flex-1 flex items-center min-h-10 px-1 sm:px-0">
           {filter.filter.kind === "slider" ? (
             <Slider
               min={Math.floor(start)}
@@ -67,6 +69,7 @@ function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
             />
           ) : (
             <form
+              className="w-full"
               onSubmit={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -80,9 +83,11 @@ function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
                 )
               }}
             >
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-3 items-center">
                 <Input
-                  className="focus-visible:ring-secondary"
+                  aria-label={`Minimum ${filter.filter.name.toLowerCase()}`}
+                  inputMode="decimal"
+                  className="tabular-nums"
                   ref={minInput}
                   type="number"
                   onChange={(e) => {
@@ -103,11 +108,13 @@ function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
                   value={Option.getOrElse(min, () => "")}
                   placeholder={`${filter.filter.valuePrefix}${Math.floor(start)}`}
                 />
-                <div className="w-20 flex items-center">
-                  <hr className="h-[5px] bg-primary w-full" />
-                </div>
+                <span className="shrink-0 text-sm text-muted-foreground">
+                  to
+                </span>
                 <Input
-                  className="focus-visible:ring-secondary"
+                  aria-label={`Maximum ${filter.filter.name.toLowerCase()}`}
+                  inputMode="decimal"
+                  className="tabular-nums"
                   ref={maxInput}
                   type="number"
                   onChange={(e) => {

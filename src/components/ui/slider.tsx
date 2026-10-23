@@ -49,7 +49,7 @@ function Slider({
       <SliderPrimitive.Track
         data-slot="slider-track"
         className={cn(
-          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
+          "bg-primary/15 relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
         )}
       >
         <SliderPrimitive.Range
@@ -65,7 +65,7 @@ function Slider({
             <TooltipTrigger asChild className="pointer-events-none">
               <SliderPrimitive.Thumb
                 data-slot="slider-thumb"
-                className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 w-6 h-6"
+                className="border-primary bg-background ring-primary/20 block size-6 shrink-0 cursor-grab rounded-full border-2 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden active:cursor-grabbing disabled:pointer-events-none disabled:opacity-50"
               />
             </TooltipTrigger>
             <TooltipContent>{formatValue(value?.[index]!)}</TooltipContent>

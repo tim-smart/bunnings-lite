@@ -20,6 +20,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -34,22 +35,9 @@ import { CopyInviteButton, InviteDialog } from "@/Sync/Invite"
 export const Route = createRootRoute({
   component: () => (
     <div className="flex min-h-screen flex-col bg-primary">
-      <header>
-        <SettingsPanel />
-        <InviteDialog />
+      <Header />
 
-        <div className="flex">
-          <div className="flex-1"></div>
-          <Logo />
-          <div className="flex-1"></div>
-        </div>
-
-        <div className="px-4">
-          <SearchInput />
-        </div>
-      </header>
-
-      <main className="flex-1 bg-white px-2 sm:px-4 pb-18">
+      <main className="flex-1 bg-canvas px-3 sm:px-6 pb-24">
         <div className="container mx-auto max-w-7xl">
           <Outlet />
         </div>
@@ -57,6 +45,45 @@ export const Route = createRootRoute({
     </div>
   ),
 })
+
+function Header() {
+  const minimize = useAtomValue(minimizeAtom)
+  return (
+    <header className="px-3 sm:px-6 text-white">
+      <InviteDialog />
+      <div
+        className={cn(
+          "container mx-auto max-w-7xl grid grid-cols-[1fr_auto_1fr] items-center gap-x-6",
+          minimize
+            ? "py-3 gap-y-3 md:grid-cols-[auto_minmax(0,1fr)_auto] md:py-4"
+            : "pt-4 pb-12 gap-y-10 md:pb-16 md:gap-y-12",
+        )}
+      >
+        <div
+          className={cn(
+            "row-start-1",
+            minimize
+              ? "col-start-1 justify-self-start"
+              : "col-start-2 justify-self-center pt-8 md:pt-12",
+          )}
+        >
+          <Logo />
+        </div>
+        <div className="col-start-3 row-start-1 self-start justify-self-end">
+          <SettingsPanel />
+        </div>
+        <div
+          className={cn(
+            "col-span-3 row-start-2",
+            minimize && "md:col-span-1 md:col-start-2 md:row-start-1",
+          )}
+        >
+          <SearchInput />
+        </div>
+      </div>
+    </header>
+  )
+}
 
 const minimizeAtom = Atom.make((get) => {
   const path = get(locationAtom).pathname
@@ -73,7 +100,10 @@ function Logo() {
       alt="Bunnings Logo"
       width={150}
       height={50}
-      className={`block transition-all ${minimize ? "mt-5 h-[30px]" : "mt-20 h-[50px]"} w-auto cursor-pointer`}
+      className={cn(
+        "block w-auto cursor-pointer transition-[height,opacity] hover:opacity-90 active:opacity-80",
+        minimize ? "h-[30px] md:h-[34px]" : "h-[50px] md:h-[60px]",
+      )}
       onClick={() => {
         setQuery("")
         navigate({ to: "/" })
@@ -111,10 +141,15 @@ function SearchInput() {
   const Icon = loading ? LoaderCircle : Search
 
   return (
-    <div className="relative w-full max-w-lg mx-auto">
+    <div
+      className={cn(
+        "relative w-full mx-auto",
+        minimize ? "max-w-2xl" : "max-w-xl",
+      )}
+    >
       <Icon
         className={cn(
-          "absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground",
+          "pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-primary",
           loading && "animate-spin",
         )}
       />
@@ -128,7 +163,10 @@ function SearchInput() {
           ref={inputRef}
           type="search"
           placeholder="Search for products..."
-          className={`w-full h-12 pl-10 border-2 border-white rounded-md focus-visible:ring-secondary focus-visible:border-secondary bg-white ${minimize ? "my-5" : "my-20"}`}
+          className={cn(
+            "w-full pl-12 pr-4 border-2 border-white rounded-lg bg-white text-base md:text-base hover:border-white focus-visible:border-secondary focus-visible:ring-3 focus-visible:ring-secondary/20",
+            minimize ? "h-11 md:h-12" : "h-13 md:h-14 md:text-lg",
+          )}
           value={query}
           onChange={onChange}
           autoFocus
@@ -155,19 +193,23 @@ function SettingsPanel() {
     >
       <DrawerTrigger
         aria-label="Sync settings"
-        className="absolute top-3 right-3 cursor-pointer"
+        className="grid size-10 cursor-pointer place-items-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white active:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
-        <Settings2 className="text-white" />
+        <Settings2 className="size-5" />
       </DrawerTrigger>
       <DrawerContent className="max-w-md mx-auto">
         <DrawerHeader>
           <DrawerTitle>Sync settings</DrawerTitle>
+          <DrawerDescription>
+            Keep your favourites in step across devices.
+          </DrawerDescription>
         </DrawerHeader>
-        <div className="p-3 flex flex-col gap-4">
-          <label className="text-sm">
+        <div className="px-4 pb-2 flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5 text-sm font-medium">
             Remote URL
             <Input
               id="remote-url"
+              placeholder="https://"
               value={remoteUrl}
               onChange={(e) => {
                 const trimmed = e.target.value.trim()
@@ -184,7 +226,7 @@ function SettingsPanel() {
             />
           </label>
 
-          <label className="text-sm">
+          <label className="flex flex-col gap-1.5 text-sm font-medium">
             Identity
             <Input
               id="identity"

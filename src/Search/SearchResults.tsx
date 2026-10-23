@@ -1,12 +1,7 @@
 import { RegistryContext, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { focusAtom, queryIsSetAtom, resultsAtom } from "./atoms"
 import { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Link, useElementScrollRestoration } from "@tanstack/react-router"
 import { preloadAtom } from "@/Product/atoms"
@@ -14,11 +9,10 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import { BaseInfoKey } from "@/RpcClient"
 import { StarRating } from "@/components/ui/star-rating"
 import { StoreSelector } from "@/Stores/Selector"
-import { Label } from "@/components/ui/label"
 import { FavoriteButton } from "@/Favorites/Button"
 import { Button } from "@/components/ui/button"
 import { useScrollBottom } from "@/lib/useScrollBottom"
-import { ArrowUp } from "lucide-react"
+import { ArrowUp, SearchX, Star } from "lucide-react"
 import { clearFavoritesAtom, favoritesAtom } from "@/Favorites/atoms"
 import { InstallButton } from "@/App/InstallButton"
 import { FulfillmentBadge } from "@/Product/FulfillmentBadge"
@@ -26,6 +20,7 @@ import { Filters } from "./Filters"
 import * as Array from "effect/Array"
 import * as Cause from "effect/Cause"
 import { router } from "@/Router"
+import { formatPrice } from "@/lib/utils"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import * as Atom from "effect/reactivity/Atom"
 import * as AsyncResult from "effect/reactivity/AsyncResult"
@@ -44,20 +39,22 @@ export function SearchResults() {
 
   return (
     <>
-      <div className="h-4" />
+      <div className="h-4 sm:h-6" />
       {AsyncResult.isSuccess(results) && <Filters />}
-      <div className="h-4" />
+      <div className="h-3 sm:h-4" />
       {AsyncResult.builder(results)
         .onSuccess(({ items }) => <ResultsGrid results={items} />)
         .onInitial(() => <ResultsSkeleton />)
         .onErrorTag("EmptyQueryError", () => <ResultsSkeleton />)
         .onErrorTag("NoSuchElementError", () => <NoResults />)
         .onFailure((cause) => (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div className="text-red-500">
+          <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-12 text-center">
+            <h2 className="text-lg font-bold text-secondary">
               An error occurred while fetching results.
-            </div>
-            {Cause.pretty(cause)}
+            </h2>
+            <pre className="max-w-full overflow-x-auto whitespace-pre-wrap text-left text-xs text-muted-foreground">
+              {Cause.pretty(cause)}
+            </pre>
           </div>
         ))
         .render()}
@@ -101,7 +98,7 @@ function ResultsGrid({
       >
         {virtualizer.getVirtualItems().map((item) => (
           <div
-            className="flex gap-2 pb-2"
+            className="flex gap-2 pb-2 sm:gap-4 sm:pb-4"
             key={item.key}
             ref={(el) => {
               if (!el) return
@@ -149,8 +146,8 @@ const columnsAtom = Atom.make((get) => {
 
 function ResultsSkeleton() {
   return (
-    <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {Array.makeBy(9, (i) => (
+    <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {Array.makeBy(8, (i) => (
         <SkeletonCard key={i} />
       ))}
     </div>
@@ -177,7 +174,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
 
   return (
     <Link
-      className="flex-1"
+      className="group flex-1 min-w-0 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-primary/40"
       to={`/product/$id`}
       params={{ id: product.id }}
       search={(current) => current}
@@ -188,32 +185,36 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         }
       }}
     >
-      <Card className="relative">
-        <div className="absolute top-2 left-2 right-2 flex">
+      <Card className="@container/card relative h-full gap-0 overflow-hidden py-0 transition-[box-shadow] group-hover:ring-2 group-hover:ring-primary/15">
+        <div className="absolute top-2 left-2 z-10">
           <FavoriteButton product={product} variant="icon" />
-          <div className="flex-1" />
-          <FulfillmentBadge product={product} />
         </div>
-        <div className="h-32 sm:h-48">
+        <div className="flex h-36 items-center justify-center px-4 pt-10 pb-2 sm:h-52 sm:px-6">
           <img
             src={product.images[0].thumbnailUrl}
             alt={product.title}
-            className="h-full mx-auto"
+            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </div>
-        <CardHeader className="px-4">
-          <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh]">
+        <div className="flex flex-1 flex-col gap-2 px-3 pt-2 pb-3 sm:px-4 sm:pb-4">
+          {/* Beside the favourite button when the card has room, otherwise
+              above the title so neither squeezes the other */}
+          <div className="absolute top-2 right-2 z-10 empty:hidden @max-[11rem]/card:static">
+            <FulfillmentBadge product={product} />
+          </div>
+          <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh] text-sm sm:text-[15px] leading-snug font-medium text-foreground group-hover:text-primary">
             {product.title}
           </CardTitle>
-          <CardDescription>
-            ${product.price}
-            <div className="h-1" />
-            <div className="flex gap-2">
-              <StarRating rating={product.rating} />
+          <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+            <span className="text-lg font-bold tabular-nums text-foreground sm:text-xl">
+              {formatPrice(product.price)}
+            </span>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
+              <StarRating size="sm" rating={product.rating} />
               <span>({product.numberOfReviews})</span>
-            </div>
-          </CardDescription>
-        </CardHeader>
+            </span>
+          </div>
+        </div>
       </Card>
     </Link>
   )
@@ -221,12 +222,11 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
 
 function SkeletonCard() {
   return (
-    <div className="flex flex-col space-y-3">
-      <Skeleton className="aspect-square w-full rounded-xl" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-      </div>
+    <div className="flex flex-col gap-3 rounded-xl bg-white p-3 sm:p-4">
+      <Skeleton className="h-28 w-full sm:h-44" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-6 w-1/3" />
     </div>
   )
 }
@@ -234,21 +234,36 @@ function SkeletonCard() {
 function NoResults() {
   const focus = useAtomSet(focusAtom)
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <div className="text-gray-500">No results found.</div>
-      <Button onClick={() => focus()}>Try another search</Button>
+    <div className="flex flex-col items-center gap-2 rounded-xl bg-white px-6 py-14 text-center">
+      <SearchX className="size-8 text-primary/60" />
+      <h2 className="text-lg font-bold">No results found.</h2>
+      <p className="text-sm text-muted-foreground">
+        Check the spelling or try a broader term.
+      </p>
+      <Button className="mt-3" onClick={() => focus()}>
+        Try another search
+      </Button>
     </div>
   )
 }
 
 function StoreAndFavourites() {
   return (
-    <div className="flex flex-col items-start py-10 gap-10">
-      <div className="flex flex-col max-w-sm w-full">
-        <Label className="text-primary">Select your store:</Label>
-        <div className="h-2" />
+    <div className="flex flex-col pt-6 pb-10 gap-8 sm:pt-8 sm:gap-10">
+      <section
+        aria-labelledby="store-heading"
+        className="grid gap-4 rounded-xl bg-white p-4 sm:p-6 md:grid-cols-[1fr_minmax(0,24rem)] md:items-center md:gap-8"
+      >
+        <div className="flex flex-col gap-1">
+          <h2 id="store-heading" className="text-lg font-bold text-primary">
+            Your store
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Stock levels and aisle locations are shown for this store.
+          </p>
+        </div>
         <StoreSelector />
-      </div>
+      </section>
 
       <FavoritesList />
 
@@ -268,23 +283,48 @@ function FavoritesList() {
   const clear = useAtomSet(clearFavoritesAtom)
 
   if (favorites.length === 0) {
-    return null
+    return (
+      <section
+        aria-labelledby="favourites-heading"
+        className="flex flex-col items-center gap-2 rounded-xl bg-white/60 px-6 py-10 text-center"
+      >
+        <Star className="size-7 text-secondary" />
+        <h2 id="favourites-heading" className="font-bold">
+          No favourites yet
+        </h2>
+        <p className="max-w-xs text-sm text-muted-foreground">
+          Tap the star on any product to keep it here for your next trip.
+        </p>
+      </section>
+    )
   }
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div className="text-primary font-medium text-sm flex gap-2">
-        Favourites:
-        <span onClick={() => clear()} className="text-gray-600 cursor-pointer">
-          (clear all)
-        </span>
+    <section
+      aria-labelledby="favourites-heading"
+      className="w-full flex flex-col gap-4"
+    >
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 id="favourites-heading" className="text-lg font-bold text-primary">
+          Favourites{" "}
+          <span className="font-normal text-muted-foreground tabular-nums">
+            {favorites.length}
+          </span>
+        </h2>
+        <button
+          type="button"
+          onClick={() => clear()}
+          className="cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-secondary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          Clear all
+        </button>
       </div>
-      <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {favorites.map((result, i) => (
           <ResultCard key={i} product={result} />
         ))}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -310,10 +350,10 @@ function BackToTop() {
   return (
     <Button
       onClick={() => scrollToTop()}
-      className="bg-primary text-white cursor-pointer hover:bg-primary/90"
-      size="lg"
+      aria-label="Back to top"
+      className="size-12 cursor-pointer rounded-full shadow-lg shadow-primary/25 animate-in fade-in zoom-in-90"
     >
-      <ArrowUp strokeWidth={3} />
+      <ArrowUp strokeWidth={2.5} className="size-5" />
     </Button>
   )
 }

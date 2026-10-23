@@ -40,7 +40,7 @@ const searchValue = "search"
 // counts both as focus-visible. Track which one is in use so hover stays a
 // neutral highlight and only keyboard focus gets a ring.
 const itemClassName =
-  "py-3 cursor-pointer focus:bg-gray-100 focus:text-primary [&>span:first-child_svg]:text-primary group-data-[input=keyboard]/stores:focus:ring-2 group-data-[input=keyboard]/stores:focus:ring-inset group-data-[input=keyboard]/stores:focus:ring-primary"
+  "py-3 cursor-pointer focus:bg-muted focus:text-primary [&>span:first-child_svg]:text-primary group-data-[input=keyboard]/stores:focus:ring-2 group-data-[input=keyboard]/stores:focus:ring-inset group-data-[input=keyboard]/stores:focus:ring-primary"
 
 export function StoreSelector() {
   const registry = useContext(RegistryContext)
@@ -73,12 +73,12 @@ export function StoreSelector() {
         }}
       >
         <SelectTrigger
-          className="w-full border-2 border-primary text-primary rounded-md focus:ring-primary"
+          className="w-full cursor-pointer border-input bg-white font-medium text-foreground shadow-none hover:border-primary/40 focus-visible:border-primary focus-visible:ring-primary/15 data-[size=default]:h-11 data-[state=open]:border-primary"
           onKeyDown={() => setInput("keyboard")}
           onPointerDown={() => setInput("pointer")}
         >
           <div className="flex items-center">
-            <MapPin className="w-5 h-5 mr-2 text-secondary" />
+            <MapPin className="size-5 mr-2 text-secondary" />
             <SelectValue placeholder="Select your store" />
           </div>
         </SelectTrigger>
@@ -316,7 +316,7 @@ function StoreList({
 
   return Object.entries(countries).map(([country, stores]) => (
     <section key={country} aria-label={country} className="pb-4">
-      <h3 className="sticky top-0 bg-background py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="sticky top-0 bg-background py-2 text-sm font-semibold text-primary">
         {country}
       </h3>
       <ul className="flex flex-col">
@@ -332,7 +332,7 @@ function StoreList({
                   type="button"
                   aria-current={selected ? "true" : undefined}
                   onClick={() => onSelect(store)}
-                  className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+                  className="flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                 >
                   <MapPin className="size-4 shrink-0 text-secondary" />
                   <span className="flex min-w-0 flex-1 flex-col">

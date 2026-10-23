@@ -16,7 +16,7 @@ export function ProductScreen() {
   const fullInfo = AsyncResult.value(useAtomValue(productFullInfoAtom(id)))
   if (product._tag !== "Success") {
     return (
-      <div className="flex h-full items-center justify-center text-2xl text-gray-500 pt-20">
+      <div className="flex h-full items-center justify-center text-lg text-muted-foreground pt-20 animate-pulse">
         Loading product...
       </div>
     )
