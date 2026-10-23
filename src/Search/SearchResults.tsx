@@ -186,7 +186,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
       }}
     >
       <Card className="@container/card relative h-full gap-0 overflow-hidden py-0 transition-[box-shadow] group-hover:ring-2 group-hover:ring-primary/15">
-        <div className="absolute top-2 left-2 z-10">
+        <div className="absolute top-1 left-1 z-10">
           <FavoriteButton product={product} variant="icon" />
         </div>
         <div className="flex h-36 items-center justify-center px-4 pt-10 pb-2 sm:h-52 sm:px-6">
@@ -199,7 +199,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         <div className="flex flex-1 flex-col gap-2 px-3 pt-2 pb-3 sm:px-4 sm:pb-4">
           {/* Beside the favourite button when the card has room, otherwise
               above the title so neither squeezes the other */}
-          <div className="absolute top-3 right-4 z-10 empty:hidden @max-[11rem]/card:static">
+          <div className="absolute top-2 right-2 z-10 empty:hidden @max-[11rem]/card:static">
             <FulfillmentBadge product={product} />
           </div>
           <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh] text-sm sm:text-[15px] leading-snug font-medium text-foreground group-hover:text-primary">
@@ -310,7 +310,7 @@ function FavoritesList() {
           className="flex items-center gap-2 text-lg font-bold text-primary"
         >
           Favourites{" "}
-          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/15 px-2 text-xs font-semibold tabular-nums">
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-xs font-semibold tabular-nums">
             {favorites.length}
           </span>
         </h2>
