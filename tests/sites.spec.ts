@@ -59,8 +59,12 @@ const fakeApi = (requests: Array<Record<string, string>>) =>
     let body: unknown
     if (url.pathname === "/v1/stores") {
       const website = request.headers.country as keyof typeof stores
-      const nearby =
-        Number(url.searchParams.get("longitude")) > 160 ? "NZ" : "AU"
+      // Without coordinates, every store in the country is listed.
+      const nearby = !url.searchParams.has("longitude")
+        ? website
+        : Number(url.searchParams.get("longitude")) > 160
+          ? "NZ"
+          : "AU"
       body =
         website === nearby
           ? {
@@ -184,4 +188,35 @@ test("sites: Australian store search uses bunnings.com.au", async () => {
     locale: "en_AU",
     locationcode: "7373",
   })
+})
+
+test("sites: all stores lists both countries without a location", async () => {
+  const requests: Array<Record<string, string>> = []
+  const found = await Effect.gen(function* () {
+    const bunnings = yield* Bunnings
+    return yield* Stream.runCollect(bunnings.allStores)
+  }).pipe(
+    Effect.provideService(
+      CurrentSession,
+      new Session({
+        id: "s1",
+        token: new SessionToken({
+          token: "t",
+          expires: DateTime.makeUnsafe(Date.now() + 86_400_000),
+        }),
+        location: SessionUnsetLocation.default,
+      }),
+    ),
+    Effect.provide(
+      Layer.effect(Bunnings, Bunnings.make).pipe(
+        Layer.provide(Layer.succeed(HttpClient.HttpClient, fakeApi(requests))),
+      ),
+    ),
+    Effect.runPromise,
+  )
+  expect(found.map((store) => store.displayName)).toEqual([
+    "Grey Lynn",
+    "Rozelle",
+  ])
+  expect(requests.map((_) => _.country)).toEqual(["NZ", "AU"])
 })

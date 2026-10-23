@@ -33,6 +33,11 @@ import { NodeHttpClient } from "@effect/platform-node"
 // @effect-diagnostics-next-line nodeBuiltinImport:off
 import { randomBytes, randomUUID } from "node:crypto"
 
+interface Coordinates {
+  readonly latitude: number
+  readonly longitude: number
+}
+
 export class GuestTokenError extends Data.TaggedError("GuestTokenError") {}
 
 export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
@@ -195,8 +200,7 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
 
     const storesPage = Effect.fn("Bunnings.stores")(function* (options: {
       readonly site: Site
-      readonly latitude: number
-      readonly longitude: number
+      readonly near?: Coordinates
       readonly page: number
     }) {
       const client = yield* apiClient("v1", {
@@ -206,14 +210,17 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
       })
       return yield* client
         .get("/stores", {
-          urlParams: {
-            fields: "FULL",
-            latitude: options.latitude,
-            longitude: options.longitude,
-            pageSize: 7,
-            radius: 100000,
-            currentPage: options.page,
-          },
+          // Without coordinates the endpoint lists every store in the country.
+          urlParams: options.near
+            ? {
+                fields: "FULL",
+                latitude: options.near.latitude,
+                longitude: options.near.longitude,
+                pageSize: 7,
+                radius: 100000,
+                currentPage: options.page,
+              }
+            : { fields: "FULL", pageSize: 500, currentPage: options.page },
         })
         .pipe(
           Effect.flatMap(
@@ -259,8 +266,7 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
 
     const storesForSite = (options: {
       readonly site: Site
-      readonly latitude: number
-      readonly longitude: number
+      readonly near?: Coordinates
     }) =>
       Stream.paginate(
         0,
@@ -280,14 +286,17 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
 
     // Each request only returns stores from one country, so try each site in
     // turn. The search radius is far smaller than the distance between them.
-    const stores = (options: {
-      readonly latitude: number
-      readonly longitude: number
-    }) =>
+    const stores = (near: Coordinates) =>
       Stream.fromIterable(sites).pipe(
-        Stream.flatMap((site) => storesForSite({ ...options, site })),
+        Stream.flatMap((site) => storesForSite({ site, near })),
         Stream.withSpan("Bunnings.stores"),
       )
+
+    // For picking a store by hand when the browser can't provide a location.
+    const allStores = Stream.fromIterable(sites).pipe(
+      Stream.flatMap((site) => storesForSite({ site })),
+      Stream.withSpan("Bunnings.allStores"),
+    )
 
     return {
       makeSession,
@@ -296,6 +305,7 @@ export class Bunnings extends Context.Service<Bunnings>()("api/Bunnings", {
       priceInfo,
       productInfoWithPrice,
       stores,
+      allStores,
       fulfillment,
       productLocation,
     } as const

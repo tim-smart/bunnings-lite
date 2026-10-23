@@ -49,6 +49,7 @@ const Handlers = Rpcs.toLayer(
         )
       }, Effect.orDie),
       stores: (req) => bunnings.stores(req).pipe(Stream.orDie),
+      allStores: () => bunnings.allStores.pipe(Stream.orDie),
     })
   }),
 ).pipe(Layer.provide([Bunnings.layer, Bazaar.layer, Sessions.layer]))
