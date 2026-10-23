@@ -17,11 +17,16 @@ export function FavoriteButton({
 
   if (variant === "full") {
     return (
-      <Button onClick={() => toggleFavorite(product)}>
+      <Button
+        variant="outline"
+        size="lg"
+        aria-pressed={isFavorite}
+        onClick={() => toggleFavorite(product)}
+      >
         <Star
           className={cn(
-            "text-white cursor-pointer",
-            isFavorite ? "fill-white" : "fill-none",
+            "text-secondary transition-transform",
+            isFavorite ? "fill-secondary scale-110" : "fill-none",
           )}
         />
         {isFavorite ? "Unfavorite" : "Favorite"}
@@ -32,6 +37,7 @@ export function FavoriteButton({
   return (
     <button
       type="button"
+      className="grid size-9 cursor-pointer place-items-center rounded-full bg-white/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onMouseDownCapture={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -42,10 +48,11 @@ export function FavoriteButton({
         e.stopPropagation()
       }}
       aria-label="Toggle favorite"
+      aria-pressed={isFavorite}
     >
       <Star
         className={cn(
-          "text-secondary cursor-pointer",
+          "size-5 text-secondary",
           isFavorite ? "fill-secondary" : "fill-none",
         )}
       />

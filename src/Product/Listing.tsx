@@ -6,7 +6,7 @@ import {
 import { StarRating } from "@/components/ui/star-rating"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAtom, useAtomValue } from "@effect/atom-react"
-import { cn } from "@/lib/utils"
+import { cn, formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, Share } from "lucide-react"
 import { ProductReview } from "../../server/src/domain/Bazaar.ts"
@@ -41,7 +41,7 @@ export function ProductListing({
     <>
       {fullInfo.pipe(
         Option.map((info) => (
-          <div className="prose">
+          <div className="prose prose-sm sm:prose-base max-w-none prose-p:text-foreground prose-li:text-foreground prose-li:marker:text-secondary prose-a:text-primary">
             {Option.isSome(pointers) && (
               <ul>
                 {pointers.value.map((pointer, i) => (
@@ -61,10 +61,10 @@ export function ProductListing({
 
   return (
     <div>
-      <div className="py-2">
+      <div className="py-3 sm:py-4">
         <Button
           variant="link"
-          className="cursor-pointer"
+          className="-ml-3 cursor-pointer"
           onClick={() => history.back()}
         >
           <ArrowLeft />
@@ -72,32 +72,47 @@ export function ProductListing({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold">{product.title}</h1>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:gap-12">
+        <div className="flex flex-col gap-5 md:pt-2">
+          <div className="flex flex-col gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight tracking-tight text-balance">
+              {product.title}
+            </h1>
 
-          <div className="flex gap-4 items-center">
-            <FulfillmentBadge product={product} />
-            <span className="text-sm text-gray-500">I/N: {product.id}</span>
+            <div className="flex flex-wrap gap-3 items-center">
+              <FulfillmentBadge product={product} />
+              <span className="text-sm text-muted-foreground tabular-nums">
+                I/N: {product.id}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">${product.price}</span>
-              <span className="text-sm text-gray-500">inc. GST</span>
+              <span className="text-4xl font-bold tracking-tight tabular-nums text-primary">
+                {formatPrice(product.price)}
+              </span>
+              <span className="text-sm text-muted-foreground">inc. GST</span>
             </div>
             <ProductRating product={product} />
           </div>
 
-          <div className="flex gap-2 items-center flex-wrap">
-            <FavoriteButton product={product} />
-            <Button asChild>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              className="col-span-2"
+            >
               <a href={product.url} target="_blank" rel="noopener noreferrer">
                 Open in Bunnings
                 <ArrowRight />
               </a>
             </Button>
+            <FavoriteButton product={product} />
             <Button
+              variant="outline"
+              size="lg"
               onClick={() => {
                 if (!navigator.share) return
                 navigator.share({
@@ -111,22 +126,20 @@ export function ProductListing({
             </Button>
           </div>
 
-          <div className="flex-col gap-4 text-sm hidden md:block">
+          <div className="hidden md:block rounded-xl bg-white p-6">
             {description}
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 md:-order-1">
+        <div className="flex flex-col gap-2 sm:gap-3 md:-order-1">
           <SelectedImage product={product} />
           <ThumbnailImages product={product} />
         </div>
 
-        <div className="flex flex-col gap-4 text-sm md:hidden">
-          {description}
-        </div>
+        <div className="md:hidden rounded-xl bg-white p-4">{description}</div>
       </div>
 
-      <div className="h-8 md:h-12" />
+      <div className="h-10 md:h-16" />
 
       <Reviews product={product} />
     </div>
@@ -137,9 +150,11 @@ function ProductRating({ product }: { readonly product: ProductBaseInfo }) {
   const numberOfReviews = useAtomValue(productReviewCountAtom(product))
   const rating = useAtomValue(productRatingAtom(product))
   return (
-    <div className="flex gap-2">
+    <div className="flex items-center gap-2">
       <StarRating rating={rating} />
-      <span className="text-sm text-gray-500">({numberOfReviews} reviews)</span>
+      <span className="text-sm text-muted-foreground tabular-nums">
+        ({numberOfReviews} reviews)
+      </span>
     </div>
   )
 }
@@ -160,8 +175,13 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
   const index = useAtomValue(imageIndexAtom)
   const image = product.images[index]
   return (
-    <div className="border rounded-lg bg-white flex items-center justify-center aspect-square overflow-hidden">
-      <img src={image.url} alt={product.title} />
+    <div className="rounded-xl bg-white flex items-center justify-center aspect-square overflow-hidden p-6 sm:p-10">
+      <img
+        key={image.url}
+        src={image.url}
+        alt={product.title}
+        className="max-h-full max-w-full object-contain animate-in fade-in duration-300"
+      />
     </div>
   )
 }
@@ -169,17 +189,23 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
 function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
   const [index, setIndex] = useAtom(imageIndexAtom)
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:grid-cols-5">
       {product.images.map((image, i) => (
         <button
           key={i}
+          aria-label={`Show image ${i + 1}`}
+          aria-current={i === index ? "true" : undefined}
           className={cn(
-            "border rounded-md p-2 hover:border-primary",
-            i === index ? "border-primary" : undefined,
+            "aspect-square cursor-pointer rounded-lg bg-white p-2 ring-inset transition-shadow hover:ring-2 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            i === index && "ring-2 ring-primary hover:ring-primary",
           )}
           onClick={() => setIndex(i)}
         >
-          <img src={image.thumbnailUrl} alt={product.title} />
+          <img
+            src={image.thumbnailUrl}
+            alt=""
+            className="size-full object-contain"
+          />
         </button>
       ))}
     </div>
@@ -188,11 +214,16 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
 
 function Reviews({ product }: { readonly product: ProductBaseInfo }) {
   return (
-    <div>
-      <h3 className="text-2xl font-bold mb-4">Customer Reviews</h3>
-      <ReviewsOverview product={product} />,
+    <section aria-labelledby="reviews-heading">
+      <h2
+        id="reviews-heading"
+        className="text-xl md:text-2xl font-bold tracking-tight mb-4"
+      >
+        Customer Reviews
+      </h2>
+      <ReviewsOverview product={product} />
       <ReviewsGrid product={product} />
-    </div>
+    </section>
   )
 }
 
@@ -203,19 +234,19 @@ function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
   }
   const stats = reviewStats.value.ReviewStatistics
   return (
-    <div className="flex items-center gap-4 mb-6 max-w-lg">
-      <div className="flex flex-col items-center">
-        <span className="text-4xl font-bold">
+    <div className="flex items-center gap-6 mb-4 sm:mb-6 rounded-xl bg-white p-4 sm:p-6 md:max-w-xl">
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-5xl font-bold tracking-tight tabular-nums">
           {stats.AverageOverallRating.toFixed(1)}
         </span>
         <div className="flex">
           <StarRating rating={stats.AverageOverallRating} />
         </div>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground tabular-nums">
           {stats.TotalReviewCount} reviews
         </span>
       </div>
-      <div className="flex-1">
+      <div className="flex flex-1 flex-col gap-1.5">
         {[5, 4, 3, 2, 1].map((i) => {
           const rating = stats.RatingDistribution.find(
             (r) => r.RatingValue === i,
@@ -224,9 +255,12 @@ function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
             ? Math.round(100 * (rating.Count / stats.TotalReviewCount))
             : 0
           return (
-            <div key={i} className="flex items-center gap-2 text-sm">
-              <span className="w-2">{i}</span>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              key={i}
+              className="flex items-center gap-3 text-sm tabular-nums"
+            >
+              <span className="w-2 text-muted-foreground">{i}</span>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                 <div
                   className="bg-secondary h-2 rounded-full"
                   style={{
@@ -244,7 +278,7 @@ function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
 
 function SkeletonRatings() {
   return (
-    <div className="flex items-center gap-4 mb-6 max-w-lg">
+    <div className="flex items-center gap-4 mb-4 sm:mb-6 rounded-xl bg-white p-4 sm:p-6 md:max-w-xl">
       <div className="flex w-full space-y-3">
         <Skeleton className="h-32 w-32 rounded-xl" />
         <div className="w-4" />
@@ -272,7 +306,7 @@ function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
   })
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 grid-template-rows-[masonry]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
       {reviews.map((review, i) => (
         <ReviewCard key={i} review={review} />
       ))}
@@ -282,22 +316,20 @@ function ReviewsGrid({ product }: { readonly product: ProductBaseInfo }) {
 
 function ReviewCard({ review }: { readonly review: ProductReview }) {
   return (
-    <Card>
-      <CardContent>
-        <div className="flex justify-between items-start">
-          <div>
-            <h4 className="font-bold">{review.Title}</h4>
-            <div className="flex my-1">
-              <StarRating size="sm" rating={review.Rating} />
-            </div>
+    <Card className="gap-0 py-5">
+      <CardContent className="px-5">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex flex-col gap-1.5">
+            <StarRating size="sm" rating={review.Rating} />
+            <h3 className="font-semibold leading-snug">{review.Title}</h3>
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
             {DateTime.formatLocal(review.SubmissionTime, {
               dateStyle: "short",
             })}
           </span>
         </div>
-        <div className="mt-2 prose prose-sm">
+        <div className="mt-2 prose prose-sm max-w-none prose-p:text-foreground/85">
           <Markdown>{review.ReviewText}</Markdown>
         </div>
       </CardContent>
