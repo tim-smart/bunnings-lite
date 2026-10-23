@@ -185,11 +185,9 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         }
       }}
     >
-      <Card className="relative h-full gap-0 overflow-hidden py-0 transition-[box-shadow] group-hover:ring-2 group-hover:ring-primary/15">
-        <div className="absolute top-2 left-2 right-2 z-10 flex items-start gap-2">
+      <Card className="@container/card relative h-full gap-0 overflow-hidden py-0 transition-[box-shadow] group-hover:ring-2 group-hover:ring-primary/15">
+        <div className="absolute top-2 left-2 z-10">
           <FavoriteButton product={product} variant="icon" />
-          <div className="flex-1" />
-          <FulfillmentBadge product={product} />
         </div>
         <div className="flex h-36 items-center justify-center px-4 pt-10 pb-2 sm:h-52 sm:px-6">
           <img
@@ -199,6 +197,11 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
           />
         </div>
         <div className="flex flex-1 flex-col gap-2 px-3 pt-2 pb-3 sm:px-4 sm:pb-4">
+          {/* Beside the favourite button when the card has room, otherwise
+              above the title so neither squeezes the other */}
+          <div className="absolute top-2 right-2 z-10 empty:hidden @max-[11rem]/card:static">
+            <FulfillmentBadge product={product} />
+          </div>
           <CardTitle className="line-clamp-3 sm:line-clamp-2 h-[3lh] sm:h-[2lh] text-sm sm:text-[15px] leading-snug font-medium text-foreground group-hover:text-primary">
             {product.title}
           </CardTitle>

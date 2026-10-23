@@ -37,7 +37,7 @@ export function FavoriteButton({
   return (
     <button
       type="button"
-      className="grid size-9 cursor-pointer place-items-center rounded-full bg-white/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-white/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onMouseDownCapture={(e) => {
         e.preventDefault()
         e.stopPropagation()
