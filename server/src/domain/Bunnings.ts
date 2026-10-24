@@ -463,23 +463,25 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
     ]
     for (const classification of this.classifications) {
       for (const feature of classification.features) {
-        specs.push({
-          name: feature.name,
-          value: feature.featureValues.map((_) => _.value).join(", "),
-        })
+        specs.push(
+          specification(
+            feature.name,
+            feature.featureValues.map((_) => _.value.trim()).join(", "),
+          ),
+        )
       }
     }
     // Product dimensions come through as bare millimetres, and weight as kg.
     const product = this.dimension.product[0]
     if (product) {
       specs.push(
-        { name: "Product Height", value: withUnit(product.height, "mm") },
-        { name: "Product Width", value: withUnit(product.width, "mm") },
-        { name: "Product Depth", value: withUnit(product.depth, "mm") },
+        { name: "Height", value: withUnit(product.height, "mm") },
+        { name: "Width", value: withUnit(product.width, "mm") },
+        { name: "Depth", value: withUnit(product.depth, "mm") },
       )
     }
     if (this.weight) {
-      specs.push({ name: "Product Weight", value: withUnit(this.weight, "kg") })
+      specs.push({ name: "Weight", value: withUnit(this.weight, "kg") })
     }
     return specs.filter((_) => _.name.trim() !== "" && _.value.trim() !== "")
   }
@@ -490,8 +492,22 @@ export interface Specification {
   readonly value: string
 }
 
+const numeric = /^[\d.]+$/
+
 const withUnit = (value: string, unit: string) =>
-  /^[\d.]+$/.test(value.trim()) ? `${value.trim()} ${unit}` : value
+  numeric.test(value.trim()) ? `${value.trim()} ${unit}` : value
+
+// Bunnings puts the unit in the feature name, e.g. "Wattage (watts)" with a
+// value of "2400", and marks boolean features as "Indoor (Yes/No)". Move the
+// unit onto the value and drop the Yes/No hint so the rows read naturally.
+const specification = (name: string, value: string): Specification => {
+  const match = /^(.*?)\s*\(([^()]+)\)$/.exec(name.trim())
+  if (!match) return { name: name.trim(), value }
+  const [, base, unit] = match
+  if (unit.toLowerCase() === "yes/no") return { name: base, value }
+  if (numeric.test(value)) return { name: base, value: `${value} ${unit}` }
+  return { name: name.trim(), value }
+}
 
 export class ProductResponse extends Schema.Class<ProductResponse>(
   "ProductResponse",

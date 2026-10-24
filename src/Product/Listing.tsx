@@ -72,8 +72,8 @@ export function ProductListing({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:gap-12">
-        <div className="flex flex-col gap-5 md:pt-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:grid-rows-[auto_1fr] md:gap-x-8 md:gap-y-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:gap-x-12">
+        <div className="flex flex-col gap-5 md:col-start-2 md:row-start-1 md:pt-2">
           <div className="flex flex-col gap-3">
             <h1 className="text-2xl md:text-3xl font-bold leading-tight tracking-tight text-balance">
               {product.title}
@@ -125,23 +125,20 @@ export function ProductListing({
               Share
             </Button>
           </div>
-
-          <div className="hidden md:block rounded-xl bg-white p-6">
-            {description}
-          </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:gap-3 md:-order-1">
+        <div className="flex flex-col gap-2 sm:gap-3 md:col-start-1 md:row-start-1 md:row-span-2 md:sticky md:top-6 md:self-start">
           <SelectedImage product={product} />
           <ThumbnailImages product={product} />
         </div>
 
-        <div className="md:hidden rounded-xl bg-white p-4">{description}</div>
+        <div className="flex flex-col gap-4 md:col-start-2 md:row-start-2 md:gap-5">
+          <div className="rounded-xl bg-white p-4 sm:p-6">{description}</div>
+          <Specifications fullInfo={fullInfo} />
+        </div>
       </div>
 
       <div className="h-10 md:h-16" />
-
-      <Specifications fullInfo={fullInfo} />
 
       <Reviews product={product} />
     </div>
@@ -185,42 +182,45 @@ function Specifications({
   return (
     <section
       aria-labelledby="specifications-heading"
-      className="mb-10 md:mb-16"
+      className="rounded-xl bg-white p-4 sm:p-6"
     >
       <h2
         id="specifications-heading"
-        className="text-xl md:text-2xl font-bold tracking-tight mb-4"
+        className="text-lg font-bold tracking-tight mb-3"
       >
         Specifications
       </h2>
-      <div className="overflow-hidden rounded-xl bg-white px-4 sm:px-6">
-        {Option.isSome(specifications) ? (
-          <dl className="-mt-px grid grid-cols-1 md:grid-cols-2 md:gap-x-10">
-            {specifications.value.map((spec, i) => (
-              <div
-                key={i}
-                className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 border-t border-foreground/[0.08] py-3 text-sm sm:text-base"
-              >
-                <dt className="text-muted-foreground">{spec.name}</dt>
-                <dd className="font-medium break-words">{spec.value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          <SkeletonSpecifications />
-        )}
-      </div>
+      {Option.isSome(specifications) ? (
+        <dl className="-mx-2 flex flex-col sm:-mx-3">
+          {specifications.value.map((spec, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 rounded-lg px-2 py-2.5 text-sm leading-snug even:bg-canvas lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:px-3 sm:text-[15px]"
+            >
+              <dt className="text-muted-foreground">{spec.name}</dt>
+              <dd className="font-medium break-words tabular-nums">
+                {spec.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <SkeletonSpecifications />
+      )}
     </section>
   )
 }
 
 function SkeletonSpecifications() {
   return (
-    <div className="grid grid-cols-1 gap-x-10 gap-y-4 py-4 md:grid-cols-2">
+    <div className="-mx-2 flex flex-col sm:-mx-3">
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="grid grid-cols-[2fr_3fr] gap-4">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-full" />
+        <div
+          key={i}
+          className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-4 rounded-lg px-2 py-3 even:bg-canvas lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] sm:px-3"
+        >
+          <Skeleton className="h-3.5 w-3/4" />
+          <Skeleton className="h-3.5 w-1/2" />
         </div>
       ))}
     </div>

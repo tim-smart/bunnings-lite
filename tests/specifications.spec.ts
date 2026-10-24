@@ -80,6 +80,8 @@ const productInfo = {
           feature("Chuck Size", "2-13"),
           feature("Chuck Type", "13mm keyless"),
           feature("Application Method", "Brush", "Roller"),
+          feature("Maximum Speed (rpm)", "1750"),
+          feature("Indoor Use (Yes/No)", "Yes"),
           feature("Empty", ""),
         ],
       },
@@ -160,10 +162,12 @@ test("product page: lists the Bunnings specifications", async ({ page }) => {
     ["Chuck Size", "2-13"],
     ["Chuck Type", "13mm keyless"],
     ["Application Method", "Brush, Roller"],
-    ["Product Height", "203 mm"],
-    ["Product Width", "173 mm"],
-    ["Product Depth", "225 mm"],
-    ["Product Weight", "2.4 kg"],
+    ["Maximum Speed", "1750 rpm"],
+    ["Indoor Use", "Yes"],
+    ["Height", "203 mm"],
+    ["Width", "173 mm"],
+    ["Depth", "225 mm"],
+    ["Weight", "2.4 kg"],
   ])
 
   // The table fits a narrow phone without scrolling sideways
