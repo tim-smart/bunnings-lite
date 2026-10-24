@@ -117,7 +117,7 @@ export function ProductListing({
                 if (!navigator.share) return
                 navigator.share({
                   title: product.title,
-                  url: product.url,
+                  url: window.location.href,
                 })
               }}
             >

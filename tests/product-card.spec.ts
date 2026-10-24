@@ -100,6 +100,34 @@ const box = async (locator: Locator) => {
   return b!
 }
 
+test("product share: shares the current page, not the external Bunnings link", async ({
+  page,
+}) => {
+  const shares: ShareData[] = []
+  await page.exposeFunction("captureShare", (data: ShareData) => {
+    shares.push(data)
+  })
+  await page.addInitScript(() => {
+    navigator.share = (data) =>
+      (
+        window as Window & { captureShare(data?: ShareData): Promise<void> }
+      ).captureShare(data)
+  })
+  await mockRpc(page)
+  await page.goto("/?query=drill")
+  await page.getByRole("link", { name: /Cordless drill/ }).click()
+  await expect(page).toHaveURL(/\/product\/1\?query=drill$/)
+
+  await expect(
+    page.getByRole("link", { name: "Open in Bunnings" }),
+  ).toHaveAttribute("href", "https://example.com/1")
+  await page.getByRole("button", { name: "Share", exact: true }).click()
+
+  await expect
+    .poll(() => shares)
+    .toEqual([{ title: "Cordless drill", url: page.url() }])
+})
+
 test.use({ viewport: { width: 320, height: 800 } })
 
 test("product card: badges leave the favourite button full size on narrow cards", async ({
