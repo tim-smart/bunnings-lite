@@ -453,7 +453,45 @@ export class ProductInfo extends Schema.Class<ProductInfo>("ProductInfo")({
   warrantyReturns: Schema.String,
   weight: Schema.optional(Schema.String),
   guideDocument: Schema.optional(Schema.NullOr(Schema.Array(GuideDocument))),
-}) {}
+  classifications: Schema.Array(Classification).pipe(
+    Schema.withDecodingDefault(Effect.succeed([])),
+  ),
+}) {
+  get specifications(): ReadonlyArray<Specification> {
+    const specs: Array<Specification> = [
+      { name: "Brand", value: this.brand.name },
+    ]
+    for (const classification of this.classifications) {
+      for (const feature of classification.features) {
+        specs.push({
+          name: feature.name,
+          value: feature.featureValues.map((_) => _.value).join(", "),
+        })
+      }
+    }
+    // Product dimensions come through as bare millimetres, and weight as kg.
+    const product = this.dimension.product[0]
+    if (product) {
+      specs.push(
+        { name: "Product Height", value: withUnit(product.height, "mm") },
+        { name: "Product Width", value: withUnit(product.width, "mm") },
+        { name: "Product Depth", value: withUnit(product.depth, "mm") },
+      )
+    }
+    if (this.weight) {
+      specs.push({ name: "Product Weight", value: withUnit(this.weight, "kg") })
+    }
+    return specs.filter((_) => _.name.trim() !== "" && _.value.trim() !== "")
+  }
+}
+
+export interface Specification {
+  readonly name: string
+  readonly value: string
+}
+
+const withUnit = (value: string, unit: string) =>
+  /^[\d.]+$/.test(value.trim()) ? `${value.trim()} ${unit}` : value
 
 export class ProductResponse extends Schema.Class<ProductResponse>(
   "ProductResponse",

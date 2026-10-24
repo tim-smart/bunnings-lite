@@ -141,6 +141,8 @@ export function ProductListing({
 
       <div className="h-10 md:h-16" />
 
+      <Specifications fullInfo={fullInfo} />
+
       <Reviews product={product} />
     </div>
   )
@@ -165,6 +167,62 @@ function SkeletonDescription() {
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-full" />
+    </div>
+  )
+}
+
+function Specifications({
+  fullInfo,
+}: {
+  readonly fullInfo: Option.Option<ProductPriceInfo>
+}) {
+  const specifications = fullInfo.pipe(
+    Option.map((info) => info.info.specifications),
+  )
+  if (Option.isSome(specifications) && specifications.value.length === 0) {
+    return null
+  }
+  return (
+    <section
+      aria-labelledby="specifications-heading"
+      className="mb-10 md:mb-16"
+    >
+      <h2
+        id="specifications-heading"
+        className="text-xl md:text-2xl font-bold tracking-tight mb-4"
+      >
+        Specifications
+      </h2>
+      <div className="overflow-hidden rounded-xl bg-white px-4 sm:px-6">
+        {Option.isSome(specifications) ? (
+          <dl className="-mt-px grid grid-cols-1 md:grid-cols-2 md:gap-x-10">
+            {specifications.value.map((spec, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 border-t border-foreground/[0.08] py-3 text-sm sm:text-base"
+              >
+                <dt className="text-muted-foreground">{spec.name}</dt>
+                <dd className="font-medium break-words">{spec.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <SkeletonSpecifications />
+        )}
+      </div>
+    </section>
+  )
+}
+
+function SkeletonSpecifications() {
+  return (
+    <div className="grid grid-cols-1 gap-x-10 gap-y-4 py-4 md:grid-cols-2">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="grid grid-cols-[2fr_3fr] gap-4">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+      ))}
     </div>
   )
 }
