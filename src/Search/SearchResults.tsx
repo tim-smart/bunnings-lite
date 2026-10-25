@@ -192,7 +192,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         {/* Product photos are shot on white, so they sit in a light well that
             the dark theme keeps instead of leaving ragged white rectangles */}
         <div className="h-36 px-3 pt-10 pb-2 sm:h-52 sm:px-4">
-          <div className="flex h-full items-center justify-center rounded-lg bg-image-well px-1 text-image-well-foreground sm:px-2">
+          <div className="flex h-full items-center justify-center overflow-hidden rounded-lg bg-image-well px-1 text-image-well-foreground sm:px-2">
             <img
               src={product.images[0].thumbnailUrl}
               alt={product.title}
