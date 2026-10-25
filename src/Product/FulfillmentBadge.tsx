@@ -25,7 +25,7 @@ export function FulfillmentBadge({
   const fullfillment = maybeResult.value
   if (!fullfillment.isAvailable) {
     return (
-      <Badge className="h-7 rounded-full border-0 bg-orange-100 px-2.5 text-orange-800">
+      <Badge className="h-7 rounded-full border-0 bg-orange-100 px-2.5 text-orange-800 dark:bg-orange-400/15 dark:text-orange-300">
         Out of stock
       </Badge>
     )
@@ -44,7 +44,7 @@ export function FulfillmentBadge({
   }
 
   return (
-    <Badge className="h-7 rounded-full border-0 bg-green-100 px-2.5 text-green-800">
+    <Badge className="h-7 rounded-full border-0 bg-green-100 px-2.5 text-green-800 dark:bg-green-400/15 dark:text-green-300">
       Available
     </Badge>
   )

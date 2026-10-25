@@ -34,7 +34,7 @@ export function StarRating({
               "transition-colors",
               index < rating
                 ? "fill-accent text-accent"
-                : "fill-none text-gray-300",
+                : "fill-none text-foreground/25",
             )}
             aria-hidden="true"
           />
@@ -62,7 +62,7 @@ function EmptyStar({ size }: { size: "sm" | "md" }) {
       className={cn(
         size === "sm" ? "h-4 w-4" : "h-5 w-5",
         "transition-colors",
-        "fill-none text-gray-300",
+        "fill-none text-foreground/25",
       )}
       aria-hidden="true"
     />

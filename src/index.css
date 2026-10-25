@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @tailwind utilities;
 
 @plugin "@tailwindcss/typography";
@@ -20,6 +18,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-canvas: var(--canvas);
+  --color-brand: var(--brand);
+  --color-image-well: var(--image-well);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -52,15 +52,30 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+ * The theme follows the system via prefers-color-scheme, so switching the OS
+ * appearance restyles the open app immediately. Tailwind's `dark:` variant
+ * uses the same media query.
+ *
+ * Roles that stay fixed across both themes:
+ *   --brand       the Bunnings green header field and overscroll colour
+ *   --secondary   the Bunnings red, used only as a fill (buttons, bars)
+ * Red text and icons use --accent, which lightens in the dark theme so it
+ * still reads against dark panels.
+ */
 :root {
+  color-scheme: light;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --brand: #0d5257;
+  --background: #ffffff;
   --foreground: #172526;
   /* Page ground behind white panels, a faint step towards the brand green */
   --canvas: #eef2f1;
-  --card: oklch(1 0 0);
+  /* Behind product photos, which are shot on white */
+  --image-well: #ffffff;
+  --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: #ffffff;
   --popover-foreground: oklch(0.145 0 0);
   --primary: #0d5257;
   --primary-foreground: oklch(0.985 0 0);
@@ -89,43 +104,49 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-html,
-body {
-  background-color: #0d5257;
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    /* Deep green-black ground; panels sit one tone step above it */
+    --canvas: #0f1615;
+    --background: #1a2423;
+    --foreground: #e4ebe9;
+    /* Product photos keep their white backgrounds, dimmed with the images */
+    --image-well: #e6e6e6;
+    --card: #1a2423;
+    --card-foreground: #e4ebe9;
+    --popover: #1a2423;
+    --popover-foreground: #e4ebe9;
+    /* The brand green lifted to read as text and carry buttons on dark */
+    --primary: #7fcbc0;
+    --primary-foreground: #07201f;
+    --muted: #243130;
+    --muted-foreground: #9cadaa;
+    --accent: #ff7b6f;
+    --accent-foreground: #1a0a08;
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: #2b3938;
+    --input: #364646;
+    --ring: #7fcbc0;
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: #1a2423;
+    --sidebar-foreground: #e4ebe9;
+    --sidebar-primary: #7fcbc0;
+    --sidebar-primary-foreground: #07201f;
+    --sidebar-accent: #243130;
+    --sidebar-accent-foreground: #e4ebe9;
+    --sidebar-border: #2b3938;
+    --sidebar-ring: #7fcbc0;
+  }
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+html,
+body {
+  background-color: var(--brand);
 }
 
 @layer base {

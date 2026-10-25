@@ -25,8 +25,8 @@ export function FavoriteButton({
       >
         <Star
           className={cn(
-            "text-secondary transition-transform",
-            isFavorite ? "fill-secondary scale-110" : "fill-none",
+            "text-accent transition-transform",
+            isFavorite ? "fill-accent scale-110" : "fill-none",
           )}
         />
         {isFavorite ? "Unfavorite" : "Favorite"}
@@ -37,7 +37,7 @@ export function FavoriteButton({
   return (
     <button
       type="button"
-      className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-white/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       onMouseDownCapture={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -52,8 +52,8 @@ export function FavoriteButton({
     >
       <Star
         className={cn(
-          "size-5 text-secondary",
-          isFavorite ? "fill-secondary" : "fill-none",
+          "size-5 text-accent",
+          isFavorite ? "fill-accent" : "fill-none",
         )}
       />
     </button>

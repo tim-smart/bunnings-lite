@@ -41,7 +41,7 @@ export function ProductListing({
     <>
       {fullInfo.pipe(
         Option.map((info) => (
-          <div className="prose prose-sm sm:prose-base max-w-none prose-p:text-foreground prose-li:text-foreground prose-li:marker:text-secondary prose-a:text-primary">
+          <div className="prose prose-sm sm:prose-base max-w-none prose-p:text-foreground prose-li:text-foreground prose-li:marker:text-accent prose-a:text-primary dark:prose-invert">
             {Option.isSome(pointers) && (
               <ul>
                 {pointers.value.map((pointer, i) => (
@@ -133,7 +133,7 @@ export function ProductListing({
         </div>
 
         <div className="flex flex-col gap-4 md:col-start-2 md:row-start-2 md:gap-5">
-          <div className="rounded-xl bg-white p-4 sm:p-6">{description}</div>
+          <div className="rounded-xl bg-card p-4 sm:p-6">{description}</div>
           <Specifications fullInfo={fullInfo} />
         </div>
       </div>
@@ -182,7 +182,7 @@ function Specifications({
   return (
     <section
       aria-labelledby="specifications-heading"
-      className="rounded-xl bg-white p-4 sm:p-6"
+      className="rounded-xl bg-card p-4 sm:p-6"
     >
       <h2
         id="specifications-heading"
@@ -233,12 +233,12 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
   const index = useAtomValue(imageIndexAtom)
   const image = product.images[index]
   return (
-    <div className="rounded-xl bg-white flex items-center justify-center aspect-square overflow-hidden p-6 sm:p-10">
+    <div className="rounded-xl bg-image-well flex items-center justify-center aspect-square overflow-hidden p-6 sm:p-10">
       <img
         key={image.url}
         src={image.url}
         alt={product.title}
-        className="max-h-full max-w-full object-contain animate-in fade-in duration-300"
+        className="max-h-full max-w-full object-contain animate-in fade-in duration-300 dark:brightness-90"
       />
     </div>
   )
@@ -254,7 +254,7 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
           aria-label={`Show image ${i + 1}`}
           aria-current={i === index ? "true" : undefined}
           className={cn(
-            "aspect-square cursor-pointer rounded-lg bg-white p-2 ring-inset transition-shadow hover:ring-2 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            "aspect-square cursor-pointer rounded-lg bg-image-well p-2 ring-inset transition-shadow hover:ring-2 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             i === index && "ring-2 ring-primary hover:ring-primary",
           )}
           onClick={() => setIndex(i)}
@@ -262,7 +262,7 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
           <img
             src={image.thumbnailUrl}
             alt=""
-            className="size-full object-contain"
+            className="size-full object-contain dark:brightness-90"
           />
         </button>
       ))}
@@ -292,7 +292,7 @@ function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
   }
   const stats = reviewStats.value.ReviewStatistics
   return (
-    <div className="flex items-center gap-6 mb-4 sm:mb-6 rounded-xl bg-white p-4 sm:p-6 md:max-w-xl">
+    <div className="flex items-center gap-6 mb-4 sm:mb-6 rounded-xl bg-card p-4 sm:p-6 md:max-w-xl">
       <div className="flex flex-col items-center gap-1">
         <span className="text-5xl font-bold tracking-tight tabular-nums">
           {stats.AverageOverallRating.toFixed(1)}
@@ -336,7 +336,7 @@ function ReviewsOverview({ product }: { readonly product: ProductBaseInfo }) {
 
 function SkeletonRatings() {
   return (
-    <div className="flex items-center gap-4 mb-4 sm:mb-6 rounded-xl bg-white p-4 sm:p-6 md:max-w-xl">
+    <div className="flex items-center gap-4 mb-4 sm:mb-6 rounded-xl bg-card p-4 sm:p-6 md:max-w-xl">
       <div className="flex w-full space-y-3">
         <Skeleton className="h-32 w-32 rounded-xl" />
         <div className="w-4" />
@@ -387,7 +387,7 @@ function ReviewCard({ review }: { readonly review: ProductReview }) {
             })}
           </span>
         </div>
-        <div className="mt-2 prose prose-sm max-w-none prose-p:text-foreground/85">
+        <div className="mt-2 prose prose-sm max-w-none dark:prose-invert prose-p:text-foreground/85">
           <Markdown>{review.ReviewText}</Markdown>
         </div>
       </CardContent>
