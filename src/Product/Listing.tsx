@@ -233,7 +233,7 @@ function SelectedImage({ product }: { readonly product: ProductBaseInfo }) {
   const index = useAtomValue(imageIndexAtom)
   const image = product.images[index]
   return (
-    <div className="rounded-xl bg-image-well flex items-center justify-center aspect-square overflow-hidden p-6 sm:p-10">
+    <div className="rounded-xl bg-image-well text-image-well-foreground flex items-center justify-center aspect-square overflow-hidden p-6 sm:p-10">
       <img
         key={image.url}
         src={image.url}
@@ -254,8 +254,8 @@ function ThumbnailImages({ product }: { readonly product: ProductBaseInfo }) {
           aria-label={`Show image ${i + 1}`}
           aria-current={i === index ? "true" : undefined}
           className={cn(
-            "aspect-square cursor-pointer rounded-lg bg-image-well p-2 ring-inset transition-shadow hover:ring-2 hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            i === index && "ring-2 ring-primary hover:ring-primary",
+            "aspect-square cursor-pointer rounded-lg bg-image-well p-2 text-image-well-foreground ring-inset transition-shadow hover:ring-2 hover:ring-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+            i === index && "ring-2 ring-brand hover:ring-brand",
           )}
           onClick={() => setIndex(i)}
         >

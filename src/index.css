@@ -20,6 +20,7 @@
   --color-canvas: var(--canvas);
   --color-brand: var(--brand);
   --color-image-well: var(--image-well);
+  --color-image-well-foreground: var(--image-well-foreground);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -71,8 +72,11 @@
   --foreground: #172526;
   /* Page ground behind white panels, a faint step towards the brand green */
   --canvas: #eef2f1;
-  /* Behind product photos, which are shot on white */
+  /* Behind product photos, which are shot on white. The well stays light in
+     both themes, so anything drawn on it (alt text, focus rings) uses these
+     fixed dark colours rather than the theme foreground. */
   --image-well: #ffffff;
+  --image-well-foreground: #172526;
   --card: #ffffff;
   --card-foreground: oklch(0.145 0 0);
   --popover: #ffffff;
