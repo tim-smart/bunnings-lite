@@ -19,8 +19,8 @@ export function CopyInviteButton() {
   const [copied, setCopied] = useState(false)
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm">
-      <p className="flex gap-2 text-amber-900">
+    <div className="flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-400/30 dark:bg-amber-400/10">
+      <p className="flex gap-2 text-amber-900 dark:text-amber-200">
         <TriangleAlert className="size-4 shrink-0 mt-0.5" />
         <span>
           An invite link gives full access to your synced favorites. Whoever has

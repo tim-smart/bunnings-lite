@@ -48,8 +48,8 @@ export function SearchResults() {
         .onErrorTag("EmptyQueryError", () => <ResultsSkeleton />)
         .onErrorTag("NoSuchElementError", () => <NoResults />)
         .onFailure((cause) => (
-          <div className="flex flex-col items-center gap-3 rounded-xl bg-white px-6 py-12 text-center">
-            <h2 className="text-lg font-bold text-secondary">
+          <div className="flex flex-col items-center gap-3 rounded-xl bg-card px-6 py-12 text-center">
+            <h2 className="text-lg font-bold text-accent">
               An error occurred while fetching results.
             </h2>
             <pre className="max-w-full overflow-x-auto whitespace-pre-wrap text-left text-xs text-muted-foreground">
@@ -189,12 +189,16 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
         <div className="absolute top-1 left-1 z-10">
           <FavoriteButton product={product} variant="icon" />
         </div>
-        <div className="flex h-36 items-center justify-center px-4 pt-10 pb-2 sm:h-52 sm:px-6">
-          <img
-            src={product.images[0].thumbnailUrl}
-            alt={product.title}
-            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
-          />
+        {/* Product photos are shot on white, so they sit in a light well that
+            the dark theme keeps instead of leaving ragged white rectangles */}
+        <div className="h-36 px-3 pt-10 pb-2 sm:h-52 sm:px-4">
+          <div className="flex h-full items-center justify-center rounded-lg bg-image-well px-1 text-image-well-foreground sm:px-2">
+            <img
+              src={product.images[0].thumbnailUrl}
+              alt={product.title}
+              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.03] dark:brightness-90"
+            />
+          </div>
         </div>
         <div className="flex flex-1 flex-col gap-2 px-3 pt-2 pb-3 sm:px-4 sm:pb-4">
           {/* Beside the favourite button when the card has room, otherwise
@@ -222,7 +226,7 @@ function ResultCard({ product }: { readonly product: ProductBaseInfo }) {
 
 function SkeletonCard() {
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-white p-3 sm:p-4">
+    <div className="flex flex-col gap-3 rounded-xl bg-card p-3 sm:p-4">
       <Skeleton className="h-28 w-full sm:h-44" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-2/3" />
@@ -234,7 +238,7 @@ function SkeletonCard() {
 function NoResults() {
   const focus = useAtomSet(focusAtom)
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl bg-white px-6 py-14 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-xl bg-card px-6 py-14 text-center">
       <SearchX className="size-8 text-primary/60" />
       <h2 className="text-lg font-bold">No results found.</h2>
       <p className="text-sm text-muted-foreground">
@@ -252,7 +256,7 @@ function StoreAndFavourites() {
     <div className="flex flex-col pt-6 pb-10 gap-8 sm:pt-8 sm:gap-10">
       <section
         aria-labelledby="store-heading"
-        className="grid gap-4 rounded-xl bg-white p-4 sm:p-6 md:grid-cols-[1fr_minmax(0,24rem)] md:items-center md:gap-8"
+        className="grid gap-4 rounded-xl bg-card p-4 sm:p-6 md:grid-cols-[1fr_minmax(0,24rem)] md:items-center md:gap-8"
       >
         <div className="flex flex-col gap-1">
           <h2 id="store-heading" className="text-lg font-bold text-primary">
@@ -286,9 +290,9 @@ function FavoritesList() {
     return (
       <section
         aria-labelledby="favourites-heading"
-        className="flex flex-col items-center gap-2 rounded-xl bg-white/60 px-6 py-10 text-center"
+        className="flex flex-col items-center gap-2 rounded-xl bg-card/60 px-6 py-10 text-center"
       >
-        <Star className="size-7 text-secondary" />
+        <Star className="size-7 text-accent" />
         <h2 id="favourites-heading" className="font-bold">
           No favourites yet
         </h2>
@@ -317,7 +321,7 @@ function FavoritesList() {
         <button
           type="button"
           onClick={() => clear()}
-          className="cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-secondary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Clear all
         </button>

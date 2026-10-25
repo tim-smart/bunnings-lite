@@ -34,7 +34,7 @@ import { CopyInviteButton, InviteDialog } from "@/Sync/Invite"
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="flex min-h-screen flex-col bg-primary">
+    <div className="flex min-h-screen flex-col bg-brand">
       <Header />
 
       <main className="flex-1 bg-canvas px-3 sm:px-6 pb-24">
@@ -164,7 +164,7 @@ function SearchInput() {
           type="search"
           placeholder="Search for products..."
           className={cn(
-            "w-full pl-12 pr-4 border-2 border-white rounded-lg bg-white text-base md:text-base hover:border-white focus-visible:border-secondary focus-visible:ring-3 focus-visible:ring-secondary/20",
+            "w-full pl-12 pr-4 border-2 border-card rounded-lg bg-card text-base md:text-base hover:border-card focus-visible:border-secondary focus-visible:ring-3 focus-visible:ring-secondary/20",
             minimize ? "h-11 md:h-12" : "h-13 md:h-14 md:text-lg",
           )}
           value={query}

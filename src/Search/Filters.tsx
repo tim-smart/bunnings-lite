@@ -8,7 +8,7 @@ import * as Option from "effect/Option"
 
 export function Filters() {
   return (
-    <div className="grid grid-cols-1 gap-x-8 gap-y-3 rounded-xl bg-white px-4 py-3 sm:grid-cols-2 sm:gap-y-4 sm:px-6 sm:py-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,22rem)]">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-3 rounded-xl bg-card px-4 py-3 sm:grid-cols-2 sm:gap-y-4 sm:px-6 sm:py-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,22rem)]">
       {Object.values(allFilters).map((filter) => (
         <FilterControl key={filter.filter.id} filter={filter} />
       ))}
@@ -42,7 +42,7 @@ function FilterControl({ filter }: { filter: AllFilters[keyof AllFilters] }) {
               <button
                 type="button"
                 onClick={() => reset()}
-                className="cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-secondary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 (clear)
               </button>

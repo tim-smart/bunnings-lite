@@ -73,12 +73,12 @@ export function StoreSelector() {
         }}
       >
         <SelectTrigger
-          className="w-full cursor-pointer border-input bg-white font-medium text-foreground shadow-none hover:border-primary/40 focus-visible:border-primary focus-visible:ring-primary/15 data-[size=default]:h-11 data-[state=open]:border-primary"
+          className="w-full cursor-pointer border-input bg-card font-medium text-foreground shadow-none hover:border-primary/40 focus-visible:border-primary focus-visible:ring-primary/15 data-[size=default]:h-11 data-[state=open]:border-primary"
           onKeyDown={() => setInput("keyboard")}
           onPointerDown={() => setInput("pointer")}
         >
           <div className="flex items-center">
-            <MapPin className="size-5 mr-2 text-secondary" />
+            <MapPin className="size-5 mr-2 text-accent" />
             <SelectValue placeholder="Select your store" />
           </div>
         </SelectTrigger>
@@ -334,7 +334,7 @@ function StoreList({
                   onClick={() => onSelect(store)}
                   className="flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
                 >
-                  <MapPin className="size-4 shrink-0 text-secondary" />
+                  <MapPin className="size-4 shrink-0 text-accent" />
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="font-medium text-primary">
                       {store.displayName}
