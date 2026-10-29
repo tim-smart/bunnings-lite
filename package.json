@@ -11,8 +11,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@effect/atom-react": "https://pkg.pr.new/@effect/atom-react@f73059d",
-    "@effect/platform-browser": "https://pkg.pr.new/@effect/platform-browser@f73059d",
+    "@effect/atom-react": "^4.1.0",
+    "@effect/platform-browser": "^4.1.0",
     "@hookform/resolvers": "^5.9.1",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-label": "^2.1.15",
@@ -25,7 +25,7 @@
     "@tanstack/react-virtual": "^3.14.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "effect": "https://pkg.pr.new/effect@f73059d",
+    "effect": "^4.1.0",
     "lucide-react": "^1.43.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -40,8 +40,8 @@
     "workbox-routing": "^7.4.0"
   },
   "devDependencies": {
-    "@effect/platform-node": "https://pkg.pr.new/@effect/platform-node@f73059d",
-    "@effect/tsgo": "0.51.1",
+    "@effect/platform-node": "^4.1.0",
+    "@effect/tsgo": "0.63.0",
     "@playwright/test": "1.59.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
