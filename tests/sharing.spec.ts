@@ -103,11 +103,22 @@ test("an invite that arrives over an open drawer takes its place", async ({
       location.hash = hash
     }, invite.hash)
 
-  for (const [opener, drawer] of [
-    ["Sync settings", "Sync settings"],
-    ["Search all stores", "Find your store"],
-  ]) {
-    await page.getByRole("button", { name: opener }).click()
+  const drawers = [
+    {
+      drawer: "Sync settings",
+      open: () => page.getByRole("button", { name: "Sync settings" }).click(),
+    },
+    {
+      drawer: "Find your store",
+      // The search is the last option of the store picker
+      open: () =>
+        page
+          .getByRole("combobox", { name: "Your store" })
+          .selectOption({ label: "Search all stores" }),
+    },
+  ]
+  for (const { drawer, open } of drawers) {
+    await open()
     await expect(page.getByRole("dialog", { name: drawer })).toBeVisible()
 
     await arrive(link)

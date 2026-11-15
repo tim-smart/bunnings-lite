@@ -130,9 +130,15 @@ for (const [reason, script] of Object.entries(failures)) {
     await page.goto("/")
 
     // The picker is a native select: reaching for it asks for nearby stores
-    await page.getByRole("combobox").focus()
-    await expect(page.getByText("Couldn't find stores near you.")).toBeVisible()
-    await page.getByRole("button", { name: "Search all stores" }).click()
+    const picker = page.getByRole("combobox", { name: "Your store" })
+    await picker.focus()
+    await expect(
+      page
+        .getByRole("paragraph")
+        .filter({ hasText: "Couldn't find stores near you." }),
+    ).toBeVisible()
+    // The search is the last option of the list
+    await picker.selectOption({ label: "Search all stores" })
 
     const drawer = page.getByRole("dialog", { name: "Find your store" })
     await expect(
@@ -228,9 +234,10 @@ test("stores: the store search is modal", async ({ page }) => {
   // As in Firefox and Safari: the page has to be inert without CSS `interactivity`
   await page.addStyleTag({ content: "* { interactivity: auto !important; }" })
 
-  const open = page.getByRole("button", { name: "Search all stores" })
-  await open.focus()
-  await page.keyboard.press("Enter")
+  // The search is the last option of the store picker
+  const picker = page.getByRole("combobox", { name: "Your store" })
+  await picker.focus()
+  await picker.selectOption({ label: "Search all stores" })
 
   const drawer = page.getByRole("dialog", { name: "Find your store" })
   const search = drawer.getByRole("searchbox", { name: "Search stores" })
@@ -266,5 +273,5 @@ test("stores: the store search is modal", async ({ page }) => {
 
   await page.keyboard.press("Escape")
   await expect(drawer).toBeHidden()
-  await expect(open).toBeFocused()
+  await expect(picker).toBeFocused()
 })
