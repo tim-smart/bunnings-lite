@@ -14,7 +14,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
 
     /* Linting */
     "strict": true,
@@ -29,30 +28,35 @@
       {
         "name": "@effect/language-service",
         "diagnosticSeverity": {
-          "abortControllerInEffect": "warning",
-          "asyncFunction": "warning",
-          "cryptoRandomUUID": "warning",
-          "cryptoRandomUUIDInEffect": "warning",
-          "extendsNativeError": "warning",
-          "globalConsole": "warning",
-          "globalConsoleInEffect": "warning",
-          "globalDate": "warning",
-          "globalDateInEffect": "warning",
-          "globalFetch": "warning",
-          "globalFetchInEffect": "warning",
-          "globalRandom": "warning",
-          "globalRandomInEffect": "warning",
-          "globalTimers": "warning",
-          "globalTimersInEffect": "warning",
-          "instanceOfSchema": "warning",
-          "newPromise": "warning",
-          "nodeBuiltinImport": "warning",
-          "preferSchemaOverJson": "warning",
-          "processEnv": "warning",
-          "processEnvInEffect": "warning"
+          "abortControllerInEffect": "error",
+          "asyncFunction": "error",
+          "cryptoRandomUUID": "error",
+          "cryptoRandomUUIDInEffect": "error",
+          "extendsNativeError": "error",
+          "globalConsole": "error",
+          "globalConsoleInEffect": "error",
+          "globalDate": "error",
+          "globalDateInEffect": "error",
+          "globalFetch": "error",
+          "globalFetchInEffect": "error",
+          "globalRandom": "error",
+          "globalRandomInEffect": "error",
+          "globalTimers": "error",
+          "globalTimersInEffect": "error",
+          "instanceOfSchema": "error",
+          "newPromise": "error",
+          "nodeBuiltinImport": "error",
+          "globalJsonInEffect": "error",
+          "processEnv": "error",
+          "processEnvInEffect": "error",
+          "schemaClassMissingBrand": "off",
+          "schemaNumber": "off",
+          // The client is built on @effect/ui, which is experimental throughout
+          "experimentalApiUsage": "off",
+          "unstableApiUsage": "off"
         }
       }
     ]
   },
-  "include": ["src", "domain"]
+  "include": ["src"]
 }

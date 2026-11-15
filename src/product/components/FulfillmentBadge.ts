@@ -1,0 +1,73 @@
+import { Layer, Option, Schema } from "effect"
+import { Session } from "../../rpc/services/Session.ts"
+import { AsyncResult } from "effect/reactivity"
+import { Component } from "@effect/ui"
+import { badgeClass } from "../../design/classes.ts"
+import { icon } from "../../design/icons.ts"
+import { GetFulfillment } from "../loaders/GetFulfillment.ts"
+
+/**
+ * Where a product is in the chosen store, or that the store is out of it. It
+ * shows nothing until that is known, and its wrapper hides while empty.
+ */
+export const FulfillmentBadgeNoDeps = Component.define({
+  name: "FulfillmentBadge",
+  props: Schema.Struct({
+    id: Schema.String,
+    /** Also say so when the product is in stock with no known aisle. */
+    showAvailable: Schema.Boolean,
+    /** Classes for the wrapper, which places the badge. */
+    class: Schema.String,
+  }),
+  model: Schema.Struct({}),
+  message: Schema.Never,
+  loaders: {
+    fulfillment: {
+      load: GetFulfillment,
+      args: (_model, props) => ({ id: props.id }),
+    },
+  },
+}).make({
+  init: () => ({}),
+  update: (model) => model,
+  view: (_model, h) => {
+    const fulfillment = Option.flatten(AsyncResult.value(h.loaded.fulfillment))
+    const badge = Option.match(fulfillment, {
+      onNone: () => undefined,
+      onSome: (info) => {
+        if (!info.isAvailable) {
+          return h.span
+            .class(
+              badgeClass(
+                "h-7 rounded-full border-0 bg-orange-100 px-2.5 text-orange-800 dark:bg-orange-400/15 dark:text-orange-300",
+              ),
+            )
+            .children("Out of stock")
+        }
+        if (Option.isSome(info.location)) {
+          const { aisle, bay } = info.location.value
+          return h.span
+            .class(
+              badgeClass(
+                "h-7 rounded-full border-0 bg-primary/10 px-2.5 text-primary tabular-nums",
+              ),
+            )
+            .children(icon(h, "mapPin"), `Aisle ${aisle}/${bay}`)
+        }
+        if (!h.props.showAvailable) return undefined
+        return h.span
+          .class(
+            badgeClass(
+              "h-7 rounded-full border-0 bg-green-100 px-2.5 text-green-800 dark:bg-green-400/15 dark:text-green-300",
+            ),
+          )
+          .children("Available")
+      },
+    })
+    return h.div.class(h.props.class).children(badge)
+  },
+})
+
+export const FulfillmentBadge = FulfillmentBadgeNoDeps.pipe(
+  Component.provide(GetFulfillment.layer.pipe(Layer.provide(Session.layer))),
+)

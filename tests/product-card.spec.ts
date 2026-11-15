@@ -140,7 +140,8 @@ test("product card: badges leave the favourite button full size on narrow cards"
     ["Cordless drill", "Out of stock"],
     ["Claw hammer", "Aisle 120/14"],
   ]) {
-    const card = page.locator("a", { hasText: title })
+    // The favourite button sits beside the card's link, not inside it
+    const card = page.locator("article", { hasText: title })
     const badge = card.getByText(badgeText, { exact: true })
     await expect(badge).toBeVisible({ timeout: 10_000 })
 

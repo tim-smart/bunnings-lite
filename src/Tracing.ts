@@ -1,12 +1,8 @@
-import * as Config from "effect/Config"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import * as Option from "effect/Option"
-import * as Redacted from "effect/Redacted"
-import * as OtlpSerialization from "effect/observability/OtlpSerialization"
-import * as OtlpTracer from "effect/observability/OtlpTracer"
-import * as FetchHttpClient from "effect/http/FetchHttpClient"
+import { Config, Effect, Layer, Option, Redacted } from "effect"
+import { FetchHttpClient } from "effect/http"
+import { OtlpSerialization, OtlpTracer } from "effect/observability"
 
+/** Sends traces to Honeycomb when `VITE_HONEYCOMB_API_KEY` is set. */
 export const TracerLayer = Layer.unwrap(
   Effect.gen(function* () {
     const apiKey = yield* Config.Redacted("VITE_HONEYCOMB_API_KEY").pipe(
