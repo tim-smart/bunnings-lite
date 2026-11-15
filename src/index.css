@@ -162,3 +162,330 @@ body {
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* The rating filter: two native range inputs that share one track. Only the
+   thumbs take the pointer, so each can be reached past the other's input. */
+@layer components {
+  .dual-range input[type="range"] {
+    position: absolute;
+    inset-inline: 0;
+    width: 100%;
+    height: 1.5rem;
+    margin: 0;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    pointer-events: none;
+  }
+  .dual-range input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--primary);
+    border-radius: 9999px;
+    background: var(--background);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 20%, transparent);
+    cursor: grab;
+    pointer-events: auto;
+    transition: box-shadow 150ms;
+  }
+  .dual-range input[type="range"]::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--primary);
+    border-radius: 9999px;
+    background: var(--background);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 20%, transparent);
+    cursor: grab;
+    pointer-events: auto;
+    transition: box-shadow 150ms;
+  }
+  .dual-range input[type="range"]:hover::-webkit-slider-thumb,
+  .dual-range input[type="range"]:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+  .dual-range input[type="range"]:hover::-moz-range-thumb,
+  .dual-range input[type="range"]:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+  .dual-range input[type="range"]:active::-webkit-slider-thumb {
+    cursor: grabbing;
+  }
+  .dual-range input[type="range"]:active::-moz-range-thumb {
+    cursor: grabbing;
+  }
+  /* The value of a thumb, shown above it while it is held or focused */
+  .dual-range output {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 0.5rem;
+    translate: -50% 0;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    scale: 0.95;
+    transform-origin: bottom;
+    pointer-events: none;
+    transition:
+      opacity 150ms,
+      scale 150ms;
+  }
+  /* Its pointer, down to the thumb */
+  .dual-range output::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0.625rem;
+    height: 0.625rem;
+    translate: -50% calc(-50% - 2px);
+    rotate: 45deg;
+    border-radius: 2px;
+    background: inherit;
+  }
+  /* Both values show while the pointer is over the slider */
+  .dual-range:hover output,
+  .dual-range input[type="range"]:active + output,
+  .dual-range input[type="range"]:focus-visible + output {
+    opacity: 1;
+    scale: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dual-range output {
+      scale: 1;
+      transition: none;
+    }
+  }
+}
+
+/*
+ * The store picker. It stays a native select, so a phone shows its own
+ * picker. Where there is a mouse and the browser can style the list
+ * (`base-select`), the list is drawn like the rest of the app. Elsewhere it
+ * is the system's.
+ */
+@layer components {
+  .store-select {
+    appearance: none;
+  }
+  @supports (appearance: base-select) {
+    @media (hover: hover) and (pointer: fine) {
+      .store-select,
+      .store-select::picker(select) {
+        appearance: base-select;
+      }
+      .store-select {
+        align-items: center;
+      }
+      /* The component draws its own chevron */
+      .store-select::picker-icon {
+        display: none;
+      }
+      .store-select::picker(select) {
+        box-sizing: border-box;
+        min-width: anchor-size(width);
+        margin-block: 0.25rem;
+        padding: 0.25rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--popover);
+        color: var(--popover-foreground);
+        box-shadow:
+          0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+        opacity: 0;
+        scale: 0.95;
+        translate: 0 -0.5rem;
+        transform-origin: top;
+        transition:
+          opacity 150ms ease-out,
+          scale 150ms ease-out,
+          translate 150ms ease-out,
+          display 150ms allow-discrete,
+          overlay 150ms allow-discrete;
+      }
+      .store-select:open::picker(select) {
+        opacity: 1;
+        scale: 1;
+        translate: 0 0;
+      }
+      @starting-style {
+        .store-select:open::picker(select) {
+          opacity: 0;
+          scale: 0.95;
+          translate: 0 -0.5rem;
+        }
+      }
+      .store-select optgroup {
+        padding: 0;
+        color: var(--muted-foreground);
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1rem;
+      }
+      .store-select optgroup::before,
+      .store-select optgroup > legend {
+        padding: 0.375rem 0.5rem;
+      }
+      .store-select option {
+        gap: 0.5rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: var(--radius-sm);
+        color: var(--popover-foreground);
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.25rem;
+        cursor: pointer;
+        outline: none;
+      }
+      .store-select option:hover,
+      .store-select option:focus-visible {
+        background: var(--muted);
+        color: var(--primary);
+      }
+      .store-select option:focus-visible {
+        box-shadow: inset 0 0 0 2px var(--primary);
+      }
+      .store-select option:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .store-select hr {
+        margin: 0.25rem -0.25rem;
+        border-color: var(--border);
+      }
+      .store-select option.store-select-search svg {
+        color: var(--muted-foreground);
+      }
+      /* The tick of the chosen store, at the far end of its row */
+      .store-select option::checkmark {
+        order: 1;
+        margin-left: auto;
+        color: var(--primary);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .store-select::picker(select) {
+          scale: 1;
+          translate: none;
+          transition:
+            opacity 100ms,
+            display 100ms allow-discrete,
+            overlay 100ms allow-discrete;
+        }
+        @starting-style {
+          .store-select:open::picker(select) {
+            scale: 1;
+            translate: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
+ * The bottom sheet: a modal dialog that fills the screen, holding its own
+ * backdrop and panel. Both move by transition, so opening, closing and a
+ * change of mind halfway each carry on from where the sheet is.
+ */
+@layer components {
+  .drawer {
+    --drawer-duration: 500ms;
+    /* The curve of an iOS sheet: quick off the mark, long to settle */
+    --drawer-ease: cubic-bezier(0.32, 0.72, 0, 1);
+    /* Never a scroll container. Showing the dialog focuses a control in the
+       panel, and a dialog that can scroll follows it to where the panel
+       starts, below the screen: the panel then stands still while the
+       backdrop is carried in from above. */
+    overflow: clip;
+    /* Once closed it stays on screen, in the top layer where the browser can
+       keep it there, until the panel has left */
+    transition:
+      display var(--drawer-duration) allow-discrete,
+      overlay var(--drawer-duration) allow-discrete;
+  }
+  .drawer-backdrop {
+    opacity: 0;
+    /* A swipe that starts on it doesn't scroll the page */
+    touch-action: none;
+    transition: opacity var(--drawer-duration) var(--drawer-ease);
+  }
+  .drawer-panel {
+    translate: 0 100%;
+    transition: translate var(--drawer-duration) var(--drawer-ease);
+  }
+  .drawer-body {
+    overscroll-behavior: contain;
+  }
+  .drawer[open] > .drawer-backdrop {
+    opacity: 1;
+  }
+  .drawer[open] > .drawer-panel {
+    translate: 0 0;
+  }
+  @starting-style {
+    .drawer[open] > .drawer-backdrop {
+      opacity: 0;
+    }
+    .drawer[open] > .drawer-panel {
+      translate: 0 100%;
+    }
+  }
+
+  /* The handle and the header, which drag the sheet down to close it */
+  .drawer-grip {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+  /* Held by a pointer: the sheet follows it exactly, see DrawerDrag.ts */
+  .drawer[data-dragging] > * {
+    transition: none;
+  }
+  .drawer[data-dragging] .drawer-grip {
+    cursor: grabbing;
+  }
+
+  /* The page doesn't scroll behind an open sheet */
+  html:has(.drawer[open]) {
+    overflow: hidden;
+    /* Where its scrollbar was, so that nothing behind the sheet moves. See
+       ScrollbarWidth.ts. */
+    padding-right: var(--scrollbar-width, 0px);
+  }
+  /* What is fixed to the right edge stays clear of it too. By a margin: the
+     `right-0` utility is in a later layer, and would win over `right`. */
+  html:has(.drawer[open]) .fixed.right-0 {
+    margin-right: var(--scrollbar-width, 0px);
+  }
+
+  /* Reduced motion: the sheet stays where it is and fades, quickly */
+  @media (prefers-reduced-motion: reduce) {
+    .drawer {
+      --drawer-duration: 150ms;
+      --drawer-ease: ease-out;
+    }
+    .drawer-panel {
+      translate: none;
+      opacity: 0;
+      transition: opacity var(--drawer-duration) var(--drawer-ease);
+    }
+    .drawer[open] > .drawer-panel {
+      translate: none;
+      opacity: 1;
+    }
+    @starting-style {
+      .drawer[open] > .drawer-panel {
+        translate: none;
+        opacity: 0;
+      }
+    }
+  }
+}

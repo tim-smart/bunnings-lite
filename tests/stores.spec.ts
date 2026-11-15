@@ -129,9 +129,16 @@ for (const [reason, script] of Object.entries(failures)) {
     const calls = await mockRpc(page)
     await page.goto("/")
 
-    await page.getByRole("combobox").click()
-    await expect(page.getByText("Couldn't find stores near you.")).toBeVisible()
-    await page.getByRole("option", { name: "Search all stores" }).click()
+    // The picker is a native select: reaching for it asks for nearby stores
+    const picker = page.getByRole("combobox", { name: "Your store" })
+    await picker.focus()
+    await expect(
+      page
+        .getByRole("paragraph")
+        .filter({ hasText: "Couldn't find stores near you." }),
+    ).toBeVisible()
+    // The search is the last option of the list
+    await picker.selectOption({ label: "Search all stores" })
 
     const drawer = page.getByRole("dialog", { name: "Find your store" })
     await expect(
@@ -142,7 +149,9 @@ for (const [reason, script] of Object.entries(failures)) {
     await drawer.getByRole("button", { name: /Rozelle/ }).click()
 
     await expect(drawer).toBeHidden()
-    await expect(page.getByRole("combobox")).toHaveText("Rozelle")
+    await expect(
+      page.getByRole("combobox").locator("option:checked"),
+    ).toHaveText("Rozelle")
     await expect
       .poll(() => calls.logins.at(-1))
       .toMatchObject({ code: "7373", city: "Rozelle", website: "AU" })
@@ -159,13 +168,110 @@ test("stores: nearby stores come from the browser location", async ({
   const calls = await mockRpc(page)
   await page.goto("/")
 
-  await page.getByRole("combobox").click()
-  await page.getByRole("option", { name: "Grey Lynn" }).click()
+  await page.getByRole("combobox").focus()
+  await page.getByRole("combobox").selectOption({ label: "Grey Lynn" })
 
-  await expect(page.getByRole("combobox")).toHaveText("Grey Lynn")
+  await expect(page.getByRole("combobox").locator("option:checked")).toHaveText(
+    "Grey Lynn",
+  )
   expect(calls.nearby).toEqual([{ latitude: -36.85, longitude: 174.76 }])
   await expect
     .poll(() => calls.logins.at(-1))
     .toMatchObject({ code: "9518", city: "Grey Lynn", website: "NZ" })
   expect(calls.allStores).toBe(0)
+})
+
+test("stores: the keyboard picks a nearby store", async ({ page }) => {
+  await page.context().grantPermissions(["geolocation"])
+  await page.context().setGeolocation({ latitude: -36.85, longitude: 174.76 })
+  const calls = await mockRpc(page)
+  await page.goto("/")
+
+  const picker = page.getByRole("combobox", { name: "Your store" })
+  await picker.focus()
+  await expect(picker.getByRole("option", { name: "Grey Lynn" })).toBeAttached()
+  // The arrow opens the list on its first store, and Enter picks it
+  await page.keyboard.press("ArrowDown")
+  await expect(picker.getByRole("option", { name: "Grey Lynn" })).toBeFocused()
+  await page.keyboard.press("Enter")
+
+  await expect(picker).toHaveValue("9518")
+  await expect(picker).toBeFocused()
+  await expect
+    .poll(() => calls.logins.at(-1))
+    .toMatchObject({ code: "9518", city: "Grey Lynn" })
+})
+
+test.describe("on a touch device", () => {
+  test.use({ hasTouch: true })
+
+  test("stores: the picker is the system's own", async ({ page }) => {
+    await page.context().grantPermissions(["geolocation"])
+    await page.context().setGeolocation({ latitude: -36.85, longitude: 174.76 })
+    const calls = await mockRpc(page)
+    await page.goto("/")
+
+    const picker = page.getByRole("combobox", { name: "Your store" })
+    await picker.focus()
+    await expect(
+      picker.getByRole("option", { name: "Grey Lynn" }),
+    ).toBeAttached()
+    await expect(picker).not.toHaveCSS("appearance", "base-select")
+    // No list of the app's to open: the arrow picks, and focus stays put
+    await page.keyboard.press("ArrowDown")
+
+    await expect(picker).toHaveValue("9518")
+    await expect(picker).toBeFocused()
+    await expect
+      .poll(() => calls.logins.at(-1))
+      .toMatchObject({ code: "9518", city: "Grey Lynn" })
+  })
+})
+
+test("stores: the store search is modal", async ({ page }) => {
+  await mockRpc(page)
+  await page.goto("/")
+  // As in Firefox and Safari: the page has to be inert without CSS `interactivity`
+  await page.addStyleTag({ content: "* { interactivity: auto !important; }" })
+
+  // The search is the last option of the store picker
+  const picker = page.getByRole("combobox", { name: "Your store" })
+  await picker.focus()
+  await picker.selectOption({ label: "Search all stores" })
+
+  const drawer = page.getByRole("dialog", { name: "Find your store" })
+  const search = drawer.getByRole("searchbox", { name: "Search stores" })
+  const first = drawer.getByRole("button", { name: /Grey Lynn/ })
+  const last = drawer.getByRole("button", { name: /Rozelle/ })
+  await expect(search).toBeFocused()
+  await expect(last).toBeVisible()
+
+  // Nothing behind the drawer can take focus
+  for (const behind of [
+    'select[aria-label="Your store"]',
+    'input[aria-label="Search for products"]',
+    'button[aria-label="Sync settings"]',
+  ]) {
+    await page.locator(behind).evaluate((el: HTMLElement) => el.focus())
+    await expect(search).toBeFocused()
+  }
+
+  // Tab moves through the drawer, and past its end leaves the page rather
+  // than reaching what is behind
+  await page.keyboard.press("Tab")
+  await expect(first).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(last).toBeFocused()
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press("Tab")
+    const behind = await page.evaluate(() => {
+      const active = document.activeElement
+      return active !== document.body && active?.closest("dialog") === null
+    })
+    expect(behind).toBe(false)
+  }
+
+  await page.keyboard.press("Escape")
+  await expect(drawer).toBeHidden()
+  await expect(picker).toBeFocused()
 })

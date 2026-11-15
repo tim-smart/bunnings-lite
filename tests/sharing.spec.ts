@@ -17,15 +17,17 @@ async function readSyncSettings(page: Page) {
   return settings
 }
 
-async function createInvite(context: BrowserContext) {
+async function createInvite(context: BrowserContext, remote = sharedRemote) {
   await context.grantPermissions(["clipboard-read", "clipboard-write"])
-  await seedRemote(context, sharedRemote)
+  await seedRemote(context, remote)
   const page = await context.newPage()
   await page.goto("/")
   const settings = await readSyncSettings(page)
 
   await page.getByRole("button", { name: "Sync settings" }).click()
   await page.getByRole("button", { name: "Copy invite link" }).click()
+  // The copy runs as a Command, after the click's handler has returned
+  await expect(page.getByRole("status")).toHaveText(/Copied/)
   const link = new URL(
     await page.evaluate(() => navigator.clipboard.readText()),
   )
@@ -79,6 +81,68 @@ test("declining an invite keeps the device's existing sync settings", async ({
   await expect(prompt).toBeHidden()
   await expect.poll(() => new URL(page.url()).hash).toBe("")
   expect(await readSyncSettings(page)).toEqual(existing)
+  await friend.close()
+})
+
+test("an invite that arrives over an open drawer takes its place", async ({
+  context,
+  browser,
+}) => {
+  const { link } = await createInvite(context)
+  const other = await createInvite(context, "ws://127.0.0.1:65534/")
+
+  const friend = await browser.newContext({ baseURL: link.origin })
+  const page = await friend.newPage()
+  await page.goto("/")
+  const dialogs = page.getByRole("dialog")
+  const prompt = page.getByRole("dialog", { name: "Join shared sync?" })
+  const cancel = prompt.getByRole("button", { name: "Cancel" })
+  // An installed app gets a new link as a fragment change in its window
+  const arrive = (invite: URL) =>
+    page.evaluate((hash) => {
+      location.hash = hash
+    }, invite.hash)
+
+  const drawers = [
+    {
+      drawer: "Sync settings",
+      open: () => page.getByRole("button", { name: "Sync settings" }).click(),
+    },
+    {
+      drawer: "Find your store",
+      // The search is the last option of the store picker
+      open: () =>
+        page
+          .getByRole("combobox", { name: "Your store" })
+          .selectOption({ label: "Search all stores" }),
+    },
+  ]
+  for (const { drawer, open } of drawers) {
+    await open()
+    await expect(page.getByRole("dialog", { name: drawer })).toBeVisible()
+
+    await arrive(link)
+    await expect(prompt).toBeVisible()
+    await expect(dialogs).toHaveCount(1)
+    await expect(cancel).toBeFocused()
+
+    await page.keyboard.press("Enter")
+    await expect(dialogs).toHaveCount(0)
+    await expect(
+      page.getByRole("button", { name: "Sync settings" }),
+    ).toBeFocused()
+  }
+
+  // Over another invite, Enter must not join the one that replaced it
+  await arrive(link)
+  // Tab before the prompt has opened would move focus on the page instead
+  await expect(cancel).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(prompt.getByRole("button", { name: "Join" })).toBeFocused()
+  await arrive(other.link)
+  await expect(prompt).toContainText("127.0.0.1:65534")
+  await expect(dialogs).toHaveCount(1)
+  await expect(cancel).toBeFocused()
   await friend.close()
 })
 
@@ -227,6 +291,7 @@ test("joining another identity on the same server discards this device's favorit
   const copyInviteLink = async (page: Page) => {
     await page.getByRole("button", { name: "Sync settings" }).click()
     await page.getByRole("button", { name: "Copy invite link" }).click()
+    await expect(page.getByRole("status")).toHaveText(/Copied/)
     const link = await page.evaluate(() => navigator.clipboard.readText())
     await page.getByRole("button", { name: "Close" }).click()
     return link
