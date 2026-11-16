@@ -400,7 +400,7 @@ const productPageView = ProductPageDef.view((model, h) => {
                 )
                 .children(product.title),
               h.div.class("flex flex-wrap gap-3 items-center").children(
-                h.child(FulfillmentBadge, {
+                FulfillmentBadge(h, {
                   key: "fulfillment",
                   props: {
                     id: product.id,
@@ -454,7 +454,7 @@ const productPageView = ProductPageDef.view((model, h) => {
                     }),
                   )
                   .children("Open in Bunnings", icon(h, "arrowRight")),
-                h.child(FavoriteButton, {
+                FavoriteButton(h, {
                   key: "favorite",
                   props: { product, variant: "button" },
                 }),

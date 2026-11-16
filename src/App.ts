@@ -93,7 +93,7 @@ export const AppNoDeps = Component.define({
   view: (model, h) => {
     switch (model.join) {
       case "Ready":
-        return h.child(Shell, {
+        return Shell(h, {
           key: "shell",
           props: {
             route: model.route,

@@ -12,8 +12,8 @@ importers:
         specifier: ^4.1.4
         version: 4.1.4(effect@4.1.4)
       '@effect/ui':
-        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609
-        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609(effect@4.1.4)
+        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415
+        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415(effect@4.1.4)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -657,8 +657,8 @@ packages:
     resolution: {integrity: sha512-ypgO19woAyrfAG0LzU2QwQnprMpV2G30nEo9ffd4Bc0ow0vXupcx0mcSLG1EfvmRGl0jhiQ3yAbsCuJhqwnRhg==}
     hasBin: true
 
-  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609':
-    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609}
+  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415':
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415}
     version: 0.0.0
     peerDependencies:
       effect: ^4.1.4
@@ -3574,7 +3574,7 @@ snapshots:
       '@effect/tsgo-win32-arm64': 0.69.0
       '@effect/tsgo-win32-x64': 0.69.0
 
-  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609(effect@4.1.4)':
+  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415(effect@4.1.4)':
     dependencies:
       effect: 4.1.4
 

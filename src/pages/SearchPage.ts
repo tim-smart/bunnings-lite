@@ -119,15 +119,12 @@ export const SearchPageNoDeps = Component.define({
                       "Stock levels and aisle locations are shown for this store.",
                     ),
                 ),
-              h.child(StoreSelector, { key: "store" }),
+              StoreSelector(h, { key: "store" }),
             ),
-          h.child(FavoritesList, { key: "favorites" }),
+          FavoritesList(h, { key: "favorites" }),
           h.div
             .class("fixed bottom-0 right-0 p-4 pb-safe flex flex-col")
-            .children(
-              h.child(InstallButton, { key: "install" }),
-              h.div.class("h-4"),
-            ),
+            .children(InstallButton(h, { key: "install" }), h.div.class("h-4")),
         )
     }
 
@@ -174,7 +171,7 @@ export const SearchPageNoDeps = Component.define({
       items.length === 0
         ? noResults()
         : // Only the cards near the window are rendered
-          h.child(VirtualList, {
+          VirtualList(h, {
             key: "results",
             props: {
               count: items.length,
@@ -189,7 +186,7 @@ export const SearchPageNoDeps = Component.define({
                   return list
                     .item(h.div.key(product.id).class("grid min-w-0"), index)
                     .children(
-                      h.child(ProductCard, {
+                      ProductCard(h, {
                         key: product.id,
                         props: { product, query: route.query.query },
                       }),
@@ -235,7 +232,7 @@ export const SearchPageNoDeps = Component.define({
     return h.div.key("results").children(
       h.div.class("h-4 sm:h-6"),
       Option.isSome(firstPage) &&
-        h.child(Filters, {
+        Filters(h, {
           // Edits that weren't applied don't carry to another search
           key: `filters:${route.query.query}`,
           props: { route, price: priceFacet(firstPage.value) },

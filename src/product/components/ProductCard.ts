@@ -68,7 +68,7 @@ export const ProductCard = Component.define({
                 .children(
                   // Beside the favourite button when the card has room,
                   // otherwise above the title so neither squeezes the other
-                  h.child(FulfillmentBadge, {
+                  FulfillmentBadge(h, {
                     key: "fulfillment",
                     props: {
                       id: product.id,
@@ -108,7 +108,7 @@ export const ProductCard = Component.define({
             ),
         ),
       h.div.class("absolute top-1 left-1 z-10").children(
-        h.child(FavoriteButton, {
+        FavoriteButton(h, {
           key: "favorite",
           props: { product, variant: "icon" },
         }),

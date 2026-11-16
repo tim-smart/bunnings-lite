@@ -91,7 +91,7 @@ export const FavoritesListNoDeps = Component.define({
           )
           .children(
             favorites.map((product) =>
-              h.child(ProductCard, {
+              ProductCard(h, {
                 key: product.id,
                 props: { product, query: "" },
               }),
