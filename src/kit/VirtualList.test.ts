@@ -30,7 +30,7 @@ const Page = Component.define({
     init: ($) => $.props,
     update: (_model, { count, dataset }) => ({ count, dataset }),
     view: (model, h) =>
-      h.child(VirtualList, {
+      VirtualList(h, {
         key: "list",
         props: { ...model, estimatedRowSize: 100 },
         view: (list) =>

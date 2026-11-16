@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@effect/platform-browser": "^4.1.4",
-    "@effect/ui": "https://pkg.pr.new/Effect-TS/ui/@effect/ui@66de609",
+    "@effect/ui": "https://pkg.pr.new/Effect-TS/ui/@effect/ui@6f5c415",
     "clsx": "^2.1.1",
     "effect": "^4.1.4",
     "tailwind-merge": "^3.6.0",

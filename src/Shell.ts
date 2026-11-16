@@ -353,7 +353,7 @@ const page = ShellDef.fragment((h, route: AppRoute) => {
   const failed = () => pageFailed(h, route)
   return AppRoute.match(route, {
     Search: (route) =>
-      h.child(SearchPage, {
+      SearchPage(h, {
         // A new search page for each search after clearing to home, so it
         // can't show the last search's results while the next one loads. A
         // search started from home keeps the page, so it is still debounced.
@@ -363,7 +363,7 @@ const page = ShellDef.fragment((h, route: AppRoute) => {
         fallback: failed,
       }),
     Product: (route) =>
-      h.child(ProductPage, {
+      ProductPage(h, {
         key: `product:${route.params.id}`,
         props: { id: route.params.id },
         fallback: failed,
@@ -380,19 +380,19 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
   const shown = (sheet: typeof Sheet.Type) =>
     drawer === sheet || leaving.includes(sheet)
   return [
-    h.child(InviteDialog, {
+    InviteDialog(h, {
       key: "invite",
       onEmit: ({ _tag }) =>
         Message.make({ _tag: "InviteChanged", open: _tag === "Opened" }),
     }),
     shown("syncSettings") &&
-      h.child(SyncSettingsPanel, {
+      SyncSettingsPanel(h, {
         key: "sync-settings",
         props: { open: drawer === "syncSettings" },
         onEmit: () => Message.make({ _tag: "SyncSettingsClosed" }),
       }),
     shown("storeSearch") &&
-      h.child(StoreSearch, {
+      StoreSearch(h, {
         key: "store-search",
         props: { open: drawer === "storeSearch" },
         onEmit: ({ store }) =>
