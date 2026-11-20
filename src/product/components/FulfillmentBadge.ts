@@ -4,7 +4,7 @@ import { AsyncResult } from "effect/reactivity"
 import { Component } from "@effect/ui"
 import { badgeClass } from "../../design/classes.ts"
 import { icon } from "../../design/icons.ts"
-import { GetFulfillment } from "../loaders/GetFulfillment.ts"
+import { GetFulfillment } from "../queries/GetFulfillment.ts"
 
 /**
  * Where a product is in the chosen store, or that the store is out of it. It

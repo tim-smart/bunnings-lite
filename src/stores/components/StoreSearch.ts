@@ -10,8 +10,8 @@ import { drawer, drawerHeader } from "../../design/drawer.ts"
 import { icon } from "../../design/icons.ts"
 import { skeleton } from "../../design/skeleton.ts"
 import { Session } from "../../rpc/services/Session.ts"
-import { AllStores } from "../loaders/AllStores.ts"
-import { CurrentStore } from "../loaders/CurrentStore.ts"
+import { AllStores } from "../queries/AllStores.ts"
+import { CurrentStore } from "../queries/CurrentStore.ts"
 
 export const StoreSearchMessage = Schema.TaggedUnion({
   SearchTyped: { text: Schema.String },

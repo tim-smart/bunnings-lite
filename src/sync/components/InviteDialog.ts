@@ -10,7 +10,7 @@ import {
   drawerLeft,
 } from "../../design/drawer.ts"
 import { PendingInvite } from "../domain/Invite.ts"
-import { GetSyncSettings } from "../loaders/GetSyncSettings.ts"
+import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 

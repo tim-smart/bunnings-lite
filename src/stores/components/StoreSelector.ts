@@ -8,8 +8,8 @@ import {
 import { icon } from "../../design/icons.ts"
 import { SessionTag } from "../../rpc/domain/SessionTag.ts"
 import { Session } from "../../rpc/services/Session.ts"
-import { CurrentStore } from "../loaders/CurrentStore.ts"
-import { NearbyStores } from "../loaders/NearbyStores.ts"
+import { CurrentStore } from "../queries/CurrentStore.ts"
+import { NearbyStores } from "../queries/NearbyStores.ts"
 import { StoreSearchPrompt } from "../services/StoreSearchPrompt.ts"
 
 export const StoreSelectorMessage = Schema.TaggedUnion({

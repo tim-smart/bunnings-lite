@@ -23,7 +23,7 @@ import {
   searchArgs,
   searchDebounce,
 } from "../search/domain/Search.ts"
-import { SearchProducts } from "../search/loaders/SearchProducts.ts"
+import { SearchProducts } from "../search/queries/SearchProducts.ts"
 import { StoreSelector } from "../stores/components/StoreSelector.ts"
 
 export const SearchPageMessage = Schema.TaggedUnion({

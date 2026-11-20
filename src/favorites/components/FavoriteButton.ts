@@ -6,7 +6,7 @@ import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { buttonClass } from "../../design/classes.ts"
 import { icon } from "../../design/icons.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
-import { ListFavorites } from "../loaders/ListFavorites.ts"
+import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
 export const FavoriteButtonMessage = Schema.TaggedUnion({

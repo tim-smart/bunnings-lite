@@ -4,7 +4,7 @@ import { Command, Component } from "@effect/ui"
 import { icon } from "../../design/icons.ts"
 import { ProductCard } from "../../product/components/ProductCard.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
-import { ListFavorites } from "../loaders/ListFavorites.ts"
+import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
 export const FavoritesListMessage = Schema.TaggedUnion({
