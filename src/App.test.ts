@@ -24,11 +24,10 @@ describe("App", () => {
   it.effect("holds the shell back until a pending join has finished", () =>
     Effect.gen(function* () {
       const s = yield* HtmlScene.make(AppNoDeps, { route })
-      s.expectExact(FinishJoin)
-        .expect(heading)
-        .toBeAbsent()
-        // Another tab still has the old journal open
-        .next(FinishJoin, "Blocked")
+      s.expectExact(FinishJoin).expect(heading).toBeAbsent()
+      assert.strictEqual(Scene.children(s.view, Shell).length, 0)
+      // Another tab still has the old journal open
+      s.next(FinishJoin, "Blocked")
         .expect(heading)
         .toHaveText(/Waiting to finish joining/)
         .next(FinishJoin, "Finished")
