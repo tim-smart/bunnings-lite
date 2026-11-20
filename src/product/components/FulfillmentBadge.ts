@@ -4,7 +4,7 @@ import { AsyncResult } from "effect/reactivity"
 import { Component } from "@effect/ui"
 import { badgeClass } from "../../design/classes.ts"
 import { icon } from "../../design/icons.ts"
-import { GetFulfillment } from "../loaders/GetFulfillment.ts"
+import { GetFulfillment } from "../queries/GetFulfillment.ts"
 
 /**
  * Where a product is in the chosen store, or that the store is out of it. It
@@ -21,9 +21,9 @@ export const FulfillmentBadgeNoDeps = Component.define({
   }),
   model: Schema.Struct({}),
   message: Schema.Never,
-  loaders: {
+  queries: {
     fulfillment: {
-      load: GetFulfillment,
+      query: GetFulfillment,
       args: (_model, props) => ({ id: props.id }),
     },
   },
@@ -31,7 +31,7 @@ export const FulfillmentBadgeNoDeps = Component.define({
   init: () => ({}),
   update: (model) => model,
   view: (_model, h) => {
-    const fulfillment = Option.flatten(AsyncResult.value(h.loaded.fulfillment))
+    const fulfillment = Option.flatten(AsyncResult.value(h.queries.fulfillment))
     const badge = Option.match(fulfillment, {
       onNone: () => undefined,
       onSome: (info) => {

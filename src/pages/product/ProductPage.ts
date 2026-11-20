@@ -20,10 +20,10 @@ import { FavoriteButton } from "../../favorites/components/FavoriteButton.ts"
 import { formatPrice } from "../../lib/utils.ts"
 import { FulfillmentBadge } from "../../product/components/FulfillmentBadge.ts"
 import { parseRichText } from "../../product/domain/RichText.ts"
-import { GetKnownProduct } from "../../product/loaders/GetKnownProduct.ts"
-import { GetProduct } from "../../product/loaders/GetProduct.ts"
-import { GetReviewStats } from "../../product/loaders/GetReviewStats.ts"
-import { ListReviews } from "../../product/loaders/ListReviews.ts"
+import { GetKnownProduct } from "../../product/queries/GetKnownProduct.ts"
+import { GetProduct } from "../../product/queries/GetProduct.ts"
+import { GetReviewStats } from "../../product/queries/GetReviewStats.ts"
+import { ListReviews } from "../../product/queries/ListReviews.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ReviewFeed } from "../../product/services/ReviewFeed.ts"
 import { Session } from "../../rpc/services/Session.ts"
@@ -67,17 +67,20 @@ const ProductPageDef = Component.define({
     image: Schema.Number,
   }),
   message: Message,
-  loaders: {
-    product: { load: GetProduct, args: (_model, props) => ({ id: props.id }) },
+  queries: {
+    product: { query: GetProduct, args: (_model, props) => ({ id: props.id }) },
     known: {
-      load: GetKnownProduct,
+      query: GetKnownProduct,
       args: (_model, props) => ({ id: props.id }),
     },
     stats: {
-      load: GetReviewStats,
+      query: GetReviewStats,
       args: (_model, props) => ({ id: props.id }),
     },
-    reviews: { load: ListReviews, args: (_model, props) => ({ id: props.id }) },
+    reviews: {
+      query: ListReviews,
+      args: (_model, props) => ({ id: props.id }),
+    },
   },
 })
 
@@ -331,12 +334,12 @@ const reviewCard = ProductPageDef.fragment((h, review: ProductReview) =>
 
 const productPageView = ProductPageDef.view((model, h) => {
   const fullInfo: Option.Option<ProductPriceInfo> = AsyncResult.value(
-    h.loaded.product,
+    h.queries.product,
   )
-  const base = productOf(fullInfo, AsyncResult.value(h.loaded.known))
+  const base = productOf(fullInfo, AsyncResult.value(h.queries.known))
 
   if (Option.isNone(base)) {
-    return AsyncResult.isFailure(h.loaded.product)
+    return AsyncResult.isFailure(h.queries.product)
       ? h.div
           .class(
             "flex flex-col items-center gap-4 pt-20 text-lg text-muted-foreground",
@@ -357,7 +360,7 @@ const productPageView = ProductPageDef.view((model, h) => {
   const product = base.value
 
   const stats = Option.map(
-    Option.flatten(AsyncResult.value(h.loaded.stats)),
+    Option.flatten(AsyncResult.value(h.queries.stats)),
     (stats) => stats.ReviewStatistics,
   )
   const rating = Option.match(stats, {
@@ -371,7 +374,7 @@ const productPageView = ProductPageDef.view((model, h) => {
 
   const reviews = Option.match(
     Option.orElse(
-      AsyncResult.value(h.loaded.reviews),
+      AsyncResult.value(h.queries.reviews),
       () => h.previous.reviews,
     ),
     { onNone: () => [], onSome: (list) => list.items },
@@ -511,7 +514,7 @@ export const ProductPageNoDeps = ProductPageDef.make({
       BackPressed: () => $.run(Router.Back.make().pipe(Command.asNoop)),
       SharePressed: ({ title }) => $.run(ShareProduct.make({ title })),
       BottomReached: () =>
-        hasMore($.loaded.reviews) ? $.loadMore("reviews") : model,
+        hasMore($.queries.reviews) ? $.loadMore("reviews") : model,
     }),
   subscriptions: () => [bottomReached(Message.make({ _tag: "BottomReached" }))],
   head: (_model, _props, loaded) => [

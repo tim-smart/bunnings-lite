@@ -6,7 +6,7 @@ import type { H } from "./h.ts"
 export const richText = <Msg>(
   h: H<Msg>,
   nodes: ReadonlyArray<RichNode>,
-): Array<View.Node<Msg, never> | string> =>
+): Array<View.Content<Msg, never> | string> =>
   nodes.map((node) => {
     if (node.type === "text") return node.text
     const children = richText(h, node.children)

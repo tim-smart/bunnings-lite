@@ -66,7 +66,7 @@ src/
     SearchPage.ts            /
     product/ProductPage.ts   /product/:id
   search/ product/ stores/ favorites/ sync/
-                features, each split into domain/ services/ loaders/ components/
+                features, each split into domain/ services/ queries/ components/
   rpc/          the API client and the logged-in session
   kit/          headless components that no feature owns (the virtual list)
   browser/      browser APIs as services (viewport, element size, share, install prompt)

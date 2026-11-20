@@ -10,8 +10,8 @@ import { drawer, drawerHeader } from "../../design/drawer.ts"
 import { icon } from "../../design/icons.ts"
 import { skeleton } from "../../design/skeleton.ts"
 import { Session } from "../../rpc/services/Session.ts"
-import { AllStores } from "../loaders/AllStores.ts"
-import { CurrentStore } from "../loaders/CurrentStore.ts"
+import { AllStores } from "../queries/AllStores.ts"
+import { CurrentStore } from "../queries/CurrentStore.ts"
 
 export const StoreSearchMessage = Schema.TaggedUnion({
   SearchTyped: { text: Schema.String },
@@ -60,9 +60,9 @@ export const StoreSearchNoDeps = Component.define({
   }),
   message: Message,
   events: StoreSearchEvents,
-  loaders: {
-    current: { load: CurrentStore, args: () => ({}) },
-    all: { load: AllStores, args: () => ({}) },
+  queries: {
+    current: { query: CurrentStore, args: () => ({}) },
+    all: { query: AllStores, args: () => ({}) },
   },
 }).make({
   init: () => ({ search: "" }),
@@ -83,7 +83,7 @@ export const StoreSearchNoDeps = Component.define({
       Retried: () => $.run(RetryAllStores.make()),
     }),
   view: (model, h) => {
-    const current = Option.flatten(AsyncResult.value(h.loaded.current))
+    const current = Option.flatten(AsyncResult.value(h.queries.current))
     const isShown = (code: string) =>
       Option.exists(current, (location) => location.code === code)
     const terms = model.search.toLowerCase().split(/\s+/).filter(Boolean)
@@ -118,7 +118,7 @@ export const StoreSearchNoDeps = Component.define({
             ),
         ),
         h.div.class("overflow-y-auto flex-1 px-4 pb-safe").children(
-          AsyncResult.match(h.loaded.all, {
+          AsyncResult.match(h.queries.all, {
             onInitial: () =>
               [0, 1, 2, 3, 4, 5, 6, 7].map((i) =>
                 skeleton(h, "h-12 my-2").key(`skeleton-${i}`),

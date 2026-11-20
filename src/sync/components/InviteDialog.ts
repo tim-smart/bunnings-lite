@@ -10,7 +10,7 @@ import {
   drawerLeft,
 } from "../../design/drawer.ts"
 import { PendingInvite } from "../domain/Invite.ts"
-import { GetSyncSettings } from "../loaders/GetSyncSettings.ts"
+import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 
@@ -73,8 +73,8 @@ export const InviteDialogNoDeps = Component.define({
   }),
   message: Message,
   events: InviteDialogEvents,
-  loaders: {
-    settings: { load: GetSyncSettings, args: () => ({}) },
+  queries: {
+    settings: { query: GetSyncSettings, args: () => ({}) },
   },
 }).make({
   init: () => ({ invite: null, open: false }),
@@ -131,7 +131,7 @@ export const InviteDialogNoDeps = Component.define({
     }
 
     const currentRemote = Option.flatMapNullishOr(
-      AsyncResult.value(h.loaded.settings),
+      AsyncResult.value(h.queries.settings),
       ({ remoteUrl }) => (remoteUrl === null ? null : new URL(remoteUrl).host),
     )
     return drawer(

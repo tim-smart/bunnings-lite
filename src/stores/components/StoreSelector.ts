@@ -8,8 +8,8 @@ import {
 import { icon } from "../../design/icons.ts"
 import { SessionTag } from "../../rpc/domain/SessionTag.ts"
 import { Session } from "../../rpc/services/Session.ts"
-import { CurrentStore } from "../loaders/CurrentStore.ts"
-import { NearbyStores } from "../loaders/NearbyStores.ts"
+import { CurrentStore } from "../queries/CurrentStore.ts"
+import { NearbyStores } from "../queries/NearbyStores.ts"
 import { StoreSearchPrompt } from "../services/StoreSearchPrompt.ts"
 
 export const StoreSelectorMessage = Schema.TaggedUnion({
@@ -79,12 +79,12 @@ export const StoreSelectorNoDeps = Component.define({
     nearbyWanted: Schema.Boolean,
   }),
   message: Message,
-  loaders: {
-    current: { load: CurrentStore, args: () => ({}) },
+  queries: {
+    current: { query: CurrentStore, args: () => ({}) },
     // Asking for nearby stores asks for the device's location, so it waits
     // until the picker is reached for
     nearby: {
-      load: NearbyStores,
+      query: NearbyStores,
       args: (model) => (model.nearbyWanted ? {} : undefined),
     },
   },
@@ -104,17 +104,17 @@ export const StoreSelectorNoDeps = Component.define({
         }),
     }),
   view: (model, h) => {
-    const shown = Option.flatten(AsyncResult.value(h.loaded.current))
+    const shown = Option.flatten(AsyncResult.value(h.queries.current))
     const isShown = (code: string) =>
       Option.exists(shown, (location) => location.code === code)
 
     const nearby = Option.getOrElse(
-      AsyncResult.value(h.loaded.nearby),
+      AsyncResult.value(h.queries.nearby),
       (): ReadonlyArray<Store> => [],
     )
     const nearbyStatus = !model.nearbyWanted
       ? ""
-      : AsyncResult.match(h.loaded.nearby, {
+      : AsyncResult.match(h.queries.nearby, {
           onInitial: () => "Finding stores near you…",
           onFailure: () => "Couldn't find stores near you.",
           onSuccess: ({ value }) =>

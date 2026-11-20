@@ -63,7 +63,7 @@ export class ReviewFeed extends Context.Service<
           let done = false
           while (!done && reviews.length < batchSize) {
             const chunk = yield* feed.pull.pipe(
-              Pull.catchDone(() => Effect.succeed(undefined)),
+              Pull.catchDone(() => Effect.undefined),
             )
             if (chunk === undefined) done = true
             else reviews.push(...chunk)

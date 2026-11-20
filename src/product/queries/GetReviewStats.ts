@@ -1,11 +1,11 @@
 import { Effect, Schema } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { ReviewStats } from "../../../server/src/domain/Bazaar.ts"
 import { ApiError } from "../../rpc/domain/ApiError.ts"
 import { Session } from "../../rpc/services/Session.ts"
 
 /** A product's average rating and how its ratings are spread. */
-export class GetReviewStats extends Loader.Service<GetReviewStats>()(
+export class GetReviewStats extends Query.Service<GetReviewStats>()(
   "product/GetReviewStats",
   {
     args: { id: Schema.String },

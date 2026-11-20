@@ -13,7 +13,7 @@ const bound = Schema.optional(Schema.Finite)
 
 export const AppRoute = Route.union({
   Search: Route.make("/", {
-    query: {
+    search: {
       query: searchText,
       priceMin: bound,
       priceMax: bound,
@@ -25,7 +25,7 @@ export const AppRoute = Route.union({
   // shows it and typing there goes back to the results.
   Product: Route.make("/product/:id", {
     params: { id: Schema.String },
-    query: { query: searchText },
+    search: { query: searchText },
   }),
   NotFound: Route.make("/*"),
 })
@@ -37,9 +37,9 @@ export type SearchRoute = typeof SearchRoute.Type
 
 export const productUrl = (id: string, query: string) =>
   AppRoute.print(
-    AppRoute.make({ _tag: "Product", params: { id }, query: { query } }),
+    AppRoute.make({ _tag: "Product", params: { id }, search: { query } }),
   )
 
 /** The search text of whichever route is showing. */
 export const queryOf = (route: AppRoute): string =>
-  route._tag === "NotFound" ? "" : route.query.query
+  route._tag === "NotFound" ? "" : route.search.query

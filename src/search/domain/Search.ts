@@ -25,7 +25,7 @@ const rangeOf = (
  */
 export const searchArgs = (route: AppRoute): SearchArgs | undefined => {
   if (route._tag !== "Search") return undefined
-  const { priceMax, priceMin, query, ratingMax, ratingMin } = route.query
+  const { priceMax, priceMin, query, ratingMax, ratingMin } = route.search
   const trimmed = query.trim()
   if (trimmed === "") return undefined
   return {

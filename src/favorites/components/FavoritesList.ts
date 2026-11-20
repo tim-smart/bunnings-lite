@@ -4,7 +4,7 @@ import { Command, Component } from "@effect/ui"
 import { icon } from "../../design/icons.ts"
 import { ProductCard } from "../../product/components/ProductCard.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
-import { ListFavorites } from "../loaders/ListFavorites.ts"
+import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
 export const FavoritesListMessage = Schema.TaggedUnion({
@@ -31,8 +31,8 @@ export const FavoritesListNoDeps = Component.define({
   name: "FavoritesList",
   model: Schema.Struct({}),
   message: Message,
-  loaders: {
-    favorites: { load: ListFavorites, args: () => ({}) },
+  queries: {
+    favorites: { query: ListFavorites, args: () => ({}) },
   },
 }).make({
   init: () => ({}),
@@ -41,7 +41,7 @@ export const FavoritesListNoDeps = Component.define({
       Cleared: () => $.run(ClearFavorites.make()),
     }),
   view: (_model, h) => {
-    const favorites = AsyncResult.getOrElse(h.loaded.favorites, () => [])
+    const favorites = AsyncResult.getOrElse(h.queries.favorites, () => [])
     if (favorites.length === 0) {
       return h.section
         .attr("aria-labelledby", "favourites-heading")

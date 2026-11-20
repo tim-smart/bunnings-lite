@@ -6,7 +6,7 @@ import { buttonClass, inputClass } from "../../design/classes.ts"
 import { drawer, drawerFooter, drawerHeader } from "../../design/drawer.ts"
 import { icon } from "../../design/icons.ts"
 import { skeleton } from "../../design/skeleton.ts"
-import { GetSyncSettings } from "../loaders/GetSyncSettings.ts"
+import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncRemote } from "../services/SyncRemote.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
@@ -90,8 +90,8 @@ export const SyncSettingsPanelNoDeps = Component.define({
   }),
   message: Message,
   events: SyncSettingsPanelEvents,
-  loaders: {
-    settings: { load: GetSyncSettings, args: () => ({}) },
+  queries: {
+    settings: { query: GetSyncSettings, args: () => ({}) },
   },
 }).make({
   init: () => ({ remoteUrl: null, copied: false }),
@@ -136,7 +136,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
         { titleId: "sync-settings-title", title: "Sync settings" },
         "Keep your favourites in step across devices.",
       ),
-      AsyncResult.match(h.loaded.settings, {
+      AsyncResult.match(h.queries.settings, {
         onInitial: () =>
           h.div
             .class("px-4 pb-2 flex flex-col gap-4")

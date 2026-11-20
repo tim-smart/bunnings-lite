@@ -1,5 +1,5 @@
 import { Effect, Option, Stream } from "effect"
-import { type Loader, Subscription } from "@effect/ui"
+import { type Query, Subscription } from "@effect/ui"
 import { AsyncResult } from "effect/reactivity"
 import { Viewport } from "./services/Viewport.ts"
 
@@ -25,10 +25,10 @@ export const bottomReached = <Msg>(message: Msg) =>
     ),
   )
 
-/** Whether a list loader has a next page that nothing is loading yet. */
+/** Whether an infinite query has a next page that nothing is loading yet. */
 export const hasMore = (
   list: AsyncResult.AsyncResult<
-    { readonly more: Loader.More<unknown> },
+    { readonly more: Query.More<unknown> },
     unknown
   >,
 ): boolean =>

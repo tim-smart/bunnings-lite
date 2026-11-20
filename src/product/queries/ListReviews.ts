@@ -1,5 +1,5 @@
 import { Effect, Option, Schema } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { ProductReview } from "../../../server/src/domain/Bazaar.ts"
 import { ApiError } from "../../rpc/domain/ApiError.ts"
 import { ReviewFeed } from "../services/ReviewFeed.ts"
@@ -10,7 +10,7 @@ const ReviewPage = Schema.Struct({
 })
 
 /** A product's reviews, a batch at a time. The cursor counts the batches. */
-export class ListReviews extends Loader.ListService<ListReviews>()(
+export class ListReviews extends Query.InfiniteService<ListReviews>()(
   "product/ListReviews",
   {
     args: { id: Schema.String },

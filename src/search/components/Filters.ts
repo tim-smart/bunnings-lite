@@ -40,8 +40,8 @@ const maxRef = Html.ref("price-max", "input")
 
 /** The rating range the slider shows: what is being dragged, else the URL's. */
 const ratingRange = (model: Model, route: SearchRoute) => ({
-  min: model.ratingMin ?? route.query.ratingMin ?? ratingFacet.start,
-  max: model.ratingMax ?? route.query.ratingMax ?? ratingFacet.end,
+  min: model.ratingMin ?? route.search.ratingMin ?? ratingFacet.start,
+  max: model.ratingMax ?? route.search.ratingMax ?? ratingFacet.end,
 })
 
 /**
@@ -70,9 +70,9 @@ export const Filters = Component.define({
   }),
   update: (model, message, $) => {
     const { price, route } = $.props
-    const { priceMax, priceMin, ratingMax, ratingMin } = route.query
-    const patch = (query: Router.QueryPatch<SearchRoute>) =>
-      Router.patchQuery(AppRoute, route, query).pipe(Command.asNoop)
+    const { priceMax, priceMin, ratingMax, ratingMin } = route.search
+    const patch = (query: Router.SearchPatch<SearchRoute>) =>
+      Router.patchSearch(AppRoute, route, query).pipe(Command.asNoop)
 
     // An end that was never typed is filled in for the search, but its field
     // stays empty: it may be the one being typed in next
@@ -136,7 +136,7 @@ export const Filters = Component.define({
   },
   view: (model, h) => {
     const { price, route } = h.props
-    const { priceMax, priceMin, ratingMax, ratingMin } = route.query
+    const { priceMax, priceMin, ratingMax, ratingMin } = route.search
 
     const heading = (name: string, filter: "price" | "rating", set: boolean) =>
       h.div.class("flex min-h-5 items-center justify-between gap-2").children(

@@ -1,8 +1,9 @@
 import "@effect/ui/html/register"
 import { assert, describe, it } from "@effect/vitest"
-import { HtmlQuery } from "@effect/ui/html/testing"
+import { Effect } from "effect"
+import { HtmlLocator, HtmlScene } from "@effect/ui/html/testing"
 import type { View } from "@effect/ui"
-import { Story } from "@effect/ui/testing"
+import { Scene } from "@effect/ui/testing"
 import {
   Facet,
   FacetValue,
@@ -17,7 +18,7 @@ import { SearchPageNoDeps } from "./SearchPage.ts"
 const route = (query: string): SearchRoute => ({
   _tag: "Search",
   params: {},
-  query: { query },
+  search: { query },
 })
 
 const page = (query: string): ResultsPage => ({
@@ -48,33 +49,42 @@ const page = (query: string): ResultsPage => ({
   ],
 })
 
-const loading = HtmlQuery.role("status", { name: "Loading results" })
+const loading = HtmlLocator.role("status", { name: "Loading results" })
 
-const filters = (view: View.Node<any, any>) => Story.children(view, Filters)
+const filters = (view: View.Node<any, any>) => Scene.children(view, Filters)
 
 describe("SearchPage", () => {
-  it("keeps the last results up while the search text changes", () => {
-    Story.make(SearchPageNoDeps, { route: route("hammer") }, (s) =>
-      s
-        .loaded("results", [page("hammer")])
+  it.effect("keeps the last results up while the search text changes", () =>
+    Effect.gen(function* () {
+      const s = yield* HtmlScene.make(SearchPageNoDeps, {
+        route: route("hammer"),
+      })
+      s.loaded("results", [page("hammer")])
         .loaded("unfiltered", [page("hammer")])
         .props({ route: route("drill") })
-        .check((story) => assert.isUndefined(story.query(loading)))
-        .view((view) => assert.strictEqual(filters(view).length, 1)),
-    )
-  })
+        // The drill search is still on its way
+        .keepPending("results")
+        .keepPending("unfiltered")
+        .expect(loading)
+        .toBeAbsent()
+      assert.strictEqual(filters(s.view).length, 1)
+    }),
+  )
 
-  it("starts the filters over for another search", () => {
-    const keys: Array<string> = []
-    Story.make(SearchPageNoDeps, { route: route("hammer") }, (s) =>
-      s
-        .loaded("results", [page("hammer")])
-        .loaded("unfiltered", [page("hammer")])
-        .view((view) => keys.push(filters(view)[0].key))
-        .props({ route: route("drill") })
-        .view((view) => keys.push(filters(view)[0].key)),
-    )
-    // A new key mounts new filters, without what was typed under the last one
-    assert.notStrictEqual(keys[0], keys[1])
-  })
+  it.effect("starts the filters over for another search", () =>
+    Effect.gen(function* () {
+      const s = yield* HtmlScene.make(SearchPageNoDeps, {
+        route: route("hammer"),
+      })
+      s.loaded("results", [page("hammer")]).loaded("unfiltered", [
+        page("hammer"),
+      ])
+      const before = filters(s.view)[0].key
+      s.props({ route: route("drill") })
+        .keepPending("results")
+        .keepPending("unfiltered")
+      // A new key mounts new filters, without what was typed under the last one
+      assert.notStrictEqual(before, filters(s.view)[0].key)
+    }),
+  )
 })
