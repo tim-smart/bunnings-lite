@@ -31,8 +31,8 @@ export const FavoritesListNoDeps = Component.define({
   name: "FavoritesList",
   model: Schema.Struct({}),
   message: Message,
-  loaders: {
-    favorites: { load: ListFavorites, args: () => ({}) },
+  queries: {
+    favorites: { query: ListFavorites, args: () => ({}) },
   },
 }).make({
   init: () => ({}),
@@ -41,7 +41,7 @@ export const FavoritesListNoDeps = Component.define({
       Cleared: () => $.run(ClearFavorites.make()),
     }),
   view: (_model, h) => {
-    const favorites = AsyncResult.getOrElse(h.loaded.favorites, () => [])
+    const favorites = AsyncResult.getOrElse(h.queries.favorites, () => [])
     if (favorites.length === 0) {
       return h.section
         .attr("aria-labelledby", "favourites-heading")

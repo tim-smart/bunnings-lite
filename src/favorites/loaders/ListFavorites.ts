@@ -1,11 +1,11 @@
 import { Effect, Layer, Schema, Stream } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { Favorites } from "../services/Favorites.ts"
 
 /** The favourites, newest first. */
-export class ListFavorites extends Loader.Service<ListFavorites>()(
+export class ListFavorites extends Query.Service<ListFavorites>()(
   "favorites/ListFavorites",
   {
     args: {},
@@ -30,7 +30,7 @@ export class ListFavorites extends Loader.Service<ListFavorites>()(
 export const ListFavoritesRefresh = Layer.effectDiscard(
   Effect.gen(function* () {
     const favorites = yield* Favorites
-    const context = yield* Effect.context<Loader.Cache>()
+    const context = yield* Effect.context<Query.Cache>()
     yield* favorites.changes.pipe(
       Stream.runForEach(() =>
         Effect.provide(ListFavorites.invalidate(), context),

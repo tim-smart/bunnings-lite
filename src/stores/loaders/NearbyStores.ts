@@ -1,12 +1,12 @@
 import * as Geolocation from "@effect/platform-browser/Geolocation"
 import { Effect, Schema, Stream } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { Store } from "../../../server/src/domain/Bunnings.ts"
 import { ApiError } from "../../rpc/domain/ApiError.ts"
 import { Session } from "../../rpc/services/Session.ts"
 
 /** The ten stores closest to where the device is. Asks for its location. */
-export class NearbyStores extends Loader.Service<NearbyStores>()(
+export class NearbyStores extends Query.Service<NearbyStores>()(
   "stores/NearbyStores",
   {
     args: {},

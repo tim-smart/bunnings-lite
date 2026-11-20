@@ -1,5 +1,5 @@
 import { Effect, Schema, Stream } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { Store } from "../../../server/src/domain/Bunnings.ts"
 import { ApiError } from "../../rpc/domain/ApiError.ts"
 import { Session } from "../../rpc/services/Session.ts"
@@ -9,7 +9,7 @@ import { Session } from "../../rpc/services/Session.ts"
  * unavailable. Only read while the store search is open, and kept for a
  * while after it closes.
  */
-export class AllStores extends Loader.Service<AllStores>()(
+export class AllStores extends Query.Service<AllStores>()(
   "stores/AllStores",
   {
     args: {},

@@ -4,7 +4,7 @@ import { Effect, Layer, Schema, Stream, SubscriptionRef } from "effect"
 import { TestClock } from "effect/testing"
 import { Component } from "@effect/ui"
 import { Html } from "@effect/ui/html"
-import { Query, TestHost } from "@effect/ui/testing"
+import { Locator, TestHost } from "@effect/ui/testing"
 import { ElementSize } from "../browser/services/ElementSize.ts"
 import { Viewport } from "../browser/services/Viewport.ts"
 import { ObserveSize, VirtualList } from "./VirtualList.ts"
@@ -143,10 +143,10 @@ const open = Effect.fnUntraced(function* (
       }),
     ]),
   )
-  list = root.get(Query.attr("role", "list")) as TestHost.TestElement
+  list = root.get(Locator.attr("role", "list")) as TestHost.TestElement
   yield* TestHost.settle
   const item = (n: number) =>
-    root.get(Query.attr("aria-posinset", String(n))) as TestHost.TestElement
+    root.get(Locator.attr("aria-posinset", String(n))) as TestHost.TestElement
   return {
     /** Scrolls the window, as far as the page goes. */
     scrollTo: (y: number) =>
@@ -167,7 +167,7 @@ const open = Effect.fnUntraced(function* (
       }),
     fire: (n: number, event: "focusin" | "focusout") =>
       Effect.gen(function* () {
-        Query.fire(item(n), event)
+        Locator.fire(item(n), event)
         yield* TestHost.settle
       }),
     /** The items in the document, such as "1-9" or "2-4 48-59". */

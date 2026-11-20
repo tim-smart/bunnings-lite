@@ -124,9 +124,9 @@ const ShellDef = Component.define({
   message: Message,
   // The search itself belongs to the search page. It is watched here as
   // well, for the search box to show while it is running.
-  loaders: {
+  queries: {
     results: {
-      load: SearchProducts,
+      query: SearchProducts,
       debounce: searchDebounce,
       args: (_model, props) => searchArgs(props.route),
     },
@@ -139,7 +139,7 @@ const searchTyped = ShellDef.update("SearchTyped", (_model, { text }, $) => {
   return route._tag === "Search"
     ? // A new search starts without the last one's filters
       $.run(
-        Router.patchQuery(AppRoute, route, {
+        Router.patchSearch(AppRoute, route, {
           query: text,
           priceMin: undefined,
           priceMax: undefined,
@@ -150,7 +150,7 @@ const searchTyped = ShellDef.update("SearchTyped", (_model, { text }, $) => {
     : $.run(
         Router.push(
           AppRoute,
-          AppRoute.make({ _tag: "Search", query: { query: text } }),
+          AppRoute.make({ _tag: "Search", search: { query: text } }),
         ).pipe(Command.asNoop),
       )
 })
@@ -288,7 +288,7 @@ const header = ShellDef.fragment((h) => {
   const minimize = route._tag !== "Search" || query.trim() !== ""
   const loading =
     searchArgs(route) !== undefined &&
-    (AsyncResult.isInitial(h.loaded.results) || h.loaded.results.waiting)
+    (AsyncResult.isInitial(h.queries.results) || h.queries.results.waiting)
 
   return h.header
     .ref(headerRef)

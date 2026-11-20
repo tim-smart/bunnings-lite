@@ -50,9 +50,9 @@ export const SearchPageNoDeps = Component.define({
   model: Schema.Struct({ scrolled: Schema.Boolean }),
   message: Message,
   events: SearchPageEvents,
-  loaders: {
+  queries: {
     results: {
-      load: SearchProducts,
+      query: SearchProducts,
       debounce: searchDebounce,
       args: (_model, props) => searchArgs(props.route),
     },
@@ -60,7 +60,7 @@ export const SearchPageNoDeps = Component.define({
     // filters can take: applying a filter narrows what the server reports.
     // With no filter applied it is the same read as `results`.
     unfiltered: {
-      load: SearchProducts,
+      query: SearchProducts,
       debounce: searchDebounce,
       args: (_model, props) => {
         const args = searchArgs(props.route)
@@ -73,7 +73,7 @@ export const SearchPageNoDeps = Component.define({
   update: (model, message, $) =>
     Message.match(message, {
       BottomReached: () =>
-        hasMore($.loaded.results) ? $.loadMore("results") : model,
+        hasMore($.queries.results) ? $.loadMore("results") : model,
       Scrolled: ({ scrolled }) => ({ ...model, scrolled }),
       SearchWanted: () =>
         $.set(model).emit(SearchPageEvents.make({ _tag: "SearchWanted" })),
@@ -88,7 +88,7 @@ export const SearchPageNoDeps = Component.define({
     ]
   },
   head: (_model, props) => {
-    const query = props.route.query.query.trim()
+    const query = props.route.search.query.trim()
     return query === "" ? [] : [Head.title(query)]
   },
   view: (model, h) => {
@@ -188,14 +188,14 @@ export const SearchPageNoDeps = Component.define({
                     .children(
                       ProductCard(h, {
                         key: product.id,
-                        props: { product, query: route.query.query },
+                        props: { product, query: route.search.query },
                       }),
                     )
                 }),
               ),
           })
 
-    const results = AsyncResult.match(h.loaded.results, {
+    const results = AsyncResult.match(h.queries.results, {
       // The last results stay up while the next ones load
       onInitial: () =>
         Option.match(h.previous.results, {
@@ -223,7 +223,7 @@ export const SearchPageNoDeps = Component.define({
     // The last search's ranges stay up while the next one's load
     const firstPage = Option.flatMap(
       Option.orElse(
-        AsyncResult.value(h.loaded.unfiltered),
+        AsyncResult.value(h.queries.unfiltered),
         () => h.previous.unfiltered,
       ),
       ({ pages }) => Arr.head(pages),
@@ -234,7 +234,7 @@ export const SearchPageNoDeps = Component.define({
       Option.isSome(firstPage) &&
         Filters(h, {
           // Edits that weren't applied don't carry to another search
-          key: `filters:${route.query.query}`,
+          key: `filters:${route.search.query}`,
           props: { route, price: priceFacet(firstPage.value) },
         }),
       h.div.class("h-3 sm:h-4"),

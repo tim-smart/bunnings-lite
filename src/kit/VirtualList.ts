@@ -349,22 +349,27 @@ const measure = (model: Model, props: Props) =>
  * of them changes when a row gets taller or shorter, and when the list gets
  * wider or narrower. The list alone would miss a row that grows as much as
  * another shrinks. It ends at once when the list isn't rendered, and one
- * that is running is enough, so a second one is dropped.
+ * run following an element is enough, so another run for it ends at once.
  */
 export class ObserveSize extends Command.Service<ObserveSize>()(
   "VirtualList.observe",
-  { args: {}, stream: true, mode: "drop" },
+  { args: {}, stream: true },
   Effect.gen(function* () {
     const size = yield* ElementSize
+    const observed = new WeakSet<Element>()
     return () =>
       Renderer.Refs.use((refs) => refs.lookup(List)).pipe(
         Effect.map(
           Option.match({
             onNone: () => Stream.empty,
-            onSome: (element) =>
-              Stream.map(size.changes(element), () =>
-                Message.make({ _tag: "Resized" }),
-              ),
+            onSome: (element) => {
+              if (observed.has(element)) return Stream.empty
+              observed.add(element)
+              return size.changes(element).pipe(
+                Stream.map(() => Message.make({ _tag: "Resized" })),
+                Stream.ensuring(Effect.sync(() => observed.delete(element))),
+              )
+            },
           }),
         ),
         Stream.unwrap,

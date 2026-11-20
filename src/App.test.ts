@@ -1,70 +1,74 @@
 import "@effect/ui/html/register"
 import { assert, describe, it } from "@effect/vitest"
+import { Effect } from "effect"
 import { Component } from "@effect/ui"
-import { Query, Story } from "@effect/ui/testing"
-import { HtmlQuery } from "@effect/ui/html/testing"
+import { Scene, Story } from "@effect/ui/testing"
+import { HtmlLocator, HtmlScene } from "@effect/ui/html/testing"
 import { AppMessage, AppNoDeps, FinishJoin, ReloadPage } from "./App.ts"
 import type { AppRoute } from "./routes.ts"
+import { Shell } from "./Shell.ts"
 import { JoinFailed } from "./sync/domain/Invite.ts"
 
 const search = (query: string): AppRoute => ({
   _tag: "Search",
   params: {},
-  query: { query },
+  search: { query },
 })
 const route = search("")
 const routeChanged = (query: string) =>
   AppMessage.make({ _tag: "RouteChanged", route: search(query) })
 
+const heading = HtmlLocator.role("heading")
+
 describe("App", () => {
-  it("holds the shell back until a pending join has finished", () => {
-    Story.make(AppNoDeps, { route }, (s) =>
-      s
-        .expectExact(FinishJoin)
-        .model((model) => assert.strictEqual(model.join, "Checking"))
+  it.effect("holds the shell back until a pending join has finished", () =>
+    Effect.gen(function* () {
+      const s = yield* HtmlScene.make(AppNoDeps, { route })
+      s.expectExact(FinishJoin)
+        .expect(heading)
+        .toBeAbsent()
         // Another tab still has the old journal open
         .next(FinishJoin, "Blocked")
-        .check((story) =>
-          assert.match(
-            Query.textOf(story.get(HtmlQuery.role("heading"))),
-            /Waiting to finish joining/,
-          ),
-        )
+        .expect(heading)
+        .toHaveText(/Waiting to finish joining/)
         .next(FinishJoin, "Finished")
-        .model((model) => assert.strictEqual(model.join, "Ready"))
-        .end(FinishJoin),
-    )
-  })
+        .expect(heading)
+        .toBeAbsent()
+      assert.strictEqual(Scene.children(s.view, Shell).length, 1)
+      s.end(FinishJoin)
+    }),
+  )
 
-  it("offers a retry when the join can't be saved", () => {
-    Story.make(AppNoDeps, { route }, (s) =>
-      s
-        .fail(FinishJoin, new JoinFailed())
-        .model((model) => assert.strictEqual(model.join, "Failed"))
-        .click(HtmlQuery.role("button", { name: "Retry" }))
+  it.effect("offers a retry when the join can't be saved", () =>
+    Effect.gen(function* () {
+      const s = yield* HtmlScene.make(AppNoDeps, { route })
+      s.fail(FinishJoin, new JoinFailed())
+        .expect(HtmlLocator.role("alert"))
+        .toExist()
+        .click(HtmlLocator.role("button", { name: "Retry" }))
         .expectExact(ReloadPage)
-        .resolve(ReloadPage, Component.noop),
-    )
-  })
+        .resolve(ReloadPage, Component.noop)
+    }),
+  )
 
-  it("counts every clear to home, including one that is never rendered", () => {
-    Story.make(AppNoDeps, { route: search("hammer") }, (s) =>
-      s
+  it.effect(
+    "counts every clear to home, including one that is never rendered",
+    () =>
+      Effect.gen(function* () {
+        const s = yield* Story.make(AppNoDeps, { route: search("hammer") })
         // Cleared and searched again before the next render
-        .send(routeChanged(""))
-        .send(routeChanged("drill"))
-        .model((model) => assert.strictEqual(model.searchesCleared, 1))
-        .end(FinishJoin),
-    )
-  })
+        s.send(routeChanged("")).send(routeChanged("drill"))
+        assert.strictEqual(s.model.searchesCleared, 1)
+        s.end(FinishJoin)
+      }),
+  )
 
-  it("keeps the search page when a search starts from home", () => {
-    Story.make(AppNoDeps, { route }, (s) =>
-      s
-        .send(routeChanged("h"))
-        .send(routeChanged("hammer"))
-        .model((model) => assert.strictEqual(model.searchesCleared, 0))
-        .end(FinishJoin),
-    )
-  })
+  it.effect("keeps the search page when a search starts from home", () =>
+    Effect.gen(function* () {
+      const s = yield* Story.make(AppNoDeps, { route })
+      s.send(routeChanged("h")).send(routeChanged("hammer"))
+      assert.strictEqual(s.model.searchesCleared, 0)
+      s.end(FinishJoin)
+    }),
+  )
 })

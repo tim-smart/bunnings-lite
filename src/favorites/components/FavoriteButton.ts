@@ -39,8 +39,8 @@ export const FavoriteButtonNoDeps = Component.define({
   }),
   model: Schema.Struct({}),
   message: FavoriteButtonMessage,
-  loaders: {
-    favorites: { load: ListFavorites, args: () => ({}) },
+  queries: {
+    favorites: { query: ListFavorites, args: () => ({}) },
   },
 }).make({
   init: () => ({}),
@@ -50,9 +50,10 @@ export const FavoriteButtonNoDeps = Component.define({
     }),
   view: (_model, h) => {
     const { product, variant } = h.props
-    const isFavorite = AsyncResult.getOrElse(h.loaded.favorites, () => []).some(
-      (favorite) => favorite.id === product.id,
-    )
+    const isFavorite = AsyncResult.getOrElse(
+      h.queries.favorites,
+      () => [],
+    ).some((favorite) => favorite.id === product.id)
     const toggled = FavoriteButtonMessage.make({ _tag: "Toggled" })
     if (variant === "icon") {
       return h.button

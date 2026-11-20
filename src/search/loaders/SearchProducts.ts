@@ -1,5 +1,5 @@
 import { Effect, Option, Schema } from "effect"
-import { Loader } from "@effect/ui"
+import { Query } from "@effect/ui"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ApiError } from "../../rpc/domain/ApiError.ts"
 import { SessionTag } from "../../rpc/domain/SessionTag.ts"
@@ -7,7 +7,7 @@ import { Session } from "../../rpc/services/Session.ts"
 import { ResultsPage, SearchArgs } from "../domain/Search.ts"
 
 /** The results of a search, a page at a time. The cursor is the offset. */
-export class SearchProducts extends Loader.ListService<SearchProducts>()(
+export class SearchProducts extends Query.InfiniteService<SearchProducts>()(
   "search/SearchProducts",
   {
     args: SearchArgs.fields,

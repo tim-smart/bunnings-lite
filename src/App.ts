@@ -1,5 +1,6 @@
 import { Effect, Layer, Schema } from "effect"
 import { Command, Component, Head, Router } from "@effect/ui"
+import { HtmlHead } from "@effect/ui/html"
 import { Reload } from "./browser/services/Reload.ts"
 import { buttonClass } from "./design/classes.ts"
 import { AppRoute } from "./routes.ts"
@@ -88,7 +89,7 @@ export const AppNoDeps = Component.define({
   head: () => [
     Head.title("Bunnings Lite"),
     Head.titleTemplate((title) => `${title} · Bunnings Lite`),
-    Head.lang("en"),
+    HtmlHead.lang("en"),
   ],
   view: (model, h) => {
     switch (model.join) {
