@@ -244,6 +244,10 @@ test("stores: the store search is modal", async ({ page }) => {
   const first = drawer.getByRole("button", { name: /Grey Lynn/ })
   const last = drawer.getByRole("button", { name: /Rozelle/ })
   await expect(search).toBeFocused()
+  // The sheet places focus again on its first frame: keys wait for it
+  await expect(drawer.locator(".drawer-popup")).not.toHaveAttribute(
+    "data-starting-style",
+  )
   await expect(last).toBeInViewport()
 
   // What is behind the drawer is hidden from assistive technology
