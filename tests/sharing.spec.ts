@@ -97,6 +97,14 @@ test("an invite that arrives over an open drawer takes its place", async ({
   const dialogs = page.getByRole("dialog")
   const prompt = page.getByRole("dialog", { name: "Join shared sync?" })
   const cancel = prompt.getByRole("button", { name: "Cancel" })
+  // The browser focuses the first button as the prompt shows, and the sheet
+  // places focus again on its first frame, once its starting style is gone.
+  // A key pressed before then could have its focus moved back.
+  const opened = async () => {
+    const popup = prompt.locator(".drawer-popup")
+    await expect(popup).toBeVisible()
+    await expect(popup).not.toHaveAttribute("data-starting-style")
+  }
   // An installed app gets a new link as a fragment change in its window
   const arrive = (invite: URL) =>
     page.evaluate((hash) => {
@@ -119,10 +127,12 @@ test("an invite that arrives over an open drawer takes its place", async ({
   ]
   for (const { drawer, open } of drawers) {
     await open()
-    await expect(page.getByRole("dialog", { name: drawer })).toBeVisible()
+    await expect(
+      page.getByRole("dialog", { name: drawer }).locator(".drawer-popup"),
+    ).toBeVisible()
 
     await arrive(link)
-    await expect(prompt).toBeVisible()
+    await opened()
     await expect(dialogs).toHaveCount(1)
     await expect(cancel).toBeFocused()
 
@@ -135,7 +145,7 @@ test("an invite that arrives over an open drawer takes its place", async ({
 
   // Over another invite, Enter must not join the one that replaced it
   await arrive(link)
-  // Tab before the prompt has opened would move focus on the page instead
+  await opened()
   await expect(cancel).toBeFocused()
   await page.keyboard.press("Tab")
   await expect(prompt.getByRole("button", { name: "Join" })).toBeFocused()

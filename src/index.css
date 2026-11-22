@@ -163,22 +163,15 @@ body {
   }
 }
 
-/* The rating filter: two native range inputs that share one track. Only the
-   thumbs take the pointer, so each can be reached past the other's input. */
+/* The rating filter: ui-kit's Slider, with a thumb at each end of the
+   range. The kit places each thumb at `--slider-thumb-position` along the
+   track, and puts a hidden range input inside it for focus and the keys. */
 @layer components {
-  .dual-range input[type="range"] {
+  .rating-thumb {
     position: absolute;
-    inset-inline: 0;
-    width: 100%;
-    height: 1.5rem;
-    margin: 0;
-    appearance: none;
-    background: transparent;
-    outline: none;
-    pointer-events: none;
-  }
-  .dual-range input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
+    top: 50%;
+    left: var(--slider-thumb-position);
+    translate: -50% -50%;
     box-sizing: border-box;
     width: 1.5rem;
     height: 1.5rem;
@@ -187,40 +180,21 @@ body {
     background: var(--background);
     box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 20%, transparent);
     cursor: grab;
-    pointer-events: auto;
     transition: box-shadow 150ms;
   }
-  .dual-range input[type="range"]::-moz-range-thumb {
-    box-sizing: border-box;
-    width: 1.5rem;
-    height: 1.5rem;
-    border: 2px solid var(--primary);
-    border-radius: 9999px;
-    background: var(--background);
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 20%, transparent);
-    cursor: grab;
-    pointer-events: auto;
-    transition: box-shadow 150ms;
-  }
-  .dual-range input[type="range"]:hover::-webkit-slider-thumb,
-  .dual-range input[type="range"]:focus-visible::-webkit-slider-thumb {
+  .rating-thumb:hover,
+  .rating-thumb:has(:focus-visible) {
     box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent);
   }
-  .dual-range input[type="range"]:hover::-moz-range-thumb,
-  .dual-range input[type="range"]:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 20%, transparent);
-  }
-  .dual-range input[type="range"]:active::-webkit-slider-thumb {
-    cursor: grabbing;
-  }
-  .dual-range input[type="range"]:active::-moz-range-thumb {
+  .rating-thumb[data-dragging] {
     cursor: grabbing;
   }
   /* The value of a thumb, shown above it while it is held or focused */
-  .dual-range output {
+  .rating-value {
     position: absolute;
     bottom: 100%;
-    margin-bottom: 0.5rem;
+    left: 50%;
+    margin-bottom: 0.625rem;
     translate: -50% 0;
     border-radius: var(--radius-md);
     background: var(--primary);
@@ -238,7 +212,7 @@ body {
       scale 150ms;
   }
   /* Its pointer, down to the thumb */
-  .dual-range output::after {
+  .rating-value::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -250,15 +224,15 @@ body {
     border-radius: 2px;
     background: inherit;
   }
-  /* Both values show while the pointer is over the slider */
-  .dual-range:hover output,
-  .dual-range input[type="range"]:active + output,
-  .dual-range input[type="range"]:focus-visible + output {
+  /* Both values show while the pointer is over the slider or a thumb is held */
+  .rating-slider:hover .rating-value,
+  .rating-thumb[data-dragging] .rating-value,
+  .rating-thumb:has(:focus-visible) .rating-value {
     opacity: 1;
     scale: 1;
   }
   @media (prefers-reduced-motion: reduce) {
-    .dual-range output {
+    .rating-value {
       scale: 1;
       transition: none;
     }
@@ -391,101 +365,53 @@ body {
 }
 
 /*
- * The bottom sheet: a modal dialog that fills the screen, holding its own
- * backdrop and panel. Both move by transition, so opening, closing and a
- * change of mind halfway each carry on from where the sheet is.
+ * The bottom sheet, drawn by ui-kit's Drawer (see design/drawer.ts). It
+ * slides up from `data-starting-style` and back down to `data-ending-style`,
+ * and follows a swipe through `--drawer-swipe-movement-y`. The kit keeps it
+ * on the screen until these transitions end.
  */
 @layer components {
-  .drawer {
+  .drawer-popup {
     --drawer-duration: 500ms;
     /* The curve of an iOS sheet: quick off the mark, long to settle */
     --drawer-ease: cubic-bezier(0.32, 0.72, 0, 1);
-    /* Never a scroll container. Showing the dialog focuses a control in the
-       panel, and a dialog that can scroll follows it to where the panel
-       starts, below the screen: the panel then stands still while the
-       backdrop is carried in from above. */
-    overflow: clip;
-    /* Once closed it stays on screen, in the top layer where the browser can
-       keep it there, until the panel has left */
-    transition:
-      display var(--drawer-duration) allow-discrete,
-      overlay var(--drawer-duration) allow-discrete;
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    transition: transform var(--drawer-duration) var(--drawer-ease);
+  }
+  /* A flick ends sooner than a slow drag let go */
+  .drawer-popup[data-swipe-dismiss] {
+    transition-duration: calc(var(--drawer-swipe-strength, 1) * 400ms);
+  }
+  .drawer-popup[data-starting-style],
+  .drawer-popup[data-ending-style] {
+    transform: translateY(100%);
   }
   .drawer-backdrop {
-    opacity: 0;
-    /* A swipe that starts on it doesn't scroll the page */
-    touch-action: none;
-    transition: opacity var(--drawer-duration) var(--drawer-ease);
+    opacity: calc(1 - var(--drawer-swipe-progress, 0));
+    transition: opacity 500ms cubic-bezier(0.32, 0.72, 0, 1);
   }
-  .drawer-panel {
-    translate: 0 100%;
-    transition: translate var(--drawer-duration) var(--drawer-ease);
-  }
-  .drawer-body {
-    overscroll-behavior: contain;
-  }
-  .drawer[open] > .drawer-backdrop {
-    opacity: 1;
-  }
-  .drawer[open] > .drawer-panel {
-    translate: 0 0;
-  }
-  @starting-style {
-    .drawer[open] > .drawer-backdrop {
-      opacity: 0;
-    }
-    .drawer[open] > .drawer-panel {
-      translate: 0 100%;
-    }
-  }
-
-  /* The handle and the header, which drag the sheet down to close it */
-  .drawer-grip {
-    cursor: grab;
-    touch-action: none;
-    user-select: none;
-  }
-  /* Held by a pointer: the sheet follows it exactly, see DrawerDrag.ts */
-  .drawer[data-dragging] > * {
+  .drawer-backdrop[data-swiping] {
     transition: none;
   }
-  .drawer[data-dragging] .drawer-grip {
-    cursor: grabbing;
-  }
-
-  /* The page doesn't scroll behind an open sheet */
-  html:has(.drawer[open]) {
-    overflow: hidden;
-    /* Where its scrollbar was, so that nothing behind the sheet moves. See
-       ScrollbarWidth.ts. */
-    padding-right: var(--scrollbar-width, 0px);
-  }
-  /* What is fixed to the right edge stays clear of it too. By a margin: the
-     `right-0` utility is in a later layer, and would win over `right`. */
-  html:has(.drawer[open]) .fixed.right-0 {
-    margin-right: var(--scrollbar-width, 0px);
+  .drawer-backdrop[data-starting-style],
+  .drawer-backdrop[data-ending-style] {
+    opacity: 0;
   }
 
   /* Reduced motion: the sheet stays where it is and fades, quickly */
   @media (prefers-reduced-motion: reduce) {
-    .drawer {
+    .drawer-popup {
       --drawer-duration: 150ms;
       --drawer-ease: ease-out;
+      transition-property: opacity;
     }
-    .drawer-panel {
-      translate: none;
+    .drawer-popup[data-starting-style],
+    .drawer-popup[data-ending-style] {
+      transform: none;
       opacity: 0;
-      transition: opacity var(--drawer-duration) var(--drawer-ease);
     }
-    .drawer[open] > .drawer-panel {
-      translate: none;
-      opacity: 1;
-    }
-    @starting-style {
-      .drawer[open] > .drawer-panel {
-        translate: none;
-        opacity: 0;
-      }
+    .drawer-backdrop {
+      transition-duration: 150ms;
     }
   }
 }

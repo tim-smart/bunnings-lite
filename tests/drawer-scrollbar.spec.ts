@@ -29,7 +29,7 @@ test("drawer: nothing behind it moves when the page's scrollbar is hidden", asyn
     page.evaluate(() => {
       const fixed = Array.from(document.querySelectorAll("#root *")).find(
         (element) =>
-          element.localName !== "dialog" &&
+          element.closest("dialog") === null &&
           getComputedStyle(element).position === "fixed",
       )!
       return {
@@ -45,14 +45,17 @@ test("drawer: nothing behind it moves when the page's scrollbar is hidden", asyn
   expect(await scrollbar()).toBeGreaterThan(0)
   const before = await edges()
 
+  // The page can't scroll, and keeps the scrollbar's space as a gutter
   await trigger.click()
   const drawer = page.getByRole("dialog", { name: "Sync settings" })
-  await expect(drawer).toBeVisible()
-  expect(await scrollbar()).toBe(0)
+  await expect(drawer.locator(".drawer-popup")).toBeVisible()
+  await page.mouse.wheel(0, 400)
+  await page.waitForTimeout(200)
+  expect(await page.evaluate(() => scrollY)).toBe(0)
   expect(await edges()).toEqual(before)
 
   await page.keyboard.press("Escape")
-  await expect(drawer).toBeHidden()
+  await expect(page.locator("dialog")).toHaveCount(0)
   expect(await scrollbar()).toBeGreaterThan(0)
   expect(await edges()).toEqual(before)
 })

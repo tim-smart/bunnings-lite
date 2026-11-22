@@ -16,7 +16,7 @@ const search = (query: string): AppRoute => ({
 })
 const route = search("")
 const routeChanged = (query: string) =>
-  AppMessage.make({ _tag: "RouteChanged", route: search(query) })
+  AppMessage.ChangedRoute({ route: search(query) })
 
 const heading = HtmlLocator.role("heading")
 
@@ -44,7 +44,7 @@ describe("App", () => {
       s.fail(FinishJoin, new JoinFailed())
         .expect(HtmlLocator.role("alert"))
         .toExist()
-        .click(HtmlLocator.role("button", { name: "Retry" }))
+        .click(HtmlLocator.role("button", { name: "ClickedRetry" }))
         .expectExact(ReloadPage)
         .resolve(ReloadPage, Component.noop)
     }),

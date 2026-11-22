@@ -1,29 +1,23 @@
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component, Subscription } from "@effect/ui"
-import { Html } from "@effect/ui/html"
+import { Command, Component, Subscription, UiSchema } from "@effect/ui"
+import { DomCommand, Html } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
-import {
-  drawer,
-  drawerFooter,
-  drawerHeader,
-  drawerLeft,
-} from "../../design/drawer.ts"
+import { Sheet, SheetFooter } from "../../design/drawer.ts"
 import { PendingInvite } from "../domain/Invite.ts"
 import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 
-export const InviteDialogMessage = Schema.TaggedUnion({
-  InviteOpened: { invite: PendingInvite },
-  Dismissed: {},
-  Joined: {},
-  Left: {},
+export const InviteDialogMessage = UiSchema.TaggedEnum({
+  OpenedInvite: { invite: PendingInvite },
+  RequestedClose: {},
+  ClickedJoin: {},
+  SettledSheet: {},
 })
-const Message = InviteDialogMessage
 
 /** Whether the dialog is showing, for its owner to close any other drawer. */
-export const InviteDialogEvents = Schema.TaggedUnion({
+export const InviteDialogEvents = UiSchema.TaggedEnum({
   Opened: {},
   Closed: {},
 })
@@ -46,7 +40,7 @@ const invitesOpened = Subscription.make(
   Stream.unwrap(
     Effect.map(Invites, (invites) =>
       invites.opened.pipe(
-        Stream.map((invite) => Message.make({ _tag: "InviteOpened", invite })),
+        Stream.map((invite) => InviteDialogMessage.OpenedInvite({ invite })),
       ),
     ),
   ),
@@ -62,6 +56,11 @@ const dismissRef = Html.ref("invite-dismiss", "button")
  */
 export const InviteDialogNoDeps = Component.define({
   name: "InviteDialog",
+  scoped: false,
+  props: Schema.Struct({
+    /** The id of the element that gets focus when the dialog closes. */
+    returnFocusTo: Schema.String,
+  }),
   model: Schema.Struct({
     /**
      * The invite waiting for an answer. It stays after the answer, for the
@@ -71,7 +70,7 @@ export const InviteDialogNoDeps = Component.define({
     /** Whether the drawer is open, asking. */
     open: Schema.Boolean,
   }),
-  message: Message,
+  message: InviteDialogMessage,
   events: InviteDialogEvents,
   queries: {
     settings: { query: GetSyncSettings, args: () => ({}) },
@@ -79,110 +78,116 @@ export const InviteDialogNoDeps = Component.define({
 }).make({
   init: () => ({ invite: null, open: false }),
   update: (model, message, $) =>
-    Message.match(message, {
-      // An invite can replace one that is already showing, and `autofocus`
-      // only counts when a dialog is shown. Focus is moved for every invite,
-      // so that Enter never joins one the user hasn't read.
-      InviteOpened: ({ invite }) =>
-        $.set({ invite, open: true })
-          .run(Html.focus(dismissRef, () => Component.noop))
-          .emit(InviteDialogEvents.make({ _tag: "Opened" })),
-      Dismissed: () =>
-        $.set({ ...model, open: false }).emit(
-          InviteDialogEvents.make({ _tag: "Closed" }),
-        ),
-      Joined: () =>
-        $.set({ ...model, open: false })
+    InviteDialogMessage.match(message, {
+      // The sheet focuses its first button, the one that turns the invite
+      // down, as it opens. An invite that replaces one already showing moves
+      // focus back there too, so that Enter never joins one the user hasn't
+      // read. Only then: on an open, focusing it here as well races the
+      // sheet's own focus, which comes a frame later.
+      OpenedInvite: ({ invite }) => {
+        const opened = $.set({ invite, open: true }).emit(
+          InviteDialogEvents.Opened(),
+        )
+        return model.open
+          ? opened.run(DomCommand.focus(dismissRef, () => Component.noop))
+          : opened
+      },
+      RequestedClose: () =>
+        $.evolve({ open: false }).emit(InviteDialogEvents.Closed()),
+      ClickedJoin: () =>
+        $.evolve({ open: false })
           .run(JoinSync.make())
-          .emit(InviteDialogEvents.make({ _tag: "Closed" })),
+          .emit(InviteDialogEvents.Closed()),
       // Unless another invite arrived while it was leaving
-      Left: () => (model.open ? model : { ...model, invite: null }),
+      SettledSheet: () => (model.open ? model : $.evolve({ invite: null })),
     }),
-  subscriptions: (model) => [
-    invitesOpened,
-    model.invite !== null &&
-      !model.open &&
-      drawerLeft("invite", Message.make({ _tag: "Left" })),
-  ],
+  subscriptions: () => [invitesOpened],
   view: (model, h) => {
     const { invite, open } = model
     if (invite === null) return h.div()
-    const dismissed = Message.make({ _tag: "Dismissed" })
+    const dismissed = InviteDialogMessage.RequestedClose()
+    const left = InviteDialogMessage.SettledSheet()
+
+    // Nothing on the page opened it, so focus goes where the owner says
+    const sheet = {
+      open,
+      onDismissed: dismissed,
+      onSettled: left,
+      returnFocusTo: h.props.returnFocusTo,
+    }
 
     if (invite._tag === "Invalid") {
-      return drawer(
-        h,
-        { titleId: "invite-title", open, onClose: dismissed },
-        drawerHeader(
-          h,
-          { titleId: "invite-title", title: "Invite link not valid" },
+      return Sheet(h, {
+        ...sheet,
+        title: "Invite link not valid",
+        description: [
           "This link is incomplete or damaged, so your sync settings were left unchanged. Ask for a new invite.",
-        ),
-        drawerFooter(
-          h,
-          h.button
-            .ref(dismissRef)
-            .attr("type", "button")
-            .class(buttonClass({ variant: "outline" }))
-            .onClick(dismissed)
-            .children("Close"),
-        ),
-      )
+        ],
+        children: [
+          SheetFooter(h).children(
+            h.button
+              .ref(dismissRef)
+              .attr("type", "button")
+              .class(buttonClass({ variant: "outline" }))
+              .onClick(dismissed)
+              .children("Close"),
+          ),
+        ],
+      })
     }
 
     const currentRemote = Option.flatMapNullishOr(
       AsyncResult.value(h.queries.settings),
       ({ remoteUrl }) => (remoteUrl === null ? null : new URL(remoteUrl).host),
     )
-    return drawer(
-      h,
-      { titleId: "invite-title", open, onClose: dismissed },
-      drawerHeader(
-        h,
-        { titleId: "invite-title", title: "Join shared sync?" },
+    return Sheet(h, {
+      ...sheet,
+      title: "Join shared sync?",
+      description: [
         "This invite connects this device to ",
         h.span.class("font-medium text-foreground").children(invite.host),
         " using the identity of whoever created it.",
-      ),
-      h.div.class("px-4 text-sm flex flex-col gap-3").children(
-        h.ul.class("list-disc pl-5 flex flex-col gap-1").children(
-          h.li(
-            "Everyone with this invite shares one set of favorites, with full access to read, change and clear them.",
+      ],
+      children: [
+        h.div.class("px-4 text-sm flex flex-col gap-3").children(
+          h.ul.class("list-disc pl-5 flex flex-col gap-1").children(
+            h.li(
+              "Everyone with this invite shares one set of favorites, with full access to read, change and clear them.",
+            ),
+            h.li(
+              "Joining discards this device's favorites and shows the shared ones instead. Favorites already synced stay on the server under this device's old identity, but you won't see them again unless you copy an invite link for it first.",
+            ),
+            h.li("Access can't be revoked later."),
+            h.li(
+              "This replaces this device's identity",
+              Option.match(currentRemote, {
+                onNone: () => "",
+                onSome: (host) => ` and its current remote (${host})`,
+              }),
+              ".",
+            ),
           ),
-          h.li(
-            "Joining discards this device's favorites and shows the shared ones instead. Favorites already synced stay on the server under this device's old identity, but you won't see them again unless you copy an invite link for it first.",
-          ),
-          h.li("Access can't be revoked later."),
-          h.li(
-            "This replaces this device's identity",
-            Option.match(currentRemote, {
-              onNone: () => "",
-              onSome: (host) => ` and its current remote (${host})`,
-            }),
-            ".",
-          ),
+          h.p
+            .class("text-muted-foreground")
+            .children(
+              "Bunnings Lite can't check who made an invite. Only join if you know the sender and were expecting it.",
+            ),
         ),
-        h.p
-          .class("text-muted-foreground")
-          .children(
-            "Bunnings Lite can't check who made an invite. Only join if you know the sender and were expecting it.",
-          ),
-      ),
-      drawerFooter(
-        h,
-        h.button
-          .ref(dismissRef)
-          .attr("type", "button")
-          .class(buttonClass({ variant: "outline" }))
-          .onClick(dismissed)
-          .children("Cancel"),
-        h.button
-          .attr("type", "button")
-          .class(buttonClass())
-          .onClick(Message.make({ _tag: "Joined" }))
-          .children("Join"),
-      ),
-    )
+        SheetFooter(h).children(
+          h.button
+            .ref(dismissRef)
+            .attr("type", "button")
+            .class(buttonClass({ variant: "outline" }))
+            .onClick(dismissed)
+            .children("Cancel"),
+          h.button
+            .attr("type", "button")
+            .class(buttonClass())
+            .onClick(InviteDialogMessage.ClickedJoin())
+            .children("Join"),
+        ),
+      ],
+    })
   },
 })
 

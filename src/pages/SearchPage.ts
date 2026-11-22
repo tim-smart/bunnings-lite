@@ -1,6 +1,6 @@
 import { Array as Arr, Cause, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Component, Head } from "@effect/ui"
+import { Component, Head, UiSchema } from "@effect/ui"
 import type { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import { InstallButton } from "../browser/components/InstallButton.ts"
 import {
@@ -9,10 +9,10 @@ import {
   scrolledPast,
 } from "../browser/subscriptions.ts"
 import { buttonClass } from "../design/classes.ts"
-import { icon } from "../design/icons.ts"
-import { skeleton } from "../design/skeleton.ts"
+import { Icon } from "../design/icons.ts"
+import { Skeleton } from "../design/skeleton.ts"
 import { FavoritesList } from "../favorites/components/FavoritesList.ts"
-import { ObserveSize, VirtualList } from "../kit/VirtualList.ts"
+import { VirtualList } from "@effect/ui-kit"
 import { ProductCard } from "../product/components/ProductCard.ts"
 import { KnownProducts } from "../product/services/KnownProducts.ts"
 import { SearchRoute } from "../routes.ts"
@@ -26,15 +26,14 @@ import {
 import { SearchProducts } from "../search/queries/SearchProducts.ts"
 import { StoreSelector } from "../stores/components/StoreSelector.ts"
 
-export const SearchPageMessage = Schema.TaggedUnion({
-  BottomReached: {},
+export const SearchPageMessage = UiSchema.TaggedEnum({
+  ReachedBottom: {},
   Scrolled: { scrolled: Schema.Boolean },
-  SearchWanted: {},
+  RequestedSearch: {},
 })
-const Message = SearchPageMessage
 
 /** Asks whoever holds the search box to bring it back into reach. */
-export const SearchPageEvents = Schema.TaggedUnion({ SearchWanted: {} })
+export const SearchPageEvents = UiSchema.TaggedEnum({ RequestedSearch: {} })
 
 const gridClass =
   "grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
@@ -46,9 +45,10 @@ const gridClass =
  */
 export const SearchPageNoDeps = Component.define({
   name: "SearchPage",
+  scoped: false,
   props: Schema.Struct({ route: SearchRoute }),
   model: Schema.Struct({ scrolled: Schema.Boolean }),
-  message: Message,
+  message: SearchPageMessage,
   events: SearchPageEvents,
   queries: {
     results: {
@@ -71,20 +71,18 @@ export const SearchPageNoDeps = Component.define({
 }).make({
   init: () => ({ scrolled: false }),
   update: (model, message, $) =>
-    Message.match(message, {
-      BottomReached: () =>
+    SearchPageMessage.match(message, {
+      ReachedBottom: () =>
         hasMore($.queries.results) ? $.loadMore("results") : model,
-      Scrolled: ({ scrolled }) => ({ ...model, scrolled }),
-      SearchWanted: () =>
-        $.set(model).emit(SearchPageEvents.make({ _tag: "SearchWanted" })),
+      Scrolled: ({ scrolled }) => $.evolve({ scrolled }),
+      RequestedSearch: () =>
+        $.set(model).emit(SearchPageEvents.RequestedSearch()),
     }),
   subscriptions: (_model, props) => {
     if (searchArgs(props.route) === undefined) return []
     return [
-      bottomReached(Message.make({ _tag: "BottomReached" })),
-      scrolledPast(200, (scrolled) =>
-        Message.make({ _tag: "Scrolled", scrolled }),
-      ),
+      bottomReached(SearchPageMessage.ReachedBottom()),
+      scrolledPast(200, (scrolled) => SearchPageMessage.Scrolled({ scrolled })),
     ]
   },
   head: (_model, props) => {
@@ -139,10 +137,10 @@ export const SearchPageNoDeps = Component.define({
               .class("flex flex-col gap-3 rounded-xl bg-card p-3 sm:p-4")
               .key(String(i))
               .children(
-                skeleton(h, "h-28 w-full sm:h-44"),
-                skeleton(h, "h-4 w-full"),
-                skeleton(h, "h-4 w-2/3"),
-                skeleton(h, "h-6 w-1/3"),
+                Skeleton(h, "h-28 w-full sm:h-44"),
+                Skeleton(h, "h-4 w-full"),
+                Skeleton(h, "h-4 w-2/3"),
+                Skeleton(h, "h-6 w-1/3"),
               ),
           ),
         )
@@ -153,7 +151,7 @@ export const SearchPageNoDeps = Component.define({
           "flex flex-col items-center gap-2 rounded-xl bg-card px-6 py-14 text-center",
         )
         .children(
-          icon(h, "searchX", { class: "size-8 text-primary/60" }),
+          Icon(h, "searchX", { class: "size-8 text-primary/60" }),
           h.h2.class("text-lg font-bold").children("No results found."),
           h.p
             .class("text-sm text-muted-foreground")
@@ -161,7 +159,7 @@ export const SearchPageNoDeps = Component.define({
           h.button
             .attr("type", "button")
             .class(buttonClass({ class: "mt-3" }))
-            .onClick(Message.make({ _tag: "SearchWanted" }))
+            .onClick(SearchPageMessage.RequestedSearch())
             .children("Try another search"),
         )
 
@@ -175,16 +173,19 @@ export const SearchPageNoDeps = Component.define({
             key: "results",
             props: {
               count: items.length,
-              estimatedRowSize: 350,
+              itemSize: 350,
               initialCount: 16,
               dataset: search,
             },
-            view: (list) =>
-              list.list(h.div.class(gridClass)).children(
-                list.items.map((index) => {
+            view: (virtualList) =>
+              virtualList.list(h.div.class(gridClass)).children(
+                virtualList.items.map((index) => {
                   const product = items[index]
-                  return list
-                    .item(h.div.key(product.id).class("grid min-w-0"), index)
+                  return virtualList
+                    .item({
+                      element: h.div.key(product.id).class("grid min-w-0"),
+                      index,
+                    })
                     .children(
                       ProductCard(h, {
                         key: product.id,
@@ -252,9 +253,9 @@ export const SearchPageNoDeps = Component.define({
                     "size-12 cursor-pointer rounded-full shadow-lg shadow-primary/25 animate-in fade-in zoom-in-90",
                 }),
               )
-              .onClick(Message.make({ _tag: "SearchWanted" }))
+              .onClick(SearchPageMessage.RequestedSearch())
               .children(
-                icon(h, "arrowUp", { class: "size-5", strokeWidth: 2.5 }),
+                Icon(h, "arrowUp", { class: "size-5", strokeWidth: 2.5 }),
               ),
           h.div.class("h-6"),
         ),
@@ -267,6 +268,5 @@ export const SearchPage = SearchPageNoDeps.pipe(
     SearchProducts.layer.pipe(
       Layer.provide([Session.layer, KnownProducts.layer]),
     ),
-    ObserveSize.layer,
   ]),
 )

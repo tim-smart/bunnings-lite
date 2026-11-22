@@ -1,16 +1,15 @@
 import { Effect, Layer, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component } from "@effect/ui"
-import { icon } from "../../design/icons.ts"
+import { Command, Component, UiSchema } from "@effect/ui"
+import { Icon } from "../../design/icons.ts"
 import { ProductCard } from "../../product/components/ProductCard.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
-export const FavoritesListMessage = Schema.TaggedUnion({
-  Cleared: {},
+export const FavoritesListMessage = UiSchema.TaggedEnum({
+  ClickedClear: {},
 })
-const Message = FavoritesListMessage
 
 /** Removes every favourite, on every device that syncs with this one. */
 export class ClearFavorites extends Command.Service<ClearFavorites>()(
@@ -29,16 +28,17 @@ export class ClearFavorites extends Command.Service<ClearFavorites>()(
 /** The favourites as a grid of product cards, newest first. */
 export const FavoritesListNoDeps = Component.define({
   name: "FavoritesList",
+  scoped: false,
   model: Schema.Struct({}),
-  message: Message,
+  message: FavoritesListMessage,
   queries: {
     favorites: { query: ListFavorites, args: () => ({}) },
   },
 }).make({
   init: () => ({}),
   update: (_model, message, $) =>
-    Message.match(message, {
-      Cleared: () => $.run(ClearFavorites.make()),
+    FavoritesListMessage.match(message, {
+      ClickedClear: () => $.run(ClearFavorites.make()),
     }),
   view: (_model, h) => {
     const favorites = AsyncResult.getOrElse(h.queries.favorites, () => [])
@@ -49,7 +49,7 @@ export const FavoritesListNoDeps = Component.define({
           "flex flex-col items-center gap-2 rounded-xl bg-card/60 px-6 py-10 text-center",
         )
         .children(
-          icon(h, "star", { class: "size-7 text-accent" }),
+          Icon(h, "star", { class: "size-7 text-accent" }),
           h.h2
             .id("favourites-heading")
             .class("font-bold")
@@ -82,7 +82,7 @@ export const FavoritesListNoDeps = Component.define({
             .class(
               "cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             )
-            .onClick(Message.make({ _tag: "Cleared" }))
+            .onClick(FavoritesListMessage.ClickedClear())
             .children("Clear all"),
         ),
         h.div

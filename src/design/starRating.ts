@@ -1,16 +1,16 @@
 import { Html } from "@effect/ui/html"
-import type { H } from "./h"
-import { icon } from "./icons"
+import type { View } from "@effect/ui"
+import { Icon } from "./icons"
 
 /** Five stars, filled up to `rating`, with a half star for a fraction. */
-export const starRating = <Msg>(
-  h: H<Msg>,
+export const StarRating = <Msg>(
+  h: View.H<Msg>,
   options: { readonly rating: number; readonly size?: "sm" | "md" },
 ) => {
   const { rating } = options
   const size = options.size === "sm" ? "h-4 w-4" : "h-5 w-5"
   const empty = () =>
-    icon(h, "star", {
+    Icon(h, "star", {
       class: Html.classNames(
         size,
         "transition-colors fill-none text-foreground/25",
@@ -22,7 +22,7 @@ export const starRating = <Msg>(
     .children(
       [0, 1, 2, 3, 4].map((index) => {
         const half = rating % 1 !== 0 && index + 1 === Math.ceil(rating)
-        const star = icon(h, half ? "starHalf" : "star", {
+        const star = Icon(h, half ? "starHalf" : "star", {
           key: half ? undefined : String(index),
           class: Html.classNames(
             half ? "absolute top-0 left-0" : "relative",

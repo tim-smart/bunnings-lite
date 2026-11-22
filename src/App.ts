@@ -1,5 +1,5 @@
 import { Effect, Layer, Schema } from "effect"
-import { Command, Component, Head, Router } from "@effect/ui"
+import { Command, Component, Head, Router, UiSchema } from "@effect/ui"
 import { HtmlHead } from "@effect/ui/html"
 import { Reload } from "./browser/services/Reload.ts"
 import { buttonClass } from "./design/classes.ts"
@@ -9,11 +9,11 @@ import { Shell } from "./Shell.ts"
 import { JoinFailed, JoinProgress } from "./sync/domain/Invite.ts"
 import { PendingJoin } from "./sync/services/PendingJoin.ts"
 
-export const AppMessage = Schema.TaggedUnion({
-  RouteChanged: { route: AppRoute },
-  JoinProgressed: { progress: JoinProgress },
-  JoinFailed: {},
-  Retry: {},
+export const AppMessage = UiSchema.TaggedEnum({
+  ChangedRoute: { route: AppRoute },
+  ProgressedJoin: { progress: JoinProgress },
+  FailedFinishJoin: {},
+  ClickedRetry: {},
 })
 
 /**
@@ -40,6 +40,7 @@ export class ReloadPage extends Command.Service<ReloadPage>()(
 
 export const AppNoDeps = Component.define({
   name: "App",
+  scoped: false,
   props: Schema.Struct({ route: AppRoute }),
   model: Schema.Struct({
     route: AppRoute,
@@ -58,31 +59,30 @@ export const AppNoDeps = Component.define({
     $.set({ route: $.props.route, searchesCleared: 0, join: "Checking" }).run(
       FinishJoin.make().pipe(
         Command.match({
-          onSuccess: (progress) =>
-            AppMessage.make({ _tag: "JoinProgressed", progress }),
-          onFailure: (_: JoinFailed) => AppMessage.make({ _tag: "JoinFailed" }),
+          onSuccess: (progress) => AppMessage.ProgressedJoin({ progress }),
+          onFailure: (_: JoinFailed) => AppMessage.FailedFinishJoin(),
         }),
       ),
     ),
   update: (model, message, $) =>
     AppMessage.match(message, {
-      RouteChanged: ({ route }) => ({
-        ...model,
-        route,
-        searchesCleared:
-          model.searchesCleared + (searchCleared(model.route, route) ? 1 : 0),
-      }),
-      JoinProgressed: ({ progress }) => ({
-        ...model,
-        join:
-          progress === "Finished" ? ("Ready" as const) : ("Blocked" as const),
-      }),
-      JoinFailed: () => ({ ...model, join: "Failed" as const }),
-      Retry: () => $.run(ReloadPage.make()),
+      ChangedRoute: ({ route }) =>
+        $.evolve({
+          route,
+          searchesCleared:
+            model.searchesCleared + (searchCleared(model.route, route) ? 1 : 0),
+        }),
+      ProgressedJoin: ({ progress }) =>
+        $.evolve({
+          join:
+            progress === "Finished" ? ("Ready" as const) : ("Blocked" as const),
+        }),
+      FailedFinishJoin: () => $.evolve({ join: "Failed" as const }),
+      ClickedRetry: () => $.run(ReloadPage.make()),
     }),
   subscriptions: (model) => [
     Router.subscription(AppRoute, model.route, (route) =>
-      AppMessage.make({ _tag: "RouteChanged", route }),
+      AppMessage.ChangedRoute({ route }),
     ),
   ],
   // A page names itself, and the app's name follows it
@@ -129,8 +129,8 @@ export const AppNoDeps = Component.define({
             h.button
               .attr("type", "button")
               .class(buttonClass())
-              .onClick(AppMessage.make({ _tag: "Retry" }))
-              .children("Retry"),
+              .onClick(AppMessage.ClickedRetry())
+              .children("ClickedRetry"),
           )
     }
   },

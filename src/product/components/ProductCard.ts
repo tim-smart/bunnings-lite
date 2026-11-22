@@ -2,7 +2,7 @@ import { Schema } from "effect"
 import { Component } from "@effect/ui"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { cardClass } from "../../design/classes.ts"
-import { starRating } from "../../design/starRating.ts"
+import { StarRating } from "../../design/starRating.ts"
 import { FavoriteButton } from "../../favorites/components/FavoriteButton.ts"
 import { formatPrice } from "../../lib/utils.ts"
 import { productUrl } from "../../routes.ts"
@@ -15,6 +15,7 @@ import { FulfillmentBadge } from "./FulfillmentBadge.ts"
  */
 export const ProductCard = Component.define({
   name: "ProductCard",
+  scoped: false,
   props: Schema.Struct({
     product: ProductBaseInfo,
     /** The search the card is shown under, which its link keeps. */
@@ -97,7 +98,7 @@ export const ProductCard = Component.define({
                           "flex items-center gap-1 text-xs text-muted-foreground tabular-nums",
                         )
                         .children(
-                          starRating(h, {
+                          StarRating(h, {
                             size: "sm",
                             rating: product.rating,
                           }),
