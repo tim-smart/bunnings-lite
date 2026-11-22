@@ -1,6 +1,6 @@
 import { Effect, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component } from "@effect/ui"
+import { Command, Component, UiSchema } from "@effect/ui"
 import {
   SessionLocation,
   type Store,
@@ -13,16 +13,15 @@ import { Session } from "../../rpc/services/Session.ts"
 import { AllStores } from "../queries/AllStores.ts"
 import { CurrentStore } from "../queries/CurrentStore.ts"
 
-export const StoreSearchMessage = Schema.TaggedUnion({
+export const StoreSearchMessage = UiSchema.TaggedEnum({
   SearchTyped: { text: Schema.String },
   StoreChosen: { location: SessionLocation },
   Closed: {},
   Retried: {},
   Left: {},
 })
-const Message = StoreSearchMessage
 
-export const StoreSearchEvents = Schema.TaggedUnion({
+export const StoreSearchEvents = UiSchema.TaggedEnum({
   /** The store that was picked, or none when the search was closed. */
   Answered: { store: Schema.Option(SessionLocation) },
   /** The closed drawer has left the screen. */
@@ -62,7 +61,7 @@ export const StoreSearchNoDeps = Component.define({
   model: Schema.Struct({
     search: Schema.String,
   }),
-  message: Message,
+  message: StoreSearchMessage,
   events: StoreSearchEvents,
   queries: {
     current: { query: CurrentStore, args: () => ({}) },
@@ -71,21 +70,18 @@ export const StoreSearchNoDeps = Component.define({
 }).make({
   init: () => ({ search: "" }),
   update: (model, message, $) =>
-    Message.match(message, {
+    StoreSearchMessage.match(message, {
       SearchTyped: ({ text }) => ({ ...model, search: text }),
       StoreChosen: ({ location }) =>
         $.set(model).emit(
-          StoreSearchEvents.make({
-            _tag: "Answered",
+          StoreSearchEvents.Answered({
             store: Option.some(location),
           }),
         ),
       Closed: () =>
-        $.set(model).emit(
-          StoreSearchEvents.make({ _tag: "Answered", store: Option.none() }),
-        ),
+        $.set(model).emit(StoreSearchEvents.Answered({ store: Option.none() })),
       Retried: () => $.run(RetryAllStores.make()),
-      Left: () => $.set(model).emit(StoreSearchEvents.make({ _tag: "Left" })),
+      Left: () => $.set(model).emit(StoreSearchEvents.Left()),
     }),
   view: (model, h) => {
     const current = Option.flatten(AsyncResult.value(h.queries.current))
@@ -94,8 +90,8 @@ export const StoreSearchNoDeps = Component.define({
     const terms = model.search.toLowerCase().split(/\s+/).filter(Boolean)
     return Sheet(h, {
       open: h.props.open,
-      onDismissed: Message.make({ _tag: "Closed" }),
-      onSettled: Message.make({ _tag: "Left" }),
+      onDismissed: StoreSearchMessage.Closed(),
+      onSettled: StoreSearchMessage.Left(),
       title: "Find your store",
       description: ["Search Bunnings stores in New Zealand and Australia."],
       class: "h-[80vh]",
@@ -113,7 +109,7 @@ export const StoreSearchNoDeps = Component.define({
               .class(inputClass("pl-9"))
               .value(model.search)
               .onInput(({ value }) =>
-                Message.make({ _tag: "SearchTyped", text: value }),
+                StoreSearchMessage.SearchTyped({ text: value }),
               ),
           ),
           h.div.class("overflow-y-auto flex-1 px-4 pb-safe").children(
@@ -134,7 +130,7 @@ export const StoreSearchNoDeps = Component.define({
                     h.button
                       .attr("type", "button")
                       .class(buttonClass({ variant: "outline" }))
-                      .onClick(Message.make({ _tag: "Retried" }))
+                      .onClick(StoreSearchMessage.Retried())
                       .children("Try again"),
                   ),
               onSuccess: ({ value: stores }) => {
@@ -169,8 +165,7 @@ export const StoreSearchNoDeps = Component.define({
                       "flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
                     )
                     .onClick(
-                      Message.make({
-                        _tag: "StoreChosen",
+                      StoreSearchMessage.StoreChosen({
                         location: SessionLocation.fromStore(store),
                       }),
                     )

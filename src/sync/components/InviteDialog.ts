@@ -1,6 +1,6 @@
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component, Subscription } from "@effect/ui"
+import { Command, Component, Subscription, UiSchema } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
 import { Sheet, SheetFooter } from "../../design/drawer.ts"
@@ -9,16 +9,15 @@ import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 
-export const InviteDialogMessage = Schema.TaggedUnion({
+export const InviteDialogMessage = UiSchema.TaggedEnum({
   InviteOpened: { invite: PendingInvite },
   Dismissed: {},
   Joined: {},
   Left: {},
 })
-const Message = InviteDialogMessage
 
 /** Whether the dialog is showing, for its owner to close any other drawer. */
-export const InviteDialogEvents = Schema.TaggedUnion({
+export const InviteDialogEvents = UiSchema.TaggedEnum({
   Opened: {},
   Closed: {},
 })
@@ -41,7 +40,7 @@ const invitesOpened = Subscription.make(
   Stream.unwrap(
     Effect.map(Invites, (invites) =>
       invites.opened.pipe(
-        Stream.map((invite) => Message.make({ _tag: "InviteOpened", invite })),
+        Stream.map((invite) => InviteDialogMessage.InviteOpened({ invite })),
       ),
     ),
   ),
@@ -67,7 +66,7 @@ export const InviteDialogNoDeps = Component.define({
     /** Whether the drawer is open, asking. */
     open: Schema.Boolean,
   }),
-  message: Message,
+  message: InviteDialogMessage,
   events: InviteDialogEvents,
   queries: {
     settings: { query: GetSyncSettings, args: () => ({}) },
@@ -75,22 +74,20 @@ export const InviteDialogNoDeps = Component.define({
 }).make({
   init: () => ({ invite: null, open: false }),
   update: (model, message, $) =>
-    Message.match(message, {
+    InviteDialogMessage.match(message, {
       // An invite can replace one that is already showing, and `autofocus`
       // only counts when a dialog is shown. Focus is moved for every invite,
       // so that Enter never joins one the user hasn't read.
       InviteOpened: ({ invite }) =>
         $.set({ invite, open: true })
           .run(DomCommand.focus(dismissRef, () => Component.noop))
-          .emit(InviteDialogEvents.make({ _tag: "Opened" })),
+          .emit(InviteDialogEvents.Opened()),
       Dismissed: () =>
-        $.set({ ...model, open: false }).emit(
-          InviteDialogEvents.make({ _tag: "Closed" }),
-        ),
+        $.set({ ...model, open: false }).emit(InviteDialogEvents.Closed()),
       Joined: () =>
         $.set({ ...model, open: false })
           .run(JoinSync.make())
-          .emit(InviteDialogEvents.make({ _tag: "Closed" })),
+          .emit(InviteDialogEvents.Closed()),
       // Unless another invite arrived while it was leaving
       Left: () => (model.open ? model : { ...model, invite: null }),
     }),
@@ -98,8 +95,8 @@ export const InviteDialogNoDeps = Component.define({
   view: (model, h) => {
     const { invite, open } = model
     if (invite === null) return h.div()
-    const dismissed = Message.make({ _tag: "Dismissed" })
-    const left = Message.make({ _tag: "Left" })
+    const dismissed = InviteDialogMessage.Dismissed()
+    const left = InviteDialogMessage.Left()
 
     // `Shell` gives focus to the sync settings button when it closes
     const sheet = {
@@ -176,7 +173,7 @@ export const InviteDialogNoDeps = Component.define({
           h.button
             .attr("type", "button")
             .class(buttonClass())
-            .onClick(Message.make({ _tag: "Joined" }))
+            .onClick(InviteDialogMessage.Joined())
             .children("Join"),
         ),
       ],

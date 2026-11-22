@@ -1,7 +1,14 @@
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { EventLog } from "effect/eventlog"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component, Head, Router, Subscription } from "@effect/ui"
+import {
+  Command,
+  Component,
+  Head,
+  Router,
+  Subscription,
+  UiSchema,
+} from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { SessionLocation } from "../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "./design/classes.ts"
@@ -27,7 +34,7 @@ import { SyncSettings } from "./sync/services/SyncSettings.ts"
 /** The drawers `Shell` mounts for as long as they are on the screen. */
 const Sheet = Schema.Literals(["syncSettings", "storeSearch"])
 
-export const ShellMessage = Schema.TaggedUnion({
+export const ShellMessage = UiSchema.TaggedEnum({
   SearchTyped: { text: Schema.String },
   SearchSubmitted: {},
   SearchWanted: {},
@@ -38,7 +45,6 @@ export const ShellMessage = Schema.TaggedUnion({
   StoreSearchAnswered: { store: Schema.Option(SessionLocation) },
   DrawerLeft: { drawer: Sheet },
 })
-const Message = ShellMessage
 
 /**
  * Answers the store selector's search of every store with the store the
@@ -60,9 +66,7 @@ const storeSearchAskedSubscription = Subscription.make(
   Stream.unwrap(
     Effect.map(StoreSearchPrompt, (prompt) =>
       prompt.asking.pipe(
-        Stream.map((asking) =>
-          Message.make({ _tag: "StoreSearchAsked", asking }),
-        ),
+        Stream.map((asking) => ShellMessage.StoreSearchAsked({ asking })),
       ),
     ),
   ),
@@ -72,7 +76,10 @@ const headerRef = Html.ref("header", "header")
 const searchRef = Html.ref("search", "input")
 const syncSettingsRef = Html.ref("sync-settings-open", "button")
 
-const focusSyncSettings = DomCommand.focus(syncSettingsRef, () => Component.noop)
+const focusSyncSettings = DomCommand.focus(
+  syncSettingsRef,
+  () => Component.noop,
+)
 const noStoreFound = AnswerStoreSearch.make({ store: Option.none() })
 
 /** Which drawer is open, if any. Only one is open at a time. */
@@ -121,7 +128,7 @@ const ShellDef = Component.define({
     searchesCleared: Schema.Number,
   }),
   model: ShellModel,
-  message: Message,
+  message: ShellMessage,
   // A drawer on its way out is gone by the time the page comes back
   restore: (model) => ({ ...model, leaving: [] }),
   // The search itself belongs to the search page. It is watched here as
@@ -230,7 +237,7 @@ const syncSettingsButton = ShellDef.fragment((h) =>
       .class(
         "grid size-10 cursor-pointer place-items-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white active:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
       )
-      .onClick(Message.make({ _tag: "SyncSettingsOpened" }))
+      .onClick(ShellMessage.SyncSettingsOpened())
       .children(icon(h, "settings2", { class: "size-5" })),
   ),
 )
@@ -254,7 +261,7 @@ const searchBox = ShellDef.fragment(
             }),
             h.form
               .attr("role", "search")
-              .onSubmit(Message.make({ _tag: "SearchSubmitted" }))
+              .onSubmit(ShellMessage.SearchSubmitted())
               .children(
                 h.input
                   .ref(searchRef)
@@ -275,7 +282,7 @@ const searchBox = ShellDef.fragment(
                   )
                   .value(query)
                   .onInput(({ value }) =>
-                    Message.make({ _tag: "SearchTyped", text: value }),
+                    ShellMessage.SearchTyped({ text: value }),
                   ),
               ),
           ),
@@ -361,7 +368,7 @@ const page = ShellDef.fragment((h, route: AppRoute) => {
         // search started from home keeps the page, so it is still debounced.
         key: `search:${h.props.searchesCleared}`,
         props: { route },
-        onEmit: () => Message.make({ _tag: "SearchWanted" }),
+        onEmit: () => ShellMessage.SearchWanted(),
         fallback: failed,
       }),
     Product: (route) =>
@@ -385,7 +392,7 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
     InviteDialog(h, {
       key: "invite",
       onEmit: ({ _tag }) =>
-        Message.make({ _tag: "InviteChanged", open: _tag === "Opened" }),
+        ShellMessage.InviteChanged({ open: _tag === "Opened" }),
     }),
     shown("syncSettings") &&
       SyncSettingsPanel(h, {
@@ -393,8 +400,8 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
         props: { open: drawer === "syncSettings" },
         onEmit: ({ _tag }) =>
           _tag === "Closed"
-            ? Message.make({ _tag: "SyncSettingsClosed" })
-            : Message.make({ _tag: "DrawerLeft", drawer: "syncSettings" }),
+            ? ShellMessage.SyncSettingsClosed()
+            : ShellMessage.DrawerLeft({ drawer: "syncSettings" }),
       }),
     shown("storeSearch") &&
       StoreSearch(h, {
@@ -402,8 +409,8 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
         props: { open: drawer === "storeSearch" },
         onEmit: (event) =>
           event._tag === "Answered"
-            ? Message.make({ _tag: "StoreSearchAnswered", store: event.store })
-            : Message.make({ _tag: "DrawerLeft", drawer: "storeSearch" }),
+            ? ShellMessage.StoreSearchAnswered({ store: event.store })
+            : ShellMessage.DrawerLeft({ drawer: "storeSearch" }),
       }),
   ] as const
 })
@@ -443,7 +450,9 @@ export const ShellNoDeps = ShellDef.make({
       $.run(DomCommand.blur(searchRef, () => Component.noop)),
     SearchWanted: (_model, _message, $) =>
       $.run(
-        DomCommand.focus(searchRef, () => Component.noop, { preventScroll: true }),
+        DomCommand.focus(searchRef, () => Component.noop, {
+          preventScroll: true,
+        }),
         DomCommand.scrollIntoView(headerRef, () => Component.noop, {
           behavior: "smooth",
           block: "start",

@@ -1,6 +1,6 @@
 import { DateTime, Effect, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component, Head, Router } from "@effect/ui"
+import { Command, Component, Head, Router, UiSchema } from "@effect/ui"
 import type {
   ProductReview,
   ReviewStats,
@@ -28,13 +28,12 @@ import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ReviewFeed } from "../../product/services/ReviewFeed.ts"
 import { Session } from "../../rpc/services/Session.ts"
 
-export const ProductPageMessage = Schema.TaggedUnion({
+export const ProductPageMessage = UiSchema.TaggedEnum({
   ImageChosen: { index: Schema.Number },
   BackPressed: {},
   SharePressed: { title: Schema.String },
   BottomReached: {},
 })
-const Message = ProductPageMessage
 
 /** Offers the product's page to the device's share sheet. */
 export class ShareProduct extends Command.Service<ShareProduct>()(
@@ -67,7 +66,7 @@ const ProductPageDef = Component.define({
     /** Which photo is showing. */
     image: Schema.Number,
   }),
-  message: Message,
+  message: ProductPageMessage,
   queries: {
     product: { query: GetProduct, args: (_model, props) => ({ id: props.id }) },
     known: {
@@ -211,7 +210,7 @@ const images = ProductPageDef.fragment(
                   ? "ring-2 ring-brand hover:ring-brand"
                   : "hover:ring-brand/30",
               )
-              .onClick(Message.make({ _tag: "ImageChosen", index: i }))
+              .onClick(ProductPageMessage.ImageChosen({ index: i }))
               .key(String(i))
               .children(
                 h.img
@@ -386,7 +385,7 @@ const productPageView = ProductPageDef.view((model, h) => {
       h.button
         .attr("type", "button")
         .class(buttonClass({ variant: "link", class: "-ml-3 cursor-pointer" }))
-        .onClick(Message.make({ _tag: "BackPressed" }))
+        .onClick(ProductPageMessage.BackPressed())
         .children(icon(h, "arrowLeft"), "Back"),
     ),
     h.div
@@ -466,8 +465,7 @@ const productPageView = ProductPageDef.view((model, h) => {
                   .attr("type", "button")
                   .class(buttonClass({ variant: "outline", size: "lg" }))
                   .onClick(
-                    Message.make({
-                      _tag: "SharePressed",
+                    ProductPageMessage.SharePressed({
                       title: product.title,
                     }),
                   )
@@ -510,14 +508,14 @@ const productPageView = ProductPageDef.view((model, h) => {
 export const ProductPageNoDeps = ProductPageDef.make({
   init: () => ({ image: 0 }),
   update: (model, message, $) =>
-    Message.match(message, {
+    ProductPageMessage.match(message, {
       ImageChosen: ({ index }) => ({ ...model, image: index }),
       BackPressed: () => $.run(Router.Back.make().pipe(Command.asNoop)),
       SharePressed: ({ title }) => $.run(ShareProduct.make({ title })),
       BottomReached: () =>
         hasMore($.queries.reviews) ? $.loadMore("reviews") : model,
     }),
-  subscriptions: () => [bottomReached(Message.make({ _tag: "BottomReached" }))],
+  subscriptions: () => [bottomReached(ProductPageMessage.BottomReached())],
   head: (_model, _props, loaded) => [
     Head.title(
       Option.match(

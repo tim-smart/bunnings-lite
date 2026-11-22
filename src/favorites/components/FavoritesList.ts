@@ -1,16 +1,15 @@
 import { Effect, Layer, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component } from "@effect/ui"
+import { Command, Component, UiSchema } from "@effect/ui"
 import { icon } from "../../design/icons.ts"
 import { ProductCard } from "../../product/components/ProductCard.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
-export const FavoritesListMessage = Schema.TaggedUnion({
+export const FavoritesListMessage = UiSchema.TaggedEnum({
   Cleared: {},
 })
-const Message = FavoritesListMessage
 
 /** Removes every favourite, on every device that syncs with this one. */
 export class ClearFavorites extends Command.Service<ClearFavorites>()(
@@ -31,14 +30,14 @@ export const FavoritesListNoDeps = Component.define({
   name: "FavoritesList",
   scoped: false,
   model: Schema.Struct({}),
-  message: Message,
+  message: FavoritesListMessage,
   queries: {
     favorites: { query: ListFavorites, args: () => ({}) },
   },
 }).make({
   init: () => ({}),
   update: (_model, message, $) =>
-    Message.match(message, {
+    FavoritesListMessage.match(message, {
       Cleared: () => $.run(ClearFavorites.make()),
     }),
   view: (_model, h) => {
@@ -83,7 +82,7 @@ export const FavoritesListNoDeps = Component.define({
             .class(
               "cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             )
-            .onClick(Message.make({ _tag: "Cleared" }))
+            .onClick(FavoritesListMessage.Cleared())
             .children("Clear all"),
         ),
         h.div

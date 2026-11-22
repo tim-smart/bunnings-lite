@@ -1,6 +1,6 @@
 import { Effect, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component } from "@effect/ui"
+import { Command, Component, UiSchema } from "@effect/ui"
 import {
   SessionLocation,
   type Store,
@@ -12,14 +12,13 @@ import { CurrentStore } from "../queries/CurrentStore.ts"
 import { NearbyStores } from "../queries/NearbyStores.ts"
 import { StoreSearchPrompt } from "../services/StoreSearchPrompt.ts"
 
-export const StoreSelectorMessage = Schema.TaggedUnion({
+export const StoreSelectorMessage = UiSchema.TaggedEnum({
   Reached: {},
   StoreChosen: { location: SessionLocation },
   SearchOpened: {},
   /** The store the search came back with, or none when it was closed. */
   SearchAnswered: { store: Schema.Option(SessionLocation) },
 })
-const Message = StoreSelectorMessage
 
 /** Shops at a store: saves it and logs the session in with it. */
 export class ChooseStore extends Command.Service<ChooseStore>()(
@@ -51,7 +50,7 @@ export class SearchAllStores extends Command.Service<SearchAllStores>()(
     const prompt = yield* StoreSearchPrompt
     return () =>
       Effect.map(prompt.ask, (store) =>
-        Message.make({ _tag: "SearchAnswered", store }),
+        StoreSelectorMessage.SearchAnswered({ store }),
       )
   }),
 ) {}
@@ -79,7 +78,7 @@ export const StoreSelectorNoDeps = Component.define({
     /** Whether the nearby stores have been asked for. */
     nearbyWanted: Schema.Boolean,
   }),
-  message: Message,
+  message: StoreSelectorMessage,
   queries: {
     current: { query: CurrentStore, args: () => ({}) },
     // Asking for nearby stores asks for the device's location, so it waits
@@ -92,7 +91,7 @@ export const StoreSelectorNoDeps = Component.define({
 }).make({
   init: () => ({ nearbyWanted: false }),
   update: (model, message, $) =>
-    Message.match(message, {
+    StoreSelectorMessage.match(message, {
       Reached: () =>
         model.nearbyWanted ? model : { ...model, nearbyWanted: true },
       StoreChosen: ({ location }) => $.run(ChooseStore.make({ location })),
@@ -134,18 +133,17 @@ export const StoreSelectorNoDeps = Component.define({
             "store-select h-11 w-full cursor-pointer rounded-md border border-input bg-card py-2 pr-9 pl-10 text-sm font-medium outline-none transition-[color,box-shadow] hover:border-primary/40 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15",
             Option.isNone(shown) ? "text-muted-foreground" : "text-foreground",
           )
-          .onFocus(Message.make({ _tag: "Reached" }))
+          .onFocus(StoreSelectorMessage.Reached())
           // A press that opens a styled list focuses an option, not the select
-          .onClick(Message.make({ _tag: "Reached" }))
+          .onClick(StoreSelectorMessage.Reached())
           .onChange(({ value }) => {
             if (value === searchValue) {
-              return Message.make({ _tag: "SearchOpened" })
+              return StoreSelectorMessage.SearchOpened()
             }
             const store = nearby.find((store) => store.name === value)
             return store === undefined
               ? undefined
-              : Message.make({
-                  _tag: "StoreChosen",
+              : StoreSelectorMessage.StoreChosen({
                   location: SessionLocation.fromStore(store),
                 })
           })

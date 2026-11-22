@@ -1,6 +1,6 @@
 import { Effect, Layer, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Command, Component } from "@effect/ui"
+import { Command, Component, UiSchema } from "@effect/ui"
 import { Html } from "@effect/ui/html"
 import { Toggle } from "@effect/ui-kit"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
@@ -10,7 +10,7 @@ import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
-export const FavoriteButtonMessage = Schema.TaggedUnion({
+export const FavoriteButtonMessage = UiSchema.TaggedEnum({
   Toggled: {},
 })
 
@@ -56,7 +56,7 @@ export const FavoriteButtonNoDeps = Component.define({
       h.queries.favorites,
       () => [],
     ).some((favorite) => favorite.id === product.id)
-    const toggled = FavoriteButtonMessage.make({ _tag: "Toggled" })
+    const toggled = FavoriteButtonMessage.Toggled()
     if (variant === "icon") {
       return Toggle(h, {
         props: { pressed: isFavorite },

@@ -16,7 +16,7 @@ const search = (query: string): AppRoute => ({
 })
 const route = search("")
 const routeChanged = (query: string) =>
-  AppMessage.make({ _tag: "RouteChanged", route: search(query) })
+  AppMessage.RouteChanged({ route: search(query) })
 
 const heading = HtmlLocator.role("heading")
 

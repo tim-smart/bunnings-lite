@@ -1,5 +1,5 @@
 import { Effect, Layer, Schema } from "effect"
-import { Command, Component, Head, Router } from "@effect/ui"
+import { Command, Component, Head, Router, UiSchema } from "@effect/ui"
 import { HtmlHead } from "@effect/ui/html"
 import { Reload } from "./browser/services/Reload.ts"
 import { buttonClass } from "./design/classes.ts"
@@ -9,7 +9,7 @@ import { Shell } from "./Shell.ts"
 import { JoinFailed, JoinProgress } from "./sync/domain/Invite.ts"
 import { PendingJoin } from "./sync/services/PendingJoin.ts"
 
-export const AppMessage = Schema.TaggedUnion({
+export const AppMessage = UiSchema.TaggedEnum({
   RouteChanged: { route: AppRoute },
   JoinProgressed: { progress: JoinProgress },
   JoinFailed: {},
@@ -59,9 +59,8 @@ export const AppNoDeps = Component.define({
     $.set({ route: $.props.route, searchesCleared: 0, join: "Checking" }).run(
       FinishJoin.make().pipe(
         Command.match({
-          onSuccess: (progress) =>
-            AppMessage.make({ _tag: "JoinProgressed", progress }),
-          onFailure: (_: JoinFailed) => AppMessage.make({ _tag: "JoinFailed" }),
+          onSuccess: (progress) => AppMessage.JoinProgressed({ progress }),
+          onFailure: (_: JoinFailed) => AppMessage.JoinFailed(),
         }),
       ),
     ),
@@ -83,7 +82,7 @@ export const AppNoDeps = Component.define({
     }),
   subscriptions: (model) => [
     Router.subscription(AppRoute, model.route, (route) =>
-      AppMessage.make({ _tag: "RouteChanged", route }),
+      AppMessage.RouteChanged({ route }),
     ),
   ],
   // A page names itself, and the app's name follows it
@@ -130,7 +129,7 @@ export const AppNoDeps = Component.define({
             h.button
               .attr("type", "button")
               .class(buttonClass())
-              .onClick(AppMessage.make({ _tag: "Retry" }))
+              .onClick(AppMessage.Retry())
               .children("Retry"),
           )
     }

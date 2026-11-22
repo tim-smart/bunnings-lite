@@ -1,6 +1,6 @@
 import { Array as Arr, Cause, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
-import { Component, Head } from "@effect/ui"
+import { Component, Head, UiSchema } from "@effect/ui"
 import type { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import { InstallButton } from "../browser/components/InstallButton.ts"
 import {
@@ -26,15 +26,14 @@ import {
 import { SearchProducts } from "../search/queries/SearchProducts.ts"
 import { StoreSelector } from "../stores/components/StoreSelector.ts"
 
-export const SearchPageMessage = Schema.TaggedUnion({
+export const SearchPageMessage = UiSchema.TaggedEnum({
   BottomReached: {},
   Scrolled: { scrolled: Schema.Boolean },
   SearchWanted: {},
 })
-const Message = SearchPageMessage
 
 /** Asks whoever holds the search box to bring it back into reach. */
-export const SearchPageEvents = Schema.TaggedUnion({ SearchWanted: {} })
+export const SearchPageEvents = UiSchema.TaggedEnum({ SearchWanted: {} })
 
 const gridClass =
   "grid gap-2 sm:gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
@@ -49,7 +48,7 @@ export const SearchPageNoDeps = Component.define({
   scoped: false,
   props: Schema.Struct({ route: SearchRoute }),
   model: Schema.Struct({ scrolled: Schema.Boolean }),
-  message: Message,
+  message: SearchPageMessage,
   events: SearchPageEvents,
   queries: {
     results: {
@@ -72,20 +71,17 @@ export const SearchPageNoDeps = Component.define({
 }).make({
   init: () => ({ scrolled: false }),
   update: (model, message, $) =>
-    Message.match(message, {
+    SearchPageMessage.match(message, {
       BottomReached: () =>
         hasMore($.queries.results) ? $.loadMore("results") : model,
       Scrolled: ({ scrolled }) => ({ ...model, scrolled }),
-      SearchWanted: () =>
-        $.set(model).emit(SearchPageEvents.make({ _tag: "SearchWanted" })),
+      SearchWanted: () => $.set(model).emit(SearchPageEvents.SearchWanted()),
     }),
   subscriptions: (_model, props) => {
     if (searchArgs(props.route) === undefined) return []
     return [
-      bottomReached(Message.make({ _tag: "BottomReached" })),
-      scrolledPast(200, (scrolled) =>
-        Message.make({ _tag: "Scrolled", scrolled }),
-      ),
+      bottomReached(SearchPageMessage.BottomReached()),
+      scrolledPast(200, (scrolled) => SearchPageMessage.Scrolled({ scrolled })),
     ]
   },
   head: (_model, props) => {
@@ -162,7 +158,7 @@ export const SearchPageNoDeps = Component.define({
           h.button
             .attr("type", "button")
             .class(buttonClass({ class: "mt-3" }))
-            .onClick(Message.make({ _tag: "SearchWanted" }))
+            .onClick(SearchPageMessage.SearchWanted())
             .children("Try another search"),
         )
 
@@ -256,7 +252,7 @@ export const SearchPageNoDeps = Component.define({
                     "size-12 cursor-pointer rounded-full shadow-lg shadow-primary/25 animate-in fade-in zoom-in-90",
                 }),
               )
-              .onClick(Message.make({ _tag: "SearchWanted" }))
+              .onClick(SearchPageMessage.SearchWanted())
               .children(
                 icon(h, "arrowUp", { class: "size-5", strokeWidth: 2.5 }),
               ),

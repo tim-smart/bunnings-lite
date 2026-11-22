@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { Command, Component, Router } from "@effect/ui"
+import { Command, Component, Router, UiSchema } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { Slider } from "@effect/ui-kit"
 import { inputClass, labelClass } from "../../design/classes.ts"
@@ -8,7 +8,7 @@ import { FacetRange, ratingFacet } from "../domain/Search.ts"
 
 const End = Schema.Literals(["min", "max"])
 
-export const FiltersMessage = Schema.TaggedUnion({
+export const FiltersMessage = UiSchema.TaggedEnum({
   PriceTyped: { end: End, text: Schema.String },
   PriceLeft: { end: End },
   PriceSubmitted: {},
@@ -16,7 +16,6 @@ export const FiltersMessage = Schema.TaggedUnion({
   RatingCommitted: { min: Schema.Number, max: Schema.Number },
   Cleared: { filter: Schema.Literals(["price", "rating"]) },
 })
-const Message = FiltersMessage
 
 /**
  * What is being typed and dragged, before it is applied. An end that is
@@ -62,7 +61,7 @@ export const Filters = Component.define({
     price: Schema.NullOr(FacetRange),
   }),
   model: FiltersModel,
-  message: Message,
+  message: FiltersMessage,
 }).make({
   init: () => ({
     priceMin: null,
@@ -84,7 +83,7 @@ export const Filters = Component.define({
       priceMax: model.priceMax ?? (priceMax === undefined ? "" : null),
     }
 
-    return Message.match(message, {
+    return FiltersMessage.match(message, {
       PriceTyped: ({ end, text }) =>
         end === "min"
           ? { ...model, priceMin: text }
@@ -139,17 +138,21 @@ export const Filters = Component.define({
     const { priceMax, priceMin, ratingMax, ratingMin } = route.search
 
     const heading = (name: string, filter: "price" | "rating", set: boolean) =>
-      h.div.class("flex min-h-5 items-center justify-between gap-2").children(
-        h.div.class(labelClass("text-foreground font-semibold")).children(name),
-        set &&
-          h.button
-            .attr("type", "button")
-            .class(
-              "cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            )
-            .onClick(Message.make({ _tag: "Cleared", filter }))
-            .children("(clear)"),
-      )
+      h.div
+        .class("flex min-h-5 items-center justify-between gap-2")
+        .children(
+          h.div
+            .class(labelClass("text-foreground font-semibold"))
+            .children(name),
+          set &&
+            h.button
+              .attr("type", "button")
+              .class(
+                "cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+              )
+              .onClick(FiltersMessage.Cleared({ filter }))
+              .children("(clear)"),
+        )
 
     const priceInput = (end: "min" | "max", range: FacetRange) => {
       const edit = end === "min" ? model.priceMin : model.priceMax
@@ -167,10 +170,8 @@ export const Filters = Component.define({
         )
         .class(inputClass("tabular-nums"))
         .value(edit ?? (applied === undefined ? "" : String(applied)))
-        .onInput(({ value }) =>
-          Message.make({ _tag: "PriceTyped", end, text: value }),
-        )
-        .onBlur(Message.make({ _tag: "PriceLeft", end }))
+        .onInput(({ value }) => FiltersMessage.PriceTyped({ end, text: value }))
+        .onBlur(FiltersMessage.PriceLeft({ end }))
     }
 
     const priceFilter = (range: FacetRange) =>
@@ -188,7 +189,7 @@ export const Filters = Component.define({
             .children(
               h.form
                 .class("w-full")
-                .onSubmit(Message.make({ _tag: "PriceSubmitted" }))
+                .onSubmit(FiltersMessage.PriceSubmitted())
                 .children(
                   h.div
                     .class("flex gap-3 items-center")
@@ -236,9 +237,9 @@ export const Filters = Component.define({
             },
             onEmit: {
               Moved: ({ value }) =>
-                Message.make({ _tag: "RatingMoved", ...rating(value) }),
+                FiltersMessage.RatingMoved({ ...rating(value) }),
               Committed: ({ value }) =>
-                Message.make({ _tag: "RatingCommitted", ...rating(value) }),
+                FiltersMessage.RatingCommitted({ ...rating(value) }),
             },
             view: (slider) => {
               const thumb = (index: 0 | 1, value: number) =>

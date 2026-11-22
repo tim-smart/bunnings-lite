@@ -16,7 +16,7 @@ const price = { start: 0.5, end: 499.2 }
 const hammer = { route: route({ query: "hammer" }), price }
 
 const typed = (end: "min" | "max", text: string) =>
-  FiltersMessage.make({ _tag: "PriceTyped", end, text })
+  FiltersMessage.PriceTyped({ end, text })
 
 const patch = (story: { readonly pending: ReadonlyArray<any> }) =>
   story.pending[0].command.args.patch
@@ -28,7 +28,7 @@ describe("Filters", () => {
       Effect.gen(function* () {
         const s = yield* Story.make(Filters, hammer)
         s.send(typed("min", "10"))
-          .send(FiltersMessage.make({ _tag: "PriceLeft", end: "min" }))
+          .send(FiltersMessage.PriceLeft({ end: "min" }))
           .expectExact(Router.PatchSearch)
         assert.deepStrictEqual(patch(s), { priceMin: 10, priceMax: 500 })
         s.resolve(Router.PatchSearch, "navigated")
@@ -40,7 +40,7 @@ describe("Filters", () => {
           })
         assert.strictEqual(s.model.priceMax, "")
         s.send(typed("max", "50")).send(
-          FiltersMessage.make({ _tag: "PriceLeft", end: "max" }),
+          FiltersMessage.PriceLeft({ end: "max" }),
         )
         assert.deepStrictEqual(patch(s), { priceMin: 10, priceMax: 50 })
         s.resolve(Router.PatchSearch, "navigated")
@@ -51,10 +51,10 @@ describe("Filters", () => {
     Effect.gen(function* () {
       const s = yield* Story.make(Filters, hammer)
       s.send(typed("max", "50"))
-        .send(FiltersMessage.make({ _tag: "PriceLeft", end: "min" }))
+        .send(FiltersMessage.PriceLeft({ end: "min" }))
         .expectNone()
         .send(typed("min", "abc"))
-        .send(FiltersMessage.make({ _tag: "PriceLeft", end: "min" }))
+        .send(FiltersMessage.PriceLeft({ end: "min" }))
         .expectNone()
     }),
   )
@@ -62,9 +62,9 @@ describe("Filters", () => {
   it.effect("applies the rating range once the slider is let go", () =>
     Effect.gen(function* () {
       const s = yield* Story.make(Filters, hammer)
-      s.send(FiltersMessage.make({ _tag: "RatingMoved", min: 3, max: 5 }))
+      s.send(FiltersMessage.RatingMoved({ min: 3, max: 5 }))
         .expectNone()
-        .send(FiltersMessage.make({ _tag: "RatingCommitted", min: 3, max: 5 }))
+        .send(FiltersMessage.RatingCommitted({ min: 3, max: 5 }))
       assert.deepStrictEqual(patch(s), { ratingMin: 3, ratingMax: 5 })
       s.resolve(Router.PatchSearch, "navigated")
     }),
