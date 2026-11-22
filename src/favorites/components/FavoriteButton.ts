@@ -2,6 +2,7 @@ import { Effect, Layer, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component } from "@effect/ui"
 import { Html } from "@effect/ui/html"
+import { Toggle } from "@effect/ui-kit"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { buttonClass } from "../../design/classes.ts"
 import { icon } from "../../design/icons.ts"
@@ -57,14 +58,15 @@ export const FavoriteButtonNoDeps = Component.define({
     ).some((favorite) => favorite.id === product.id)
     const toggled = FavoriteButtonMessage.make({ _tag: "Toggled" })
     if (variant === "icon") {
-      return h.button
+      return Toggle(h, {
+        props: { pressed: isFavorite },
+        onToggle: () => toggled,
+      })
         .attr("type", "button")
         .attr("aria-label", "Toggle favorite")
-        .attr("aria-pressed", String(isFavorite))
         .class(
           "grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         )
-        .onClick(toggled)
         .children(
           icon(h, "star", {
             class: Html.classNames(
