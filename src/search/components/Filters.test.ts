@@ -59,16 +59,13 @@ describe("Filters", () => {
     }),
   )
 
-  it.effect("keeps one rating thumb from passing the other", () =>
+  it.effect("applies the rating range once the slider is let go", () =>
     Effect.gen(function* () {
       const s = yield* Story.make(Filters, hammer)
-      s.send(
-        FiltersMessage.make({ _tag: "RatingMoved", end: "max", value: 3 }),
-      ).send(FiltersMessage.make({ _tag: "RatingMoved", end: "min", value: 4 }))
-      assert.strictEqual(s.model.ratingMin, 3)
-      assert.strictEqual(s.model.ratingMax, 3)
-      s.send(FiltersMessage.make({ _tag: "RatingReleased" }))
-      assert.deepStrictEqual(patch(s), { ratingMin: 3, ratingMax: 3 })
+      s.send(FiltersMessage.make({ _tag: "RatingMoved", min: 3, max: 5 }))
+        .expectNone()
+        .send(FiltersMessage.make({ _tag: "RatingCommitted", min: 3, max: 5 }))
+      assert.deepStrictEqual(patch(s), { ratingMin: 3, ratingMax: 5 })
       s.resolve(Router.PatchSearch, "navigated")
     }),
   )

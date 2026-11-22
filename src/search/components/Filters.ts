@@ -1,6 +1,7 @@
 import { Schema } from "effect"
 import { Command, Component, Router } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
+import { Slider } from "@effect/ui-kit"
 import { inputClass, labelClass } from "../../design/classes.ts"
 import { AppRoute, SearchRoute } from "../../routes.ts"
 import { FacetRange, ratingFacet } from "../domain/Search.ts"
@@ -11,8 +12,8 @@ export const FiltersMessage = Schema.TaggedUnion({
   PriceTyped: { end: End, text: Schema.String },
   PriceLeft: { end: End },
   PriceSubmitted: {},
-  RatingMoved: { end: End, value: Schema.Number },
-  RatingReleased: {},
+  RatingMoved: { min: Schema.Number, max: Schema.Number },
+  RatingCommitted: { min: Schema.Number, max: Schema.Number },
   Cleared: { filter: Schema.Literals(["price", "rating"]) },
 })
 const Message = FiltersMessage
@@ -112,19 +113,17 @@ export const Filters = Component.define({
           DomCommand.blur(maxRef, () => Component.noop),
         )
       },
-      RatingMoved: ({ end, value }) => {
-        const { max, min } = ratingRange(model, route)
-        // One thumb can't pass the other
-        return end === "min"
-          ? { ...model, ratingMin: Math.min(value, max), ratingMax: max }
-          : { ...model, ratingMin: min, ratingMax: Math.max(value, min) }
-      },
-      RatingReleased: () => {
-        const { max, min } = ratingRange(model, route)
-        return ratingMin === min && ratingMax === max
-          ? model
-          : $.run(patch({ ratingMin: min, ratingMax: max }))
-      },
+      RatingMoved: ({ max, min }) => ({
+        ...model,
+        ratingMin: min,
+        ratingMax: max,
+      }),
+      RatingCommitted: ({ max, min }) =>
+        ratingMin === min && ratingMax === max
+          ? { ...model, ratingMin: min, ratingMax: max }
+          : $.set({ ...model, ratingMin: min, ratingMax: max }).run(
+              patch({ ratingMin: min, ratingMax: max }),
+            ),
       Cleared: ({ filter }) =>
         filter === "price"
           ? $.set({ ...model, priceMin: null, priceMax: null }).run(
@@ -211,43 +210,11 @@ export const Filters = Component.define({
         )
 
     const { max: high, min: low } = ratingRange(model, route)
-    const span = ratingFacet.end - ratingFacet.start
-    // Where a thumb's centre sits: a native thumb stays inside the track, so
-    // it travels the track's width less its own
-    const offset = (value: number) => {
-      const part = (value - ratingFacet.start) / span
-      return { percent: part * 100, pixels: 12 - 24 * part }
+    // The slider sorts its values and keeps one thumb from passing the other
+    const rating = (value: number | ReadonlyArray<number>) => {
+      const [min = low, max = high] = typeof value === "number" ? [] : value
+      return { min, max }
     }
-    const at = (value: number) => {
-      const { percent, pixels } = offset(value)
-      return `calc(${percent}% + ${pixels}px)`
-    }
-    const fromEnd = (value: number) => {
-      const { percent, pixels } = offset(value)
-      return `calc(${100 - percent}% - ${pixels}px)`
-    }
-
-    const ratingThumb = (end: "min" | "max", value: number) => [
-      h.input
-        .attr("type", "range")
-        .attr("min", String(ratingFacet.start))
-        .attr("max", String(ratingFacet.end))
-        .attr("step", "1")
-        .attr("aria-label", end === "min" ? "Minimum rating" : "Maximum rating")
-        // With both thumbs at the top end, the lower one has to be on top or
-        // neither could move
-        .class(end === "min" && low === ratingFacet.end && "z-10")
-        .value(String(value))
-        .onInput(({ value }) =>
-          Message.make({ _tag: "RatingMoved", end, value: Number(value) }),
-        )
-        .onChange(Message.make({ _tag: "RatingReleased" }))
-        .key(end),
-      h.output
-        .style({ left: at(value) })
-        .key(`${end}-value`)
-        .children(String(value)),
-    ]
 
     const ratingFilter = h.div
       .class("flex flex-col gap-1.5")
@@ -259,25 +226,70 @@ export const Filters = Component.define({
           ratingMin !== undefined && ratingMax !== undefined,
         ),
         h.div.class("flex-1 flex items-center min-h-10 px-1 sm:px-0").children(
-          h.div
-            .attr("role", "group")
-            .attr("aria-label", "Rating")
-            .class(
-              "dual-range relative flex h-6 w-full touch-none items-center select-none",
-            )
-            .children(
-              h.div
-                .class(
-                  "bg-primary/15 relative h-1.5 w-full grow overflow-hidden rounded-full",
+          Slider(h, {
+            props: {
+              value: [low, high],
+              min: ratingFacet.start,
+              max: ratingFacet.end,
+              step: 1,
+              largeStep: 1,
+            },
+            onEmit: {
+              Moved: ({ value }) =>
+                Message.make({ _tag: "RatingMoved", ...rating(value) }),
+              Committed: ({ value }) =>
+                Message.make({ _tag: "RatingCommitted", ...rating(value) }),
+            },
+            view: (slider) => {
+              const thumb = (index: 0 | 1, value: number) =>
+                slider
+                  .thumb({
+                    element: h.div.class("rating-thumb"),
+                    input: h.input.attr(
+                      "aria-label",
+                      index === 0 ? "Minimum rating" : "Maximum rating",
+                    ),
+                    index,
+                  })
+                  .children(
+                    h.span
+                      .class("rating-value")
+                      .attr("aria-hidden", "true")
+                      .children(String(value)),
+                  )
+              return slider
+                .root(
+                  h.div
+                    .attr("aria-label", "Rating")
+                    .class("rating-slider w-full px-3"),
                 )
                 .children(
-                  h.div
-                    .class("bg-secondary absolute h-full")
-                    .attr("style", `left: ${at(low)}; right: ${fromEnd(high)}`),
-                ),
-              ratingThumb("min", low),
-              ratingThumb("max", high),
-            ),
+                  slider
+                    .control(
+                      h.div.class(
+                        "flex h-6 w-full touch-none items-center select-none",
+                      ),
+                    )
+                    .children(
+                      slider
+                        .track(
+                          h.div.class(
+                            "bg-primary/15 relative h-1.5 w-full rounded-full",
+                          ),
+                        )
+                        .children(
+                          slider.indicator(
+                            h.div.class(
+                              "bg-secondary absolute inset-y-0 left-(--slider-indicator-start) w-(--slider-indicator-size) rounded-full",
+                            ),
+                          ),
+                          thumb(0, low),
+                          thumb(1, high),
+                        ),
+                    ),
+                )
+            },
+          }),
         ),
       )
 
