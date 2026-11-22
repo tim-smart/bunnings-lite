@@ -255,7 +255,7 @@ test("the focused card keeps the focus when the window leaves it", async ({
   await expect(card(page, 50)).toBeFocused()
 })
 
-test("rows that trade heights don't leave the window empty", async ({
+test("rows that trade heights leave the row in view where it was", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 800 })
@@ -299,15 +299,23 @@ test("rows that trade heights don't leave the window empty", async ({
   )
   await expect.poll(inView).toBeGreaterThan(0)
   await page.waitForTimeout(300)
-  const before = await read(page)
+  // The box of the row of card 29, at the top of the window
+  const row29 = () =>
+    page.evaluate(() => {
+      const box = document
+        .querySelector('[aria-posinset="29"]')
+        ?.getBoundingClientRect()
+      return box === undefined ? null : { top: box.top, height: box.height }
+    })
+  const top = (await row29())!.top
 
-  // One row gets as much taller as another gets shorter, so the list is as
-  // tall as it was
+  // One row above the window gets as much taller as the row in view gets
+  // shorter. The row in view stays where the user was looking.
   await page.evaluate(() => document.documentElement.classList.add("traded"))
-  await expect.poll(inView).toBeGreaterThan(0)
-  const after = await read(page)
-  expect(after.listHeight).toBe(before.listHeight)
-  // A row above the window grew, and the list scrolled by as much, so what
-  // was in view stays in place
-  expect(after.scrollY - before.scrollY).toBe(2500)
+  await expect.poll(async () => (await row29())?.height).toBe(300)
+  await expect
+    .poll(async () => Math.abs((await row29())!.top - top))
+    .toBeLessThanOrEqual(1)
+  await expect(card(page, 29)).toBeInViewport()
+  expect(await inView()).toBeGreaterThan(0)
 })
