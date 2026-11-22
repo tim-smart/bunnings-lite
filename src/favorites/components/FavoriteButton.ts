@@ -5,13 +5,13 @@ import { Html } from "@effect/ui/html"
 import { Toggle } from "@effect/ui-kit"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { buttonClass } from "../../design/classes.ts"
-import { icon } from "../../design/icons.ts"
+import { Icon } from "../../design/icons.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
 import { ListFavorites } from "../queries/ListFavorites.ts"
 import { Favorites } from "../services/Favorites.ts"
 
 export const FavoriteButtonMessage = UiSchema.TaggedEnum({
-  Toggled: {},
+  ToggledFavorite: {},
 })
 
 /** Adds a product to the favourites, or removes it if it is one already. */
@@ -48,7 +48,8 @@ export const FavoriteButtonNoDeps = Component.define({
   init: () => ({}),
   update: (_model, message, $) =>
     FavoriteButtonMessage.match(message, {
-      Toggled: () => $.run(ToggleFavorite.make({ product: $.props.product })),
+      ToggledFavorite: () =>
+        $.run(ToggleFavorite.make({ product: $.props.product })),
     }),
   view: (_model, h) => {
     const { product, variant } = h.props
@@ -56,7 +57,7 @@ export const FavoriteButtonNoDeps = Component.define({
       h.queries.favorites,
       () => [],
     ).some((favorite) => favorite.id === product.id)
-    const toggled = FavoriteButtonMessage.Toggled()
+    const toggled = FavoriteButtonMessage.ToggledFavorite()
     if (variant === "icon") {
       return Toggle(h, {
         props: { pressed: isFavorite },
@@ -68,7 +69,7 @@ export const FavoriteButtonNoDeps = Component.define({
           "grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card/90 transition-[background-color,transform] hover:bg-muted active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         )
         .children(
-          icon(h, "star", {
+          Icon(h, "star", {
             class: Html.classNames(
               "size-5 text-accent",
               isFavorite ? "fill-accent" : "fill-none",
@@ -87,7 +88,7 @@ export const FavoriteButtonNoDeps = Component.define({
       )
       .onClick(toggled)
       .children(
-        icon(h, "star", {
+        Icon(h, "star", {
           class: Html.classNames(
             "text-accent transition-transform",
             isFavorite ? "fill-accent scale-110" : "fill-none",

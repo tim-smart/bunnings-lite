@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { Command, Component, Router, UiSchema } from "@effect/ui"
+import { Command, Component, Router, UiSchema, UiStruct } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { Slider } from "@effect/ui-kit"
 import { inputClass, labelClass } from "../../design/classes.ts"
@@ -9,12 +9,12 @@ import { FacetRange, ratingFacet } from "../domain/Search.ts"
 const End = Schema.Literals(["min", "max"])
 
 export const FiltersMessage = UiSchema.TaggedEnum({
-  PriceTyped: { end: End, text: Schema.String },
-  PriceLeft: { end: End },
-  PriceSubmitted: {},
-  RatingMoved: { min: Schema.Number, max: Schema.Number },
-  RatingCommitted: { min: Schema.Number, max: Schema.Number },
-  Cleared: { filter: Schema.Literals(["price", "rating"]) },
+  UpdatedPrice: { end: End, text: Schema.String },
+  BlurredPrice: { end: End },
+  SubmittedPrice: {},
+  MovedRating: { min: Schema.Number, max: Schema.Number },
+  CommittedRating: { min: Schema.Number, max: Schema.Number },
+  ClickedClear: { filter: Schema.Literals(["price", "rating"]) },
 })
 
 /**
@@ -27,7 +27,7 @@ const FiltersModel = Schema.Struct({
   ratingMin: Schema.NullOr(Schema.Number),
   ratingMax: Schema.NullOr(Schema.Number),
 })
-type Model = typeof FiltersModel.Type
+type FiltersModel = typeof FiltersModel.Type
 
 const parse = (text: string | null): number | undefined => {
   if (text === null || text.trim() === "") return undefined
@@ -39,7 +39,7 @@ const minRef = Html.ref("price-min", "input")
 const maxRef = Html.ref("price-max", "input")
 
 /** The rating range the slider shows: what is being dragged, else the URL's. */
-const ratingRange = (model: Model, route: SearchRoute) => ({
+const ratingRange = (model: FiltersModel, route: SearchRoute) => ({
   min: model.ratingMin ?? route.search.ratingMin ?? ratingFacet.start,
   max: model.ratingMax ?? route.search.ratingMax ?? ratingFacet.end,
 })
@@ -77,18 +77,17 @@ export const Filters = Component.define({
 
     // An end that was never typed is filled in for the search, but its field
     // stays empty: it may be the one being typed in next
-    const typedOnly: Model = {
-      ...model,
-      priceMin: model.priceMin ?? (priceMin === undefined ? "" : null),
-      priceMax: model.priceMax ?? (priceMax === undefined ? "" : null),
-    }
+    const typedOnly = UiStruct.evolve(model, {
+      priceMin: (typed) => typed ?? (priceMin === undefined ? "" : null),
+      priceMax: (typed) => typed ?? (priceMax === undefined ? "" : null),
+    })
 
     return FiltersMessage.match(message, {
-      PriceTyped: ({ end, text }) =>
+      UpdatedPrice: ({ end, text }) =>
         end === "min"
-          ? { ...model, priceMin: text }
-          : { ...model, priceMax: text },
-      PriceLeft: ({ end }) => {
+          ? $.evolve({ priceMin: text })
+          : $.evolve({ priceMax: text }),
+      BlurredPrice: ({ end }) => {
         if (price === null) return model
         const typedMin = parse(model.priceMin)
         const typedMax = parse(model.priceMax)
@@ -100,7 +99,7 @@ export const Filters = Component.define({
           ? model
           : $.set(typedOnly).run(patch({ priceMin: min, priceMax: max }))
       },
-      PriceSubmitted: () => {
+      SubmittedPrice: () => {
         if (price === null) return model
         return $.set(typedOnly).run(
           patch({
@@ -112,23 +111,23 @@ export const Filters = Component.define({
           DomCommand.blur(maxRef, () => Component.noop),
         )
       },
-      RatingMoved: ({ max, min }) => ({
-        ...model,
-        ratingMin: min,
-        ratingMax: max,
-      }),
-      RatingCommitted: ({ max, min }) =>
+      MovedRating: ({ max, min }) =>
+        $.evolve({
+          ratingMin: min,
+          ratingMax: max,
+        }),
+      CommittedRating: ({ max, min }) =>
         ratingMin === min && ratingMax === max
-          ? { ...model, ratingMin: min, ratingMax: max }
-          : $.set({ ...model, ratingMin: min, ratingMax: max }).run(
+          ? $.evolve({ ratingMin: min, ratingMax: max })
+          : $.evolve({ ratingMin: min, ratingMax: max }).run(
               patch({ ratingMin: min, ratingMax: max }),
             ),
-      Cleared: ({ filter }) =>
+      ClickedClear: ({ filter }) =>
         filter === "price"
-          ? $.set({ ...model, priceMin: null, priceMax: null }).run(
+          ? $.evolve({ priceMin: null, priceMax: null }).run(
               patch({ priceMin: undefined, priceMax: undefined }),
             )
-          : $.set({ ...model, ratingMin: null, ratingMax: null }).run(
+          : $.evolve({ ratingMin: null, ratingMax: null }).run(
               patch({ ratingMin: undefined, ratingMax: undefined }),
             ),
     })
@@ -150,7 +149,7 @@ export const Filters = Component.define({
               .class(
                 "cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               )
-              .onClick(FiltersMessage.Cleared({ filter }))
+              .onClick(FiltersMessage.ClickedClear({ filter }))
               .children("(clear)"),
         )
 
@@ -170,8 +169,10 @@ export const Filters = Component.define({
         )
         .class(inputClass("tabular-nums"))
         .value(edit ?? (applied === undefined ? "" : String(applied)))
-        .onInput(({ value }) => FiltersMessage.PriceTyped({ end, text: value }))
-        .onBlur(FiltersMessage.PriceLeft({ end }))
+        .onInput(({ value }) =>
+          FiltersMessage.UpdatedPrice({ end, text: value }),
+        )
+        .onBlur(FiltersMessage.BlurredPrice({ end }))
     }
 
     const priceFilter = (range: FacetRange) =>
@@ -189,7 +190,7 @@ export const Filters = Component.define({
             .children(
               h.form
                 .class("w-full")
-                .onSubmit(FiltersMessage.PriceSubmitted())
+                .onSubmit(FiltersMessage.SubmittedPrice())
                 .children(
                   h.div
                     .class("flex gap-3 items-center")
@@ -237,9 +238,9 @@ export const Filters = Component.define({
             },
             onEmit: {
               Moved: ({ value }) =>
-                FiltersMessage.RatingMoved({ ...rating(value) }),
+                FiltersMessage.MovedRating({ ...rating(value) }),
               Committed: ({ value }) =>
-                FiltersMessage.RatingCommitted({ ...rating(value) }),
+                FiltersMessage.CommittedRating({ ...rating(value) }),
             },
             view: (slider) => {
               const thumb = (index: 0 | 1, value: number) =>

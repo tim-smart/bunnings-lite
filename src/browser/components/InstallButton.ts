@@ -1,12 +1,12 @@
 import { Effect, Schema, Stream } from "effect"
 import { Command, Component, Subscription, UiSchema } from "@effect/ui"
 import { buttonClass } from "../../design/classes.ts"
-import { icon } from "../../design/icons.ts"
+import { Icon } from "../../design/icons.ts"
 import { InstallPrompt } from "../services/InstallPrompt.ts"
 
 export const InstallButtonMessage = UiSchema.TaggedEnum({
-  AvailabilityChanged: { available: Schema.Boolean },
-  Pressed: {},
+  ChangedAvailability: { available: Schema.Boolean },
+  ClickedInstall: {},
 })
 
 /** Shows the browser's prompt to install the app. */
@@ -24,7 +24,7 @@ const installAvailable = Subscription.make(
   InstallPrompt.useSync((install) =>
     install.available.pipe(
       Stream.map((available) =>
-        InstallButtonMessage.AvailabilityChanged({ available }),
+        InstallButtonMessage.ChangedAvailability({ available }),
       ),
     ),
   ).pipe(Stream.unwrap),
@@ -40,8 +40,8 @@ export const InstallButtonNoDeps = Component.define({
   init: () => ({ available: false }),
   update: (_model, message, $) =>
     InstallButtonMessage.match(message, {
-      AvailabilityChanged: ({ available }) => ({ available }),
-      Pressed: () => $.run(PromptInstall.make()),
+      ChangedAvailability: ({ available }) => ({ available }),
+      ClickedInstall: () => $.run(PromptInstall.make()),
     }),
   subscriptions: () => [installAvailable],
   view: (model, h) =>
@@ -50,8 +50,8 @@ export const InstallButtonNoDeps = Component.define({
         h.button
           .attr("type", "button")
           .class(buttonClass({ class: "cursor-pointer" }))
-          .onClick(InstallButtonMessage.Pressed())
-          .children(icon(h, "house"), "Add to home screen"),
+          .onClick(InstallButtonMessage.ClickedInstall())
+          .children(Icon(h, "house"), "Add to home screen"),
     ),
 })
 

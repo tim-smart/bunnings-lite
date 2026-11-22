@@ -10,10 +10,10 @@ import { JoinFailed, JoinProgress } from "./sync/domain/Invite.ts"
 import { PendingJoin } from "./sync/services/PendingJoin.ts"
 
 export const AppMessage = UiSchema.TaggedEnum({
-  RouteChanged: { route: AppRoute },
-  JoinProgressed: { progress: JoinProgress },
-  JoinFailed: {},
-  Retry: {},
+  ChangedRoute: { route: AppRoute },
+  ProgressedJoin: { progress: JoinProgress },
+  FailedFinishJoin: {},
+  ClickedRetry: {},
 })
 
 /**
@@ -59,30 +59,30 @@ export const AppNoDeps = Component.define({
     $.set({ route: $.props.route, searchesCleared: 0, join: "Checking" }).run(
       FinishJoin.make().pipe(
         Command.match({
-          onSuccess: (progress) => AppMessage.JoinProgressed({ progress }),
-          onFailure: (_: JoinFailed) => AppMessage.JoinFailed(),
+          onSuccess: (progress) => AppMessage.ProgressedJoin({ progress }),
+          onFailure: (_: JoinFailed) => AppMessage.FailedFinishJoin(),
         }),
       ),
     ),
   update: (model, message, $) =>
     AppMessage.match(message, {
-      RouteChanged: ({ route }) => ({
-        ...model,
-        route,
-        searchesCleared:
-          model.searchesCleared + (searchCleared(model.route, route) ? 1 : 0),
-      }),
-      JoinProgressed: ({ progress }) => ({
-        ...model,
-        join:
-          progress === "Finished" ? ("Ready" as const) : ("Blocked" as const),
-      }),
-      JoinFailed: () => ({ ...model, join: "Failed" as const }),
-      Retry: () => $.run(ReloadPage.make()),
+      ChangedRoute: ({ route }) =>
+        $.evolve({
+          route,
+          searchesCleared:
+            model.searchesCleared + (searchCleared(model.route, route) ? 1 : 0),
+        }),
+      ProgressedJoin: ({ progress }) =>
+        $.evolve({
+          join:
+            progress === "Finished" ? ("Ready" as const) : ("Blocked" as const),
+        }),
+      FailedFinishJoin: () => $.evolve({ join: "Failed" as const }),
+      ClickedRetry: () => $.run(ReloadPage.make()),
     }),
   subscriptions: (model) => [
     Router.subscription(AppRoute, model.route, (route) =>
-      AppMessage.RouteChanged({ route }),
+      AppMessage.ChangedRoute({ route }),
     ),
   ],
   // A page names itself, and the app's name follows it
@@ -129,8 +129,8 @@ export const AppNoDeps = Component.define({
             h.button
               .attr("type", "button")
               .class(buttonClass())
-              .onClick(AppMessage.Retry())
-              .children("Retry"),
+              .onClick(AppMessage.ClickedRetry())
+              .children("ClickedRetry"),
           )
     }
   },

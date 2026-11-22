@@ -3,7 +3,7 @@ import { Session } from "../../rpc/services/Session.ts"
 import { AsyncResult } from "effect/reactivity"
 import { Component } from "@effect/ui"
 import { badgeClass } from "../../design/classes.ts"
-import { icon } from "../../design/icons.ts"
+import { Icon } from "../../design/icons.ts"
 import { GetFulfillment } from "../queries/GetFulfillment.ts"
 
 /**
@@ -53,7 +53,7 @@ export const FulfillmentBadgeNoDeps = Component.define({
                 "h-7 rounded-full border-0 bg-primary/10 px-2.5 text-primary tabular-nums",
               ),
             )
-            .children(icon(h, "mapPin"), `Aisle ${aisle}/${bay}`)
+            .children(Icon(h, "mapPin"), `Aisle ${aisle}/${bay}`)
         }
         if (!h.props.showAvailable) return undefined
         return h.span

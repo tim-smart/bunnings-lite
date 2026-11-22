@@ -5,7 +5,7 @@ import {
   SessionLocation,
   type Store,
 } from "../../../server/src/domain/Bunnings.ts"
-import { icon } from "../../design/icons.ts"
+import { Icon } from "../../design/icons.ts"
 import { SessionTag } from "../../rpc/domain/SessionTag.ts"
 import { Session } from "../../rpc/services/Session.ts"
 import { CurrentStore } from "../queries/CurrentStore.ts"
@@ -13,11 +13,11 @@ import { NearbyStores } from "../queries/NearbyStores.ts"
 import { StoreSearchPrompt } from "../services/StoreSearchPrompt.ts"
 
 export const StoreSelectorMessage = UiSchema.TaggedEnum({
-  Reached: {},
-  StoreChosen: { location: SessionLocation },
-  SearchOpened: {},
+  ReachedPicker: {},
+  SelectedStore: { location: SessionLocation },
+  SelectedSearchAllStores: {},
   /** The store the search came back with, or none when it was closed. */
-  SearchAnswered: { store: Schema.Option(SessionLocation) },
+  AnsweredStoreSearch: { store: Schema.Option(SessionLocation) },
 })
 
 /** Shops at a store: saves it and logs the session in with it. */
@@ -50,7 +50,7 @@ export class SearchAllStores extends Command.Service<SearchAllStores>()(
     const prompt = yield* StoreSearchPrompt
     return () =>
       Effect.map(prompt.ask, (store) =>
-        StoreSelectorMessage.SearchAnswered({ store }),
+        StoreSelectorMessage.AnsweredStoreSearch({ store }),
       )
   }),
 ) {}
@@ -92,12 +92,12 @@ export const StoreSelectorNoDeps = Component.define({
   init: () => ({ nearbyWanted: false }),
   update: (model, message, $) =>
     StoreSelectorMessage.match(message, {
-      Reached: () =>
-        model.nearbyWanted ? model : { ...model, nearbyWanted: true },
-      StoreChosen: ({ location }) => $.run(ChooseStore.make({ location })),
-      SearchOpened: () => $.run(SearchAllStores.make()),
+      ReachedPicker: () =>
+        model.nearbyWanted ? model : $.evolve({ nearbyWanted: true }),
+      SelectedStore: ({ location }) => $.run(ChooseStore.make({ location })),
+      SelectedSearchAllStores: () => $.run(SearchAllStores.make()),
       // The host hands focus back to the select that opened the search
-      SearchAnswered: ({ store }) =>
+      AnsweredStoreSearch: ({ store }) =>
         Option.match(store, {
           onNone: () => model,
           onSome: (location) => $.run(ChooseStore.make({ location })),
@@ -123,7 +123,7 @@ export const StoreSelectorNoDeps = Component.define({
 
     return h.div.class("w-full").children(
       h.div.class("relative").children(
-        icon(h, "mapPin", {
+        Icon(h, "mapPin", {
           class:
             "pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-accent",
         }),
@@ -133,17 +133,17 @@ export const StoreSelectorNoDeps = Component.define({
             "store-select h-11 w-full cursor-pointer rounded-md border border-input bg-card py-2 pr-9 pl-10 text-sm font-medium outline-none transition-[color,box-shadow] hover:border-primary/40 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15",
             Option.isNone(shown) ? "text-muted-foreground" : "text-foreground",
           )
-          .onFocus(StoreSelectorMessage.Reached())
+          .onFocus(StoreSelectorMessage.ReachedPicker())
           // A press that opens a styled list focuses an option, not the select
-          .onClick(StoreSelectorMessage.Reached())
+          .onClick(StoreSelectorMessage.ReachedPicker())
           .onChange(({ value }) => {
             if (value === searchValue) {
-              return StoreSelectorMessage.SearchOpened()
+              return StoreSelectorMessage.SelectedSearchAllStores()
             }
             const store = nearby.find((store) => store.name === value)
             return store === undefined
               ? undefined
-              : StoreSelectorMessage.StoreChosen({
+              : StoreSelectorMessage.SelectedStore({
                   location: SessionLocation.fromStore(store),
                 })
           })
@@ -192,11 +192,11 @@ export const StoreSelectorNoDeps = Component.define({
               .class("store-select-search")
               .key(searchValue)
               .children(
-                icon(h, "search", { class: "size-4 shrink-0" }),
+                Icon(h, "search", { class: "size-4 shrink-0" }),
                 "Search all stores",
               ),
           ),
-        icon(h, "chevronDown", {
+        Icon(h, "chevronDown", {
           class:
             "pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 opacity-50",
         }),

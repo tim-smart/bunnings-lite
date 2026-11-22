@@ -8,11 +8,12 @@ import {
   Router,
   Subscription,
   UiSchema,
+  UiStruct,
 } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { SessionLocation } from "../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "./design/classes.ts"
-import { icon } from "./design/icons.ts"
+import { Icon } from "./design/icons.ts"
 import { ListFavoritesRefresh } from "./favorites/queries/ListFavorites.ts"
 import { Favorites } from "./favorites/services/Favorites.ts"
 import { FavoritesRepo } from "./favorites/services/FavoritesRepo.ts"
@@ -35,15 +36,17 @@ import { SyncSettings } from "./sync/services/SyncSettings.ts"
 const Sheet = Schema.Literals(["syncSettings", "storeSearch"])
 
 export const ShellMessage = UiSchema.TaggedEnum({
-  SearchTyped: { text: Schema.String },
-  SearchSubmitted: {},
-  SearchWanted: {},
-  SyncSettingsOpened: {},
-  SyncSettingsClosed: {},
-  InviteChanged: { open: Schema.Boolean },
-  StoreSearchAsked: { asking: Schema.Boolean },
-  StoreSearchAnswered: { store: Schema.Option(SessionLocation) },
-  DrawerLeft: { drawer: Sheet },
+  UpdatedSearch: { text: Schema.String },
+  SubmittedSearch: {},
+  RequestedSearch: {},
+  ClickedSyncSettings: {},
+  ClosedSyncSettings: {},
+  LeftSyncSettings: {},
+  OpenedInvite: {},
+  ClosedInvite: {},
+  ChangedStoreSearchPrompt: { asking: Schema.Boolean },
+  AnsweredStoreSearch: { store: Schema.Option(SessionLocation) },
+  LeftStoreSearch: {},
 })
 
 /**
@@ -66,7 +69,9 @@ const storeSearchAskedSubscription = Subscription.make(
   Stream.unwrap(
     Effect.map(StoreSearchPrompt, (prompt) =>
       prompt.asking.pipe(
-        Stream.map((asking) => ShellMessage.StoreSearchAsked({ asking })),
+        Stream.map((asking) =>
+          ShellMessage.ChangedStoreSearchPrompt({ asking }),
+        ),
       ),
     ),
   ),
@@ -106,11 +111,11 @@ const opened = (
 
 /**
  * Closes the open drawer. One that `Shell` mounts stays mounted while it
- * slides away, until `DrawerLeft`.
+ * slides away, until it reports that it has left.
  */
 const closed = (model: ShellModel): ShellModel =>
   model.drawer === null || model.drawer === "invite"
-    ? { ...model, drawer: null }
+    ? UiStruct.evolve(model, { drawer: null })
     : {
         drawer: null,
         leaving: [
@@ -118,6 +123,12 @@ const closed = (model: ShellModel): ShellModel =>
           model.drawer,
         ],
       }
+
+/** Unmounts a drawer that has slid away. */
+const left = (model: ShellModel, drawer: typeof Sheet.Type): ShellModel =>
+  UiStruct.evolve(model, {
+    leaving: (leaving) => leaving.filter((sheet) => sheet !== drawer),
+  })
 
 const ShellDef = Component.define({
   name: "Shell",
@@ -130,7 +141,7 @@ const ShellDef = Component.define({
   model: ShellModel,
   message: ShellMessage,
   // A drawer on its way out is gone by the time the page comes back
-  restore: (model) => ({ ...model, leaving: [] }),
+  restore: (model) => UiStruct.evolve(model, { leaving: [] }),
   // The search itself belongs to the search page. It is watched here as
   // well, for the search box to show while it is running.
   queries: {
@@ -143,43 +154,47 @@ const ShellDef = Component.define({
 })
 
 // Typing in the search box searches from any page
-const searchTyped = ShellDef.update("SearchTyped", (_model, { text }, $) => {
-  const { route } = $.props
-  return route._tag === "Search"
-    ? // A new search starts without the last one's filters
-      $.run(
-        Router.patchSearch(AppRoute, route, {
-          query: text,
-          priceMin: undefined,
-          priceMax: undefined,
-          ratingMin: undefined,
-          ratingMax: undefined,
-        }).pipe(Command.asNoop),
-      )
-    : $.run(
-        Router.push(
-          AppRoute,
-          AppRoute.make({ _tag: "Search", search: { query: text } }),
-        ).pipe(Command.asNoop),
-      )
-})
+const updatedSearch = ShellDef.update(
+  "UpdatedSearch",
+  (_model, { text }, $) => {
+    const { route } = $.props
+    return route._tag === "Search"
+      ? // A new search starts without the last one's filters
+        $.run(
+          Router.patchSearch(AppRoute, route, {
+            query: text,
+            priceMin: undefined,
+            priceMax: undefined,
+            ratingMin: undefined,
+            ratingMax: undefined,
+          }).pipe(Command.asNoop),
+        )
+      : $.run(
+          Router.push(
+            AppRoute,
+            AppRoute.make({ _tag: "Search", search: { query: text } }),
+          ).pipe(Command.asNoop),
+        )
+  },
+)
 
 // An invite takes the place of whichever drawer is open
-const inviteChanged = ShellDef.update("InviteChanged", (model, { open }, $) => {
-  if (open) {
-    const next = opened(closed(model), "invite")
-    // The selector is still waiting to hear from its search
-    return model.drawer === "storeSearch" ? $.set(next).run(noStoreFound) : next
-  }
-  // An invite has nothing on the page that opened it, so focus goes to the
-  // button for what it was about
-  return model.drawer === "invite"
-    ? $.set(closed(model)).run(focusSyncSettings)
-    : model
+const openedInvite = ShellDef.update("OpenedInvite", (model, _message, $) => {
+  const next = opened(closed(model), "invite")
+  // The selector is still waiting to hear from its search
+  return model.drawer === "storeSearch" ? $.set(next).run(noStoreFound) : next
 })
 
-const storeSearchAsked = ShellDef.update(
-  "StoreSearchAsked",
+// An invite has nothing on the page that opened it, so focus goes to the
+// button for what it was about
+const closedInvite = ShellDef.update("ClosedInvite", (model, _message, $) =>
+  model.drawer === "invite"
+    ? $.set(closed(model)).run(focusSyncSettings)
+    : model,
+)
+
+const changedStoreSearchPrompt = ShellDef.update(
+  "ChangedStoreSearchPrompt",
   (model, { asking }, $) => {
     if (!asking) {
       // Without an answer when the page that asked has gone
@@ -192,8 +207,8 @@ const storeSearchAsked = ShellDef.update(
 )
 
 // Closed here first, so the page is live before the selector hears
-const storeSearchAnswered = ShellDef.update(
-  "StoreSearchAnswered",
+const answeredStoreSearch = ShellDef.update(
+  "AnsweredStoreSearch",
   (model, { store }, $) =>
     $.set(model.drawer === "storeSearch" ? closed(model) : model).run(
       AnswerStoreSearch.make({ store }),
@@ -237,8 +252,8 @@ const syncSettingsButton = ShellDef.fragment((h) =>
       .class(
         "grid size-10 cursor-pointer place-items-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white active:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
       )
-      .onClick(ShellMessage.SyncSettingsOpened())
-      .children(icon(h, "settings2", { class: "size-5" })),
+      .onClick(ShellMessage.ClickedSyncSettings())
+      .children(Icon(h, "settings2", { class: "size-5" })),
   ),
 )
 
@@ -253,7 +268,7 @@ const searchBox = ShellDef.fragment(
         h.div
           .class("relative w-full mx-auto", minimize ? "max-w-2xl" : "max-w-xl")
           .children(
-            icon(h, loading ? "loaderCircle" : "search", {
+            Icon(h, loading ? "loaderCircle" : "search", {
               class: Html.classNames(
                 "pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-primary",
                 loading && "animate-spin",
@@ -261,7 +276,7 @@ const searchBox = ShellDef.fragment(
             }),
             h.form
               .attr("role", "search")
-              .onSubmit(ShellMessage.SearchSubmitted())
+              .onSubmit(ShellMessage.SubmittedSearch())
               .children(
                 h.input
                   .ref(searchRef)
@@ -282,7 +297,7 @@ const searchBox = ShellDef.fragment(
                   )
                   .value(query)
                   .onInput(({ value }) =>
-                    ShellMessage.SearchTyped({ text: value }),
+                    ShellMessage.UpdatedSearch({ text: value }),
                   ),
               ),
           ),
@@ -368,7 +383,7 @@ const page = ShellDef.fragment((h, route: AppRoute) => {
         // search started from home keeps the page, so it is still debounced.
         key: `search:${h.props.searchesCleared}`,
         props: { route },
-        onEmit: () => ShellMessage.SearchWanted(),
+        onEmit: () => ShellMessage.RequestedSearch(),
         fallback: failed,
       }),
     Product: (route) =>
@@ -391,26 +406,28 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
   return [
     InviteDialog(h, {
       key: "invite",
-      onEmit: ({ _tag }) =>
-        ShellMessage.InviteChanged({ open: _tag === "Opened" }),
+      onEmit: {
+        Opened: () => ShellMessage.OpenedInvite(),
+        Closed: () => ShellMessage.ClosedInvite(),
+      },
     }),
     shown("syncSettings") &&
       SyncSettingsPanel(h, {
         key: "sync-settings",
         props: { open: drawer === "syncSettings" },
-        onEmit: ({ _tag }) =>
-          _tag === "Closed"
-            ? ShellMessage.SyncSettingsClosed()
-            : ShellMessage.DrawerLeft({ drawer: "syncSettings" }),
+        onEmit: {
+          Closed: () => ShellMessage.ClosedSyncSettings(),
+          Left: () => ShellMessage.LeftSyncSettings(),
+        },
       }),
     shown("storeSearch") &&
       StoreSearch(h, {
         key: "store-search",
         props: { open: drawer === "storeSearch" },
-        onEmit: (event) =>
-          event._tag === "Answered"
-            ? ShellMessage.StoreSearchAnswered({ store: event.store })
-            : ShellMessage.DrawerLeft({ drawer: "storeSearch" }),
+        onEmit: {
+          Answered: ({ store }) => ShellMessage.AnsweredStoreSearch({ store }),
+          Left: () => ShellMessage.LeftStoreSearch(),
+        },
       }),
   ] as const
 })
@@ -445,10 +462,10 @@ const shellView = ShellDef.view((model, h) =>
 export const ShellNoDeps = ShellDef.make({
   init: () => ({ drawer: null, leaving: [] }),
   update: {
-    SearchTyped: searchTyped,
-    SearchSubmitted: (_model, _message, $) =>
+    UpdatedSearch: updatedSearch,
+    SubmittedSearch: (_model, _message, $) =>
       $.run(DomCommand.blur(searchRef, () => Component.noop)),
-    SearchWanted: (_model, _message, $) =>
+    RequestedSearch: (_model, _message, $) =>
       $.run(
         DomCommand.focus(searchRef, () => Component.noop, {
           preventScroll: true,
@@ -458,18 +475,17 @@ export const ShellNoDeps = ShellDef.make({
           block: "start",
         }),
       ),
-    SyncSettingsOpened: (model) =>
+    ClickedSyncSettings: (model) =>
       model.drawer === null ? opened(model, "syncSettings") : model,
-    // The host hands focus back to the button that opened it
-    SyncSettingsClosed: (model) =>
+    // The drawer hands focus back to the button that opened it
+    ClosedSyncSettings: (model) =>
       model.drawer === "syncSettings" ? closed(model) : model,
-    InviteChanged: inviteChanged,
-    StoreSearchAsked: storeSearchAsked,
-    StoreSearchAnswered: storeSearchAnswered,
-    DrawerLeft: (model, { drawer }) => ({
-      ...model,
-      leaving: model.leaving.filter((sheet) => sheet !== drawer),
-    }),
+    LeftSyncSettings: (model) => left(model, "syncSettings"),
+    OpenedInvite: openedInvite,
+    ClosedInvite: closedInvite,
+    ChangedStoreSearchPrompt: changedStoreSearchPrompt,
+    AnsweredStoreSearch: answeredStoreSearch,
+    LeftStoreSearch: (model) => left(model, "storeSearch"),
   },
   subscriptions: () => [storeSearchAskedSubscription],
   head: (_model, { route }) =>

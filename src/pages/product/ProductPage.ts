@@ -12,10 +12,10 @@ import type {
 import { Share } from "../../browser/services/Share.ts"
 import { bottomReached, hasMore } from "../../browser/subscriptions.ts"
 import { buttonClass, cardClass } from "../../design/classes.ts"
-import { icon } from "../../design/icons.ts"
-import { richText } from "../../design/richText.ts"
-import { skeleton } from "../../design/skeleton.ts"
-import { starRating } from "../../design/starRating.ts"
+import { Icon } from "../../design/icons.ts"
+import { RichText } from "../../design/richText.ts"
+import { Skeleton } from "../../design/skeleton.ts"
+import { StarRating } from "../../design/starRating.ts"
 import { FavoriteButton } from "../../favorites/components/FavoriteButton.ts"
 import { formatPrice } from "../../lib/utils.ts"
 import { FulfillmentBadge } from "../../product/components/FulfillmentBadge.ts"
@@ -29,10 +29,10 @@ import { ReviewFeed } from "../../product/services/ReviewFeed.ts"
 import { Session } from "../../rpc/services/Session.ts"
 
 export const ProductPageMessage = UiSchema.TaggedEnum({
-  ImageChosen: { index: Schema.Number },
-  BackPressed: {},
-  SharePressed: { title: Schema.String },
-  BottomReached: {},
+  ClickedImage: { index: Schema.Number },
+  ClickedBack: {},
+  ClickedShare: { title: Schema.String },
+  ReachedBottom: {},
 })
 
 /** Offers the product's page to the device's share sheet. */
@@ -91,9 +91,9 @@ const description = ProductPageDef.fragment(
         h.div
           .class("flex flex-col space-y-2")
           .children(
-            skeleton(h, "h-4 w-full"),
-            skeleton(h, "h-4 w-full"),
-            skeleton(h, "h-4 w-full"),
+            Skeleton(h, "h-4 w-full"),
+            Skeleton(h, "h-4 w-full"),
+            Skeleton(h, "h-4 w-full"),
           ),
       onSome: (info) => {
         const pointers = info.info.feature.pointers ?? []
@@ -108,7 +108,7 @@ const description = ProductPageDef.fragment(
                   h.li.key(String(i)).children(pointer),
                 ),
               ),
-            richText(
+            RichText(
               h,
               parseRichText(info.info.feature.description, { html: true }),
             ),
@@ -146,8 +146,8 @@ const specificationsSection = ProductPageDef.fragment(
                         .class(specificationRow, "py-3")
                         .key(String(i))
                         .children(
-                          skeleton(h, "h-3.5 w-3/4"),
-                          skeleton(h, "h-3.5 w-1/2"),
+                          Skeleton(h, "h-3.5 w-3/4"),
+                          Skeleton(h, "h-3.5 w-1/2"),
                         ),
                     ),
                   ),
@@ -210,7 +210,7 @@ const images = ProductPageDef.fragment(
                   ? "ring-2 ring-brand hover:ring-brand"
                   : "hover:ring-brand/30",
               )
-              .onClick(ProductPageMessage.ImageChosen({ index: i }))
+              .onClick(ProductPageMessage.ClickedImage({ index: i }))
               .key(String(i))
               .children(
                 h.img
@@ -236,13 +236,13 @@ const reviewsOverview = ProductPageDef.fragment(
             h.div
               .class("flex w-full space-y-3")
               .children(
-                skeleton(h, "h-32 w-32 rounded-xl"),
+                Skeleton(h, "h-32 w-32 rounded-xl"),
                 h.div.class("w-4"),
                 h.div
                   .class("space-y-2 flex-1")
                   .children(
                     [0, 1, 2, 3, 4].map((i) =>
-                      skeleton(h, "h-4 w-full").key(String(i)),
+                      Skeleton(h, "h-4 w-full").key(String(i)),
                     ),
                   ),
               ),
@@ -262,7 +262,7 @@ const reviewsOverview = ProductPageDef.fragment(
                 h.div
                   .class("flex")
                   .children(
-                    starRating(h, { rating: stats.AverageOverallRating }),
+                    StarRating(h, { rating: stats.AverageOverallRating }),
                   ),
                 h.span
                   .class("text-sm text-muted-foreground tabular-nums")
@@ -308,7 +308,7 @@ const reviewCard = ProductPageDef.fragment((h, review: ProductReview) =>
           h.div
             .class("flex flex-col gap-1.5")
             .children(
-              starRating(h, { size: "sm", rating: review.Rating }),
+              StarRating(h, { size: "sm", rating: review.Rating }),
               h.h3
                 .class("font-semibold leading-snug")
                 .children(review.Title ?? ""),
@@ -326,7 +326,7 @@ const reviewCard = ProductPageDef.fragment((h, review: ProductReview) =>
             "mt-2 prose prose-sm max-w-none dark:prose-invert prose-p:text-foreground/85",
           )
           .children(
-            richText(h, parseRichText(review.ReviewText, { html: false })),
+            RichText(h, parseRichText(review.ReviewText, { html: false })),
           ),
       ),
     ),
@@ -385,8 +385,8 @@ const productPageView = ProductPageDef.view((model, h) => {
       h.button
         .attr("type", "button")
         .class(buttonClass({ variant: "link", class: "-ml-3 cursor-pointer" }))
-        .onClick(ProductPageMessage.BackPressed())
-        .children(icon(h, "arrowLeft"), "Back"),
+        .onClick(ProductPageMessage.ClickedBack())
+        .children(Icon(h, "arrowLeft"), "Back"),
     ),
     h.div
       .class(
@@ -434,7 +434,7 @@ const productPageView = ProductPageDef.view((model, h) => {
                 h.div
                   .class("flex items-center gap-2")
                   .children(
-                    starRating(h, { rating }),
+                    StarRating(h, { rating }),
                     h.span
                       .class("text-sm text-muted-foreground tabular-nums")
                       .children(`(${reviewCount} reviews)`),
@@ -456,7 +456,7 @@ const productPageView = ProductPageDef.view((model, h) => {
                       class: "col-span-2",
                     }),
                   )
-                  .children("Open in Bunnings", icon(h, "arrowRight")),
+                  .children("Open in Bunnings", Icon(h, "arrowRight")),
                 FavoriteButton(h, {
                   key: "favorite",
                   props: { product, variant: "button" },
@@ -465,11 +465,11 @@ const productPageView = ProductPageDef.view((model, h) => {
                   .attr("type", "button")
                   .class(buttonClass({ variant: "outline", size: "lg" }))
                   .onClick(
-                    ProductPageMessage.SharePressed({
+                    ProductPageMessage.ClickedShare({
                       title: product.title,
                     }),
                   )
-                  .children(icon(h, "share"), "Share"),
+                  .children(Icon(h, "share"), "Share"),
               ),
           ),
         images(h, product, model.image),
@@ -509,13 +509,13 @@ export const ProductPageNoDeps = ProductPageDef.make({
   init: () => ({ image: 0 }),
   update: (model, message, $) =>
     ProductPageMessage.match(message, {
-      ImageChosen: ({ index }) => ({ ...model, image: index }),
-      BackPressed: () => $.run(Router.Back.make().pipe(Command.asNoop)),
-      SharePressed: ({ title }) => $.run(ShareProduct.make({ title })),
-      BottomReached: () =>
+      ClickedImage: ({ index }) => $.evolve({ image: index }),
+      ClickedBack: () => $.run(Router.Back.make().pipe(Command.asNoop)),
+      ClickedShare: ({ title }) => $.run(ShareProduct.make({ title })),
+      ReachedBottom: () =>
         hasMore($.queries.reviews) ? $.loadMore("reviews") : model,
     }),
-  subscriptions: () => [bottomReached(ProductPageMessage.BottomReached())],
+  subscriptions: () => [bottomReached(ProductPageMessage.ReachedBottom())],
   head: (_model, _props, loaded) => [
     Head.title(
       Option.match(

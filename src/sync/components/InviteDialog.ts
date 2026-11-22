@@ -10,10 +10,10 @@ import { Invites } from "../services/Invites.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 
 export const InviteDialogMessage = UiSchema.TaggedEnum({
-  InviteOpened: { invite: PendingInvite },
-  Dismissed: {},
-  Joined: {},
-  Left: {},
+  OpenedInvite: { invite: PendingInvite },
+  RequestedClose: {},
+  ClickedJoin: {},
+  SettledSheet: {},
 })
 
 /** Whether the dialog is showing, for its owner to close any other drawer. */
@@ -40,7 +40,7 @@ const invitesOpened = Subscription.make(
   Stream.unwrap(
     Effect.map(Invites, (invites) =>
       invites.opened.pipe(
-        Stream.map((invite) => InviteDialogMessage.InviteOpened({ invite })),
+        Stream.map((invite) => InviteDialogMessage.OpenedInvite({ invite })),
       ),
     ),
   ),
@@ -78,25 +78,25 @@ export const InviteDialogNoDeps = Component.define({
       // An invite can replace one that is already showing, and `autofocus`
       // only counts when a dialog is shown. Focus is moved for every invite,
       // so that Enter never joins one the user hasn't read.
-      InviteOpened: ({ invite }) =>
+      OpenedInvite: ({ invite }) =>
         $.set({ invite, open: true })
           .run(DomCommand.focus(dismissRef, () => Component.noop))
           .emit(InviteDialogEvents.Opened()),
-      Dismissed: () =>
-        $.set({ ...model, open: false }).emit(InviteDialogEvents.Closed()),
-      Joined: () =>
-        $.set({ ...model, open: false })
+      RequestedClose: () =>
+        $.evolve({ open: false }).emit(InviteDialogEvents.Closed()),
+      ClickedJoin: () =>
+        $.evolve({ open: false })
           .run(JoinSync.make())
           .emit(InviteDialogEvents.Closed()),
       // Unless another invite arrived while it was leaving
-      Left: () => (model.open ? model : { ...model, invite: null }),
+      SettledSheet: () => (model.open ? model : $.evolve({ invite: null })),
     }),
   subscriptions: () => [invitesOpened],
   view: (model, h) => {
     const { invite, open } = model
     if (invite === null) return h.div()
-    const dismissed = InviteDialogMessage.Dismissed()
-    const left = InviteDialogMessage.Left()
+    const dismissed = InviteDialogMessage.RequestedClose()
+    const left = InviteDialogMessage.SettledSheet()
 
     // `Shell` gives focus to the sync settings button when it closes
     const sheet = {
@@ -173,7 +173,7 @@ export const InviteDialogNoDeps = Component.define({
           h.button
             .attr("type", "button")
             .class(buttonClass())
-            .onClick(InviteDialogMessage.Joined())
+            .onClick(InviteDialogMessage.ClickedJoin())
             .children("Join"),
         ),
       ],

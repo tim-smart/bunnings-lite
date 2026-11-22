@@ -7,18 +7,18 @@ import {
 } from "../../../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "../../design/classes.ts"
 import { Sheet } from "../../design/drawer.ts"
-import { icon } from "../../design/icons.ts"
-import { skeleton } from "../../design/skeleton.ts"
+import { Icon } from "../../design/icons.ts"
+import { Skeleton } from "../../design/skeleton.ts"
 import { Session } from "../../rpc/services/Session.ts"
 import { AllStores } from "../queries/AllStores.ts"
 import { CurrentStore } from "../queries/CurrentStore.ts"
 
 export const StoreSearchMessage = UiSchema.TaggedEnum({
-  SearchTyped: { text: Schema.String },
-  StoreChosen: { location: SessionLocation },
-  Closed: {},
-  Retried: {},
-  Left: {},
+  UpdatedSearch: { text: Schema.String },
+  ClickedStore: { location: SessionLocation },
+  RequestedClose: {},
+  ClickedRetry: {},
+  SettledSheet: {},
 })
 
 export const StoreSearchEvents = UiSchema.TaggedEnum({
@@ -71,17 +71,17 @@ export const StoreSearchNoDeps = Component.define({
   init: () => ({ search: "" }),
   update: (model, message, $) =>
     StoreSearchMessage.match(message, {
-      SearchTyped: ({ text }) => ({ ...model, search: text }),
-      StoreChosen: ({ location }) =>
+      UpdatedSearch: ({ text }) => $.evolve({ search: text }),
+      ClickedStore: ({ location }) =>
         $.set(model).emit(
           StoreSearchEvents.Answered({
             store: Option.some(location),
           }),
         ),
-      Closed: () =>
+      RequestedClose: () =>
         $.set(model).emit(StoreSearchEvents.Answered({ store: Option.none() })),
-      Retried: () => $.run(RetryAllStores.make()),
-      Left: () => $.set(model).emit(StoreSearchEvents.Left()),
+      ClickedRetry: () => $.run(RetryAllStores.make()),
+      SettledSheet: () => $.set(model).emit(StoreSearchEvents.Left()),
     }),
   view: (model, h) => {
     const current = Option.flatten(AsyncResult.value(h.queries.current))
@@ -90,15 +90,15 @@ export const StoreSearchNoDeps = Component.define({
     const terms = model.search.toLowerCase().split(/\s+/).filter(Boolean)
     return Sheet(h, {
       open: h.props.open,
-      onDismissed: StoreSearchMessage.Closed(),
-      onSettled: StoreSearchMessage.Left(),
+      onDismissed: StoreSearchMessage.RequestedClose(),
+      onSettled: StoreSearchMessage.SettledSheet(),
       title: "Find your store",
       description: ["Search Bunnings stores in New Zealand and Australia."],
       class: "h-[80vh]",
       children: [
         h.div.class("flex flex-col min-h-0 flex-1").children(
           h.div.class("px-4 pb-2 relative").children(
-            icon(h, "search", {
+            Icon(h, "search", {
               class:
                 "absolute left-7 top-1/2 -translate-y-1/2 -mt-1 size-4 text-muted-foreground",
             }),
@@ -109,14 +109,14 @@ export const StoreSearchNoDeps = Component.define({
               .class(inputClass("pl-9"))
               .value(model.search)
               .onInput(({ value }) =>
-                StoreSearchMessage.SearchTyped({ text: value }),
+                StoreSearchMessage.UpdatedSearch({ text: value }),
               ),
           ),
           h.div.class("overflow-y-auto flex-1 px-4 pb-safe").children(
             AsyncResult.match(h.queries.all, {
               onInitial: () =>
                 [0, 1, 2, 3, 4, 5, 6, 7].map((i) =>
-                  skeleton(h, "h-12 my-2").key(`skeleton-${i}`),
+                  Skeleton(h, "h-12 my-2").key(`skeleton-${i}`),
                 ),
               onFailure: () =>
                 h.div
@@ -130,7 +130,7 @@ export const StoreSearchNoDeps = Component.define({
                     h.button
                       .attr("type", "button")
                       .class(buttonClass({ variant: "outline" }))
-                      .onClick(StoreSearchMessage.Retried())
+                      .onClick(StoreSearchMessage.ClickedRetry())
                       .children("Try again"),
                   ),
               onSuccess: ({ value: stores }) => {
@@ -165,12 +165,12 @@ export const StoreSearchNoDeps = Component.define({
                       "flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
                     )
                     .onClick(
-                      StoreSearchMessage.StoreChosen({
+                      StoreSearchMessage.ClickedStore({
                         location: SessionLocation.fromStore(store),
                       }),
                     )
                     .children(
-                      icon(h, "mapPin", {
+                      Icon(h, "mapPin", {
                         class: "size-4 shrink-0 text-accent",
                       }),
                       h.span
@@ -184,7 +184,7 @@ export const StoreSearchNoDeps = Component.define({
                             .children(store.address.formattedAddress),
                         ),
                       isShown(store.name) &&
-                        icon(h, "check", { class: "size-4 text-primary" }),
+                        Icon(h, "check", { class: "size-4 text-primary" }),
                     )
                   return h.li.key(store.name).children(button)
                 }

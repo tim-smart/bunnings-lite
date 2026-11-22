@@ -4,20 +4,20 @@ import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription, UiSchema } from "@effect/ui"
 import { buttonClass, inputClass } from "../../design/classes.ts"
 import { Sheet, SheetFooter } from "../../design/drawer.ts"
-import { icon } from "../../design/icons.ts"
-import { skeleton } from "../../design/skeleton.ts"
+import { Icon } from "../../design/icons.ts"
+import { Skeleton } from "../../design/skeleton.ts"
 import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
 import { SyncRemote } from "../services/SyncRemote.ts"
 import { SyncSettings } from "../services/SyncSettings.ts"
 
 export const SyncSettingsPanelMessage = UiSchema.TaggedEnum({
-  Closed: {},
-  RemoteUrlTyped: { text: Schema.String },
-  CopyPressed: {},
-  Copied: { copied: Schema.Boolean },
-  CopiedExpired: {},
-  Left: {},
+  RequestedClose: {},
+  UpdatedRemoteUrl: { text: Schema.String },
+  ClickedCopyInvite: {},
+  CompletedCopyInvite: { copied: Schema.Boolean },
+  ExpiredCopiedNotice: {},
+  SettledSheet: {},
 })
 
 /** `Closed` asks to close, and `Left` says the closed drawer has gone. */
@@ -65,7 +65,9 @@ export class CopyInvite extends Command.Service<CopyInvite>()(
               ),
           }),
         ),
-        Effect.map((copied) => SyncSettingsPanelMessage.Copied({ copied })),
+        Effect.map((copied) =>
+          SyncSettingsPanelMessage.CompletedCopyInvite({ copied }),
+        ),
       )
   }),
 ) {}
@@ -102,17 +104,17 @@ export const SyncSettingsPanelNoDeps = Component.define({
   init: () => ({ remoteUrl: null, copied: false }),
   update: (model, message, $) =>
     SyncSettingsPanelMessage.match(message, {
-      Closed: () => $.set(model).emit(SyncSettingsPanelEvents.Closed()),
-      RemoteUrlTyped: ({ text }) => {
+      RequestedClose: () => $.set(model).emit(SyncSettingsPanelEvents.Closed()),
+      UpdatedRemoteUrl: ({ text }) => {
         const url = remoteUrlOf(text)
         return url === undefined
-          ? { ...model, remoteUrl: text }
-          : $.set({ ...model, remoteUrl: text }).run(SetRemoteUrl.make({ url }))
+          ? $.evolve({ remoteUrl: text })
+          : $.evolve({ remoteUrl: text }).run(SetRemoteUrl.make({ url }))
       },
-      CopyPressed: () => $.run(CopyInvite.make()),
-      Copied: ({ copied }) => ({ ...model, copied }),
-      CopiedExpired: () => ({ ...model, copied: false }),
-      Left: () => $.set(model).emit(SyncSettingsPanelEvents.Left()),
+      ClickedCopyInvite: () => $.run(CopyInvite.make()),
+      CompletedCopyInvite: ({ copied }) => $.evolve({ copied }),
+      ExpiredCopiedNotice: () => $.evolve({ copied: false }),
+      SettledSheet: () => $.set(model).emit(SyncSettingsPanelEvents.Left()),
     }),
   subscriptions: (model) => [
     model.copied &&
@@ -121,7 +123,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
         Stream.fromEffect(
           Effect.as(
             Effect.sleep("2 seconds"),
-            SyncSettingsPanelMessage.CopiedExpired(),
+            SyncSettingsPanelMessage.ExpiredCopiedNotice(),
           ),
         ),
       ),
@@ -131,8 +133,8 @@ export const SyncSettingsPanelNoDeps = Component.define({
 
     return Sheet(h, {
       open: h.props.open,
-      onDismissed: SyncSettingsPanelMessage.Closed(),
-      onSettled: SyncSettingsPanelMessage.Left(),
+      onDismissed: SyncSettingsPanelMessage.RequestedClose(),
+      onSettled: SyncSettingsPanelMessage.SettledSheet(),
       title: "Sync settings",
       description: ["Keep your favourites in step across devices."],
       children: [
@@ -140,7 +142,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
           onInitial: () =>
             h.div
               .class("px-4 pb-2 flex flex-col gap-4")
-              .children(skeleton(h, "h-10 w-full"), skeleton(h, "h-10 w-full")),
+              .children(Skeleton(h, "h-10 w-full"), Skeleton(h, "h-10 w-full")),
           onFailure: () => h.div(),
           onSuccess: ({ value: settings }) =>
             h.div.class("px-4 pb-2 flex flex-col gap-4").children(
@@ -152,7 +154,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
                   .class(inputClass())
                   .value(model.remoteUrl ?? settings.remoteUrl ?? "")
                   .onInput(({ value }) =>
-                    SyncSettingsPanelMessage.RemoteUrlTyped({ text: value }),
+                    SyncSettingsPanelMessage.UpdatedRemoteUrl({ text: value }),
                   ),
               ),
               h.label.class(labelClass).children(
@@ -173,7 +175,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
                   h.p
                     .class("flex gap-2 text-amber-900 dark:text-amber-200")
                     .children(
-                      icon(h, "triangleAlert", {
+                      Icon(h, "triangleAlert", {
                         class: "size-4 shrink-0 mt-0.5",
                       }),
                       h.span(
@@ -184,9 +186,9 @@ export const SyncSettingsPanelNoDeps = Component.define({
                     .attr("type", "button")
                     .disabled(settings.remoteUrl === null)
                     .class(buttonClass({ variant: "outline" }))
-                    .onClick(SyncSettingsPanelMessage.CopyPressed())
+                    .onClick(SyncSettingsPanelMessage.ClickedCopyInvite())
                     .children(
-                      icon(h, model.copied ? "check" : "copy"),
+                      Icon(h, model.copied ? "check" : "copy"),
                       "Copy invite link",
                     ),
                   settings.remoteUrl === null &&
@@ -205,7 +207,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
           h.button
             .attr("type", "button")
             .class(buttonClass({ variant: "outline" }))
-            .onClick(SyncSettingsPanelMessage.Closed())
+            .onClick(SyncSettingsPanelMessage.RequestedClose())
             .children("Close"),
         ),
       ],
