@@ -12,7 +12,7 @@ import { buttonClass } from "../design/classes.ts"
 import { icon } from "../design/icons.ts"
 import { skeleton } from "../design/skeleton.ts"
 import { FavoritesList } from "../favorites/components/FavoritesList.ts"
-import { ObserveSize, VirtualList } from "../kit/VirtualList.ts"
+import { VirtualList } from "@effect/ui-kit"
 import { ProductCard } from "../product/components/ProductCard.ts"
 import { KnownProducts } from "../product/services/KnownProducts.ts"
 import { SearchRoute } from "../routes.ts"
@@ -46,6 +46,7 @@ const gridClass =
  */
 export const SearchPageNoDeps = Component.define({
   name: "SearchPage",
+  scoped: false,
   props: Schema.Struct({ route: SearchRoute }),
   model: Schema.Struct({ scrolled: Schema.Boolean }),
   message: Message,
@@ -175,16 +176,19 @@ export const SearchPageNoDeps = Component.define({
             key: "results",
             props: {
               count: items.length,
-              estimatedRowSize: 350,
+              itemSize: 350,
               initialCount: 16,
               dataset: search,
             },
-            view: (list) =>
-              list.list(h.div.class(gridClass)).children(
-                list.items.map((index) => {
+            view: (virtualList) =>
+              virtualList.list(h.div.class(gridClass)).children(
+                virtualList.items.map((index) => {
                   const product = items[index]
-                  return list
-                    .item(h.div.key(product.id).class("grid min-w-0"), index)
+                  return virtualList
+                    .item({
+                      element: h.div.key(product.id).class("grid min-w-0"),
+                      index,
+                    })
                     .children(
                       ProductCard(h, {
                         key: product.id,
@@ -267,6 +271,5 @@ export const SearchPage = SearchPageNoDeps.pipe(
     SearchProducts.layer.pipe(
       Layer.provide([Session.layer, KnownProducts.layer]),
     ),
-    ObserveSize.layer,
   ]),
 )

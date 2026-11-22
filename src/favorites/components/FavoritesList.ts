@@ -29,6 +29,7 @@ export class ClearFavorites extends Command.Service<ClearFavorites>()(
 /** The favourites as a grid of product cards, newest first. */
 export const FavoritesListNoDeps = Component.define({
   name: "FavoritesList",
+  scoped: false,
   model: Schema.Struct({}),
   message: Message,
   queries: {

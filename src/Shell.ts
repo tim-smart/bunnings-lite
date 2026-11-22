@@ -2,7 +2,7 @@ import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { EventLog } from "effect/eventlog"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Head, Router, Subscription } from "@effect/ui"
-import { Html } from "@effect/ui/html"
+import { DomCommand, Html } from "@effect/ui/html"
 import { SessionLocation } from "../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "./design/classes.ts"
 import { drawerLeft } from "./design/drawer.ts"
@@ -73,7 +73,7 @@ const headerRef = Html.ref("header", "header")
 const searchRef = Html.ref("search", "input")
 const syncSettingsRef = Html.ref("sync-settings-open", "button")
 
-const focusSyncSettings = Html.focus(syncSettingsRef, () => Component.noop)
+const focusSyncSettings = DomCommand.focus(syncSettingsRef, () => Component.noop)
 const noStoreFound = AnswerStoreSearch.make({ store: Option.none() })
 
 /** Which drawer is open, if any. Only one is open at a time. */
@@ -115,6 +115,7 @@ const closed = (model: ShellModel): ShellModel =>
 
 const ShellDef = Component.define({
   name: "Shell",
+  scoped: false,
   props: Schema.Struct({
     route: AppRoute,
     /** Starts the search page over when it changes. */
@@ -433,11 +434,11 @@ export const ShellNoDeps = ShellDef.make({
   update: {
     SearchTyped: searchTyped,
     SearchSubmitted: (_model, _message, $) =>
-      $.run(Html.blur(searchRef, () => Component.noop)),
+      $.run(DomCommand.blur(searchRef, () => Component.noop)),
     SearchWanted: (_model, _message, $) =>
       $.run(
-        Html.focus(searchRef, () => Component.noop, { preventScroll: true }),
-        Html.scrollIntoView(headerRef, () => Component.noop, {
+        DomCommand.focus(searchRef, () => Component.noop, { preventScroll: true }),
+        DomCommand.scrollIntoView(headerRef, () => Component.noop, {
           behavior: "smooth",
           block: "start",
         }),

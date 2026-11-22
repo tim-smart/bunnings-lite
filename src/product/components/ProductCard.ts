@@ -15,6 +15,7 @@ import { FulfillmentBadge } from "./FulfillmentBadge.ts"
  */
 export const ProductCard = Component.define({
   name: "ProductCard",
+  scoped: false,
   props: Schema.Struct({
     product: ProductBaseInfo,
     /** The search the card is shown under, which its link keeps. */

@@ -54,6 +54,7 @@ const matches = (store: Store, terms: ReadonlyArray<string>) => {
  */
 export const StoreSearchNoDeps = Component.define({
   name: "StoreSearch",
+  scoped: false,
   props: Schema.Struct({ open: Schema.Boolean }),
   model: Schema.Struct({
     search: Schema.String,

@@ -40,6 +40,7 @@ export class ReloadPage extends Command.Service<ReloadPage>()(
 
 export const AppNoDeps = Component.define({
   name: "App",
+  scoped: false,
   props: Schema.Struct({ route: AppRoute }),
   model: Schema.Struct({
     route: AppRoute,

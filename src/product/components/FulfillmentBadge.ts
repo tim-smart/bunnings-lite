@@ -12,6 +12,7 @@ import { GetFulfillment } from "../queries/GetFulfillment.ts"
  */
 export const FulfillmentBadgeNoDeps = Component.define({
   name: "FulfillmentBadge",
+  scoped: false,
   props: Schema.Struct({
     id: Schema.String,
     /** Also say so when the product is in stock with no known aisle. */

@@ -33,6 +33,7 @@ export class ToggleFavorite extends Command.Service<ToggleFavorite>()(
  */
 export const FavoriteButtonNoDeps = Component.define({
   name: "FavoriteButton",
+  scoped: false,
   props: Schema.Struct({
     product: ProductBaseInfo,
     variant: Schema.Literals(["icon", "button"]),

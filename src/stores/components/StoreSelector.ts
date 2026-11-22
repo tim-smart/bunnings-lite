@@ -74,6 +74,7 @@ const searchValue = "search-all-stores"
 
 export const StoreSelectorNoDeps = Component.define({
   name: "StoreSelector",
+  scoped: false,
   model: Schema.Struct({
     /** Whether the nearby stores have been asked for. */
     nearbyWanted: Schema.Boolean,

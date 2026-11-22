@@ -61,6 +61,7 @@ const productOf = (
 
 const ProductPageDef = Component.define({
   name: "ProductPage",
+  scoped: false,
   props: Schema.Struct({ id: Schema.String }),
   model: Schema.Struct({
     /** Which photo is showing. */

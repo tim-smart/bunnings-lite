@@ -1,7 +1,7 @@
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription } from "@effect/ui"
-import { Html } from "@effect/ui/html"
+import { DomCommand, Html } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
 import {
   drawer,
@@ -62,6 +62,7 @@ const dismissRef = Html.ref("invite-dismiss", "button")
  */
 export const InviteDialogNoDeps = Component.define({
   name: "InviteDialog",
+  scoped: false,
   model: Schema.Struct({
     /**
      * The invite waiting for an answer. It stays after the answer, for the
@@ -85,7 +86,7 @@ export const InviteDialogNoDeps = Component.define({
       // so that Enter never joins one the user hasn't read.
       InviteOpened: ({ invite }) =>
         $.set({ invite, open: true })
-          .run(Html.focus(dismissRef, () => Component.noop))
+          .run(DomCommand.focus(dismissRef, () => Component.noop))
           .emit(InviteDialogEvents.make({ _tag: "Opened" })),
       Dismissed: () =>
         $.set({ ...model, open: false }).emit(

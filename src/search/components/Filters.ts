@@ -1,6 +1,6 @@
 import { Schema } from "effect"
 import { Command, Component, Router } from "@effect/ui"
-import { Html } from "@effect/ui/html"
+import { DomCommand, Html } from "@effect/ui/html"
 import { inputClass, labelClass } from "../../design/classes.ts"
 import { AppRoute, SearchRoute } from "../../routes.ts"
 import { FacetRange, ratingFacet } from "../domain/Search.ts"
@@ -54,6 +54,7 @@ const ratingRange = (model: Model, route: SearchRoute) => ({
  */
 export const Filters = Component.define({
   name: "Filters",
+  scoped: false,
   props: Schema.Struct({
     route: SearchRoute,
     /** The range of prices in the search. Without one, no price filter. */
@@ -107,8 +108,8 @@ export const Filters = Component.define({
               parse(model.priceMin) ?? priceMin ?? Math.floor(price.start),
             priceMax: parse(model.priceMax) ?? priceMax ?? Math.ceil(price.end),
           }),
-          Html.blur(minRef, () => Component.noop),
-          Html.blur(maxRef, () => Component.noop),
+          DomCommand.blur(minRef, () => Component.noop),
+          DomCommand.blur(maxRef, () => Component.noop),
         )
       },
       RatingMoved: ({ end, value }) => {

@@ -34,6 +34,7 @@ const installAvailable = Subscription.make(
 /** Offers to install the app, once the browser says it can be. */
 export const InstallButtonNoDeps = Component.define({
   name: "InstallButton",
+  scoped: false,
   model: Schema.Struct({ available: Schema.Boolean }),
   message: Message,
 }).make({

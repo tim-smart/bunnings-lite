@@ -81,6 +81,7 @@ const remoteUrlOf = (text: string): string | null | undefined => {
  */
 export const SyncSettingsPanelNoDeps = Component.define({
   name: "SyncSettingsPanel",
+  scoped: false,
   props: Schema.Struct({ open: Schema.Boolean }),
   model: Schema.Struct({
     /** What was typed into the remote field. It shows the saved one until then. */
