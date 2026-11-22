@@ -3,12 +3,7 @@ import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
-import {
-  drawer,
-  drawerFooter,
-  drawerHeader,
-  drawerLeft,
-} from "../../design/drawer.ts"
+import { Sheet, SheetFooter } from "../../design/drawer.ts"
 import { PendingInvite } from "../domain/Invite.ts"
 import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
 import { Invites } from "../services/Invites.ts"
@@ -99,91 +94,93 @@ export const InviteDialogNoDeps = Component.define({
       // Unless another invite arrived while it was leaving
       Left: () => (model.open ? model : { ...model, invite: null }),
     }),
-  subscriptions: (model) => [
-    invitesOpened,
-    model.invite !== null &&
-      !model.open &&
-      drawerLeft("invite", Message.make({ _tag: "Left" })),
-  ],
+  subscriptions: () => [invitesOpened],
   view: (model, h) => {
     const { invite, open } = model
     if (invite === null) return h.div()
     const dismissed = Message.make({ _tag: "Dismissed" })
+    const left = Message.make({ _tag: "Left" })
+
+    // `Shell` gives focus to the sync settings button when it closes
+    const sheet = {
+      open,
+      onDismissed: dismissed,
+      onSettled: left,
+      finalFocus: false,
+    }
 
     if (invite._tag === "Invalid") {
-      return drawer(
-        h,
-        { titleId: "invite-title", open, onClose: dismissed },
-        drawerHeader(
-          h,
-          { titleId: "invite-title", title: "Invite link not valid" },
+      return Sheet(h, {
+        ...sheet,
+        title: "Invite link not valid",
+        description: [
           "This link is incomplete or damaged, so your sync settings were left unchanged. Ask for a new invite.",
-        ),
-        drawerFooter(
-          h,
-          h.button
-            .ref(dismissRef)
-            .attr("type", "button")
-            .class(buttonClass({ variant: "outline" }))
-            .onClick(dismissed)
-            .children("Close"),
-        ),
-      )
+        ],
+        children: [
+          SheetFooter(h).children(
+            h.button
+              .ref(dismissRef)
+              .attr("type", "button")
+              .class(buttonClass({ variant: "outline" }))
+              .onClick(dismissed)
+              .children("Close"),
+          ),
+        ],
+      })
     }
 
     const currentRemote = Option.flatMapNullishOr(
       AsyncResult.value(h.queries.settings),
       ({ remoteUrl }) => (remoteUrl === null ? null : new URL(remoteUrl).host),
     )
-    return drawer(
-      h,
-      { titleId: "invite-title", open, onClose: dismissed },
-      drawerHeader(
-        h,
-        { titleId: "invite-title", title: "Join shared sync?" },
+    return Sheet(h, {
+      ...sheet,
+      title: "Join shared sync?",
+      description: [
         "This invite connects this device to ",
         h.span.class("font-medium text-foreground").children(invite.host),
         " using the identity of whoever created it.",
-      ),
-      h.div.class("px-4 text-sm flex flex-col gap-3").children(
-        h.ul.class("list-disc pl-5 flex flex-col gap-1").children(
-          h.li(
-            "Everyone with this invite shares one set of favorites, with full access to read, change and clear them.",
+      ],
+      children: [
+        h.div.class("px-4 text-sm flex flex-col gap-3").children(
+          h.ul.class("list-disc pl-5 flex flex-col gap-1").children(
+            h.li(
+              "Everyone with this invite shares one set of favorites, with full access to read, change and clear them.",
+            ),
+            h.li(
+              "Joining discards this device's favorites and shows the shared ones instead. Favorites already synced stay on the server under this device's old identity, but you won't see them again unless you copy an invite link for it first.",
+            ),
+            h.li("Access can't be revoked later."),
+            h.li(
+              "This replaces this device's identity",
+              Option.match(currentRemote, {
+                onNone: () => "",
+                onSome: (host) => ` and its current remote (${host})`,
+              }),
+              ".",
+            ),
           ),
-          h.li(
-            "Joining discards this device's favorites and shows the shared ones instead. Favorites already synced stay on the server under this device's old identity, but you won't see them again unless you copy an invite link for it first.",
-          ),
-          h.li("Access can't be revoked later."),
-          h.li(
-            "This replaces this device's identity",
-            Option.match(currentRemote, {
-              onNone: () => "",
-              onSome: (host) => ` and its current remote (${host})`,
-            }),
-            ".",
-          ),
+          h.p
+            .class("text-muted-foreground")
+            .children(
+              "Bunnings Lite can't check who made an invite. Only join if you know the sender and were expecting it.",
+            ),
         ),
-        h.p
-          .class("text-muted-foreground")
-          .children(
-            "Bunnings Lite can't check who made an invite. Only join if you know the sender and were expecting it.",
-          ),
-      ),
-      drawerFooter(
-        h,
-        h.button
-          .ref(dismissRef)
-          .attr("type", "button")
-          .class(buttonClass({ variant: "outline" }))
-          .onClick(dismissed)
-          .children("Cancel"),
-        h.button
-          .attr("type", "button")
-          .class(buttonClass())
-          .onClick(Message.make({ _tag: "Joined" }))
-          .children("Join"),
-      ),
-    )
+        SheetFooter(h).children(
+          h.button
+            .ref(dismissRef)
+            .attr("type", "button")
+            .class(buttonClass({ variant: "outline" }))
+            .onClick(dismissed)
+            .children("Cancel"),
+          h.button
+            .attr("type", "button")
+            .class(buttonClass())
+            .onClick(Message.make({ _tag: "Joined" }))
+            .children("Join"),
+        ),
+      ],
+    })
   },
 })
 

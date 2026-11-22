@@ -5,7 +5,6 @@ import { Command, Component, Head, Router, Subscription } from "@effect/ui"
 import { DomCommand, Html } from "@effect/ui/html"
 import { SessionLocation } from "../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "./design/classes.ts"
-import { drawerLeft } from "./design/drawer.ts"
 import { icon } from "./design/icons.ts"
 import { ListFavoritesRefresh } from "./favorites/queries/ListFavorites.ts"
 import { Favorites } from "./favorites/services/Favorites.ts"
@@ -123,6 +122,8 @@ const ShellDef = Component.define({
   }),
   model: ShellModel,
   message: Message,
+  // A drawer on its way out is gone by the time the page comes back
+  restore: (model) => ({ ...model, leaving: [] }),
   // The search itself belongs to the search page. It is watched here as
   // well, for the search box to show while it is running.
   queries: {
@@ -390,14 +391,19 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
       SyncSettingsPanel(h, {
         key: "sync-settings",
         props: { open: drawer === "syncSettings" },
-        onEmit: () => Message.make({ _tag: "SyncSettingsClosed" }),
+        onEmit: ({ _tag }) =>
+          _tag === "Closed"
+            ? Message.make({ _tag: "SyncSettingsClosed" })
+            : Message.make({ _tag: "DrawerLeft", drawer: "syncSettings" }),
       }),
     shown("storeSearch") &&
       StoreSearch(h, {
         key: "store-search",
         props: { open: drawer === "storeSearch" },
-        onEmit: ({ store }) =>
-          Message.make({ _tag: "StoreSearchAnswered", store }),
+        onEmit: (event) =>
+          event._tag === "Answered"
+            ? Message.make({ _tag: "StoreSearchAnswered", store: event.store })
+            : Message.make({ _tag: "DrawerLeft", drawer: "storeSearch" }),
       }),
   ] as const
 })
@@ -456,12 +462,7 @@ export const ShellNoDeps = ShellDef.make({
       leaving: model.leaving.filter((sheet) => sheet !== drawer),
     }),
   },
-  subscriptions: (model) => [
-    storeSearchAskedSubscription,
-    ...model.leaving.map((drawer) =>
-      drawerLeft(drawer, Message.make({ _tag: "DrawerLeft", drawer })),
-    ),
-  ],
+  subscriptions: () => [storeSearchAskedSubscription],
   head: (_model, { route }) =>
     route._tag === "NotFound" ? [Head.title("Page not found")] : [],
   view: shellView,

@@ -18,7 +18,8 @@ and pnpm.
 pnpm install
 ```
 
-`@effect/ui` is pinned to a pkg.pr.new build, and takes `effect` as a peer.
+`@effect/ui` and `@effect/ui-kit` are pinned to the same pkg.pr.new build,
+and take `effect` as a peer. Bump them together.
 Keep `effect` and the other `@effect/*` packages on one version, so there is
 one copy of `effect`.
 
@@ -68,8 +69,7 @@ src/
   search/ product/ stores/ favorites/ sync/
                 features, each split into domain/ services/ queries/ components/
   rpc/          the API client and the logged-in session
-  kit/          headless components that no feature owns (the virtual list)
-  browser/      browser APIs as services (viewport, element size, share, install prompt)
+  browser/      browser APIs as services (viewport, share, install prompt)
   design/       class recipes, icons and view helpers shared by components
 ```
 

@@ -3,7 +3,7 @@ import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription } from "@effect/ui"
 import { buttonClass, inputClass } from "../../design/classes.ts"
-import { drawer, drawerFooter, drawerHeader } from "../../design/drawer.ts"
+import { Sheet, SheetFooter } from "../../design/drawer.ts"
 import { icon } from "../../design/icons.ts"
 import { skeleton } from "../../design/skeleton.ts"
 import { GetSyncSettings } from "../queries/GetSyncSettings.ts"
@@ -17,10 +17,15 @@ export const SyncSettingsPanelMessage = Schema.TaggedUnion({
   CopyPressed: {},
   Copied: { copied: Schema.Boolean },
   CopiedExpired: {},
+  Left: {},
 })
 const Message = SyncSettingsPanelMessage
 
-export const SyncSettingsPanelEvents = Schema.TaggedUnion({ Closed: {} })
+/** `Closed` asks to close, and `Left` says the closed drawer has gone. */
+export const SyncSettingsPanelEvents = Schema.TaggedUnion({
+  Closed: {},
+  Left: {},
+})
 
 /** Saves the remote to sync with, or none, and connects to it. */
 export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
@@ -109,6 +114,8 @@ export const SyncSettingsPanelNoDeps = Component.define({
       CopyPressed: () => $.run(CopyInvite.make()),
       Copied: ({ copied }) => ({ ...model, copied }),
       CopiedExpired: () => ({ ...model, copied: false }),
+      Left: () =>
+        $.set(model).emit(SyncSettingsPanelEvents.make({ _tag: "Left" })),
     }),
   subscriptions: (model) => [
     model.copied &&
@@ -125,94 +132,87 @@ export const SyncSettingsPanelNoDeps = Component.define({
   view: (model, h) => {
     const labelClass = "flex flex-col gap-1.5 text-sm font-medium"
 
-    return drawer(
-      h,
-      {
-        titleId: "sync-settings-title",
-        open: h.props.open,
-        onClose: Message.make({ _tag: "Closed" }),
-      },
-      drawerHeader(
-        h,
-        { titleId: "sync-settings-title", title: "Sync settings" },
-        "Keep your favourites in step across devices.",
-      ),
-      AsyncResult.match(h.queries.settings, {
-        onInitial: () =>
-          h.div
-            .class("px-4 pb-2 flex flex-col gap-4")
-            .children(skeleton(h, "h-10 w-full"), skeleton(h, "h-10 w-full")),
-        onFailure: () => h.div(),
-        onSuccess: ({ value: settings }) =>
-          h.div.class("px-4 pb-2 flex flex-col gap-4").children(
-            h.label.class(labelClass).children(
-              "Remote URL",
-              h.input
-                .id("remote-url")
-                .attr("placeholder", "https://")
-                .class(inputClass())
-                .value(model.remoteUrl ?? settings.remoteUrl ?? "")
-                .onInput(({ value }) =>
-                  Message.make({ _tag: "RemoteUrlTyped", text: value }),
+    return Sheet(h, {
+      open: h.props.open,
+      onDismissed: Message.make({ _tag: "Closed" }),
+      onSettled: Message.make({ _tag: "Left" }),
+      title: "Sync settings",
+      description: ["Keep your favourites in step across devices."],
+      children: [
+        AsyncResult.match(h.queries.settings, {
+          onInitial: () =>
+            h.div
+              .class("px-4 pb-2 flex flex-col gap-4")
+              .children(skeleton(h, "h-10 w-full"), skeleton(h, "h-10 w-full")),
+          onFailure: () => h.div(),
+          onSuccess: ({ value: settings }) =>
+            h.div.class("px-4 pb-2 flex flex-col gap-4").children(
+              h.label.class(labelClass).children(
+                "Remote URL",
+                h.input
+                  .id("remote-url")
+                  .attr("placeholder", "https://")
+                  .class(inputClass())
+                  .value(model.remoteUrl ?? settings.remoteUrl ?? "")
+                  .onInput(({ value }) =>
+                    Message.make({ _tag: "RemoteUrlTyped", text: value }),
+                  ),
+              ),
+              h.label.class(labelClass).children(
+                "Identity",
+                // Switching identity discards local data, so it goes
+                // through the invite prompt instead
+                h.input
+                  .id("identity")
+                  .attr("readonly", "")
+                  .class(inputClass())
+                  .value(settings.identity),
+              ),
+              h.div
+                .class(
+                  "flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-400/30 dark:bg-amber-400/10",
+                )
+                .children(
+                  h.p
+                    .class("flex gap-2 text-amber-900 dark:text-amber-200")
+                    .children(
+                      icon(h, "triangleAlert", {
+                        class: "size-4 shrink-0 mt-0.5",
+                      }),
+                      h.span(
+                        "An invite link gives full access to your synced favorites. Whoever has it can read, change and clear them, from any device, and it can't be revoked later. Only send it to people you trust.",
+                      ),
+                    ),
+                  h.button
+                    .attr("type", "button")
+                    .disabled(settings.remoteUrl === null)
+                    .class(buttonClass({ variant: "outline" }))
+                    .onClick(Message.make({ _tag: "CopyPressed" }))
+                    .children(
+                      icon(h, model.copied ? "check" : "copy"),
+                      "Copy invite link",
+                    ),
+                  settings.remoteUrl === null &&
+                    h.p
+                      .class("text-muted-foreground")
+                      .children("Set a remote URL to create an invite."),
+                  model.copied &&
+                    h.p
+                      .attr("role", "status")
+                      .class("text-muted-foreground")
+                      .children("Copied. Send it privately."),
                 ),
             ),
-            h.label.class(labelClass).children(
-              "Identity",
-              // Switching identity discards local data, so it goes
-              // through the invite prompt instead
-              h.input
-                .id("identity")
-                .attr("readonly", "")
-                .class(inputClass())
-                .value(settings.identity),
-            ),
-            h.div
-              .class(
-                "flex flex-col gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-400/30 dark:bg-amber-400/10",
-              )
-              .children(
-                h.p
-                  .class("flex gap-2 text-amber-900 dark:text-amber-200")
-                  .children(
-                    icon(h, "triangleAlert", {
-                      class: "size-4 shrink-0 mt-0.5",
-                    }),
-                    h.span(
-                      "An invite link gives full access to your synced favorites. Whoever has it can read, change and clear them, from any device, and it can't be revoked later. Only send it to people you trust.",
-                    ),
-                  ),
-                h.button
-                  .attr("type", "button")
-                  .disabled(settings.remoteUrl === null)
-                  .class(buttonClass({ variant: "outline" }))
-                  .onClick(Message.make({ _tag: "CopyPressed" }))
-                  .children(
-                    icon(h, model.copied ? "check" : "copy"),
-                    "Copy invite link",
-                  ),
-                settings.remoteUrl === null &&
-                  h.p
-                    .class("text-muted-foreground")
-                    .children("Set a remote URL to create an invite."),
-                model.copied &&
-                  h.p
-                    .attr("role", "status")
-                    .class("text-muted-foreground")
-                    .children("Copied. Send it privately."),
-              ),
-          ),
-      }),
-      drawerFooter(
-        h,
-        h.button
-          // The fields above load after the sheet opens
-          .attr("autofocus", "")
-          .attr("type", "button")
-          .class(buttonClass({ variant: "outline" }))
-          .onClick(Message.make({ _tag: "Closed" }))
-          .children("Close"),
-      ),
-    )
+        }),
+        SheetFooter(h).children(
+          h.button
+            .attr("type", "button")
+            .class(buttonClass({ variant: "outline" }))
+            .onClick(Message.make({ _tag: "Closed" }))
+            .children("Close"),
+        ),
+      ],
+    })
   },
 })
 

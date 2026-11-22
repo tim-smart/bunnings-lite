@@ -244,16 +244,15 @@ test("stores: the store search is modal", async ({ page }) => {
   const first = drawer.getByRole("button", { name: /Grey Lynn/ })
   const last = drawer.getByRole("button", { name: /Rozelle/ })
   await expect(search).toBeFocused()
-  await expect(last).toBeVisible()
+  await expect(last).toBeInViewport()
 
-  // Nothing behind the drawer can take focus
+  // What is behind the drawer is hidden from assistive technology
   for (const behind of [
-    'select[aria-label="Your store"]',
-    'input[aria-label="Search for products"]',
-    'button[aria-label="Sync settings"]',
+    page.getByRole("combobox", { name: "Your store" }),
+    page.getByRole("searchbox", { name: "Search for products" }),
+    page.getByRole("button", { name: "Sync settings" }),
   ]) {
-    await page.locator(behind).evaluate((el: HTMLElement) => el.focus())
-    await expect(search).toBeFocused()
+    await expect(behind).toHaveCount(0)
   }
 
   // Tab moves through the drawer, and past its end leaves the page rather

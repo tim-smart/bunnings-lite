@@ -391,101 +391,53 @@ body {
 }
 
 /*
- * The bottom sheet: a modal dialog that fills the screen, holding its own
- * backdrop and panel. Both move by transition, so opening, closing and a
- * change of mind halfway each carry on from where the sheet is.
+ * The bottom sheet, drawn by ui-kit's Drawer (see design/drawer.ts). It
+ * slides up from `data-starting-style` and back down to `data-ending-style`,
+ * and follows a swipe through `--drawer-swipe-movement-y`. The kit keeps it
+ * on the screen until these transitions end.
  */
 @layer components {
-  .drawer {
+  .drawer-popup {
     --drawer-duration: 500ms;
     /* The curve of an iOS sheet: quick off the mark, long to settle */
     --drawer-ease: cubic-bezier(0.32, 0.72, 0, 1);
-    /* Never a scroll container. Showing the dialog focuses a control in the
-       panel, and a dialog that can scroll follows it to where the panel
-       starts, below the screen: the panel then stands still while the
-       backdrop is carried in from above. */
-    overflow: clip;
-    /* Once closed it stays on screen, in the top layer where the browser can
-       keep it there, until the panel has left */
-    transition:
-      display var(--drawer-duration) allow-discrete,
-      overlay var(--drawer-duration) allow-discrete;
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    transition: transform var(--drawer-duration) var(--drawer-ease);
+  }
+  /* A flick ends sooner than a slow drag let go */
+  .drawer-popup[data-swipe-dismiss] {
+    transition-duration: calc(var(--drawer-swipe-strength, 1) * 400ms);
+  }
+  .drawer-popup[data-starting-style],
+  .drawer-popup[data-ending-style] {
+    transform: translateY(100%);
   }
   .drawer-backdrop {
-    opacity: 0;
-    /* A swipe that starts on it doesn't scroll the page */
-    touch-action: none;
-    transition: opacity var(--drawer-duration) var(--drawer-ease);
+    opacity: calc(1 - var(--drawer-swipe-progress, 0));
+    transition: opacity 500ms cubic-bezier(0.32, 0.72, 0, 1);
   }
-  .drawer-panel {
-    translate: 0 100%;
-    transition: translate var(--drawer-duration) var(--drawer-ease);
-  }
-  .drawer-body {
-    overscroll-behavior: contain;
-  }
-  .drawer[open] > .drawer-backdrop {
-    opacity: 1;
-  }
-  .drawer[open] > .drawer-panel {
-    translate: 0 0;
-  }
-  @starting-style {
-    .drawer[open] > .drawer-backdrop {
-      opacity: 0;
-    }
-    .drawer[open] > .drawer-panel {
-      translate: 0 100%;
-    }
-  }
-
-  /* The handle and the header, which drag the sheet down to close it */
-  .drawer-grip {
-    cursor: grab;
-    touch-action: none;
-    user-select: none;
-  }
-  /* Held by a pointer: the sheet follows it exactly, see DrawerDrag.ts */
-  .drawer[data-dragging] > * {
+  .drawer-backdrop[data-swiping] {
     transition: none;
   }
-  .drawer[data-dragging] .drawer-grip {
-    cursor: grabbing;
-  }
-
-  /* The page doesn't scroll behind an open sheet */
-  html:has(.drawer[open]) {
-    overflow: hidden;
-    /* Where its scrollbar was, so that nothing behind the sheet moves. See
-       ScrollbarWidth.ts. */
-    padding-right: var(--scrollbar-width, 0px);
-  }
-  /* What is fixed to the right edge stays clear of it too. By a margin: the
-     `right-0` utility is in a later layer, and would win over `right`. */
-  html:has(.drawer[open]) .fixed.right-0 {
-    margin-right: var(--scrollbar-width, 0px);
+  .drawer-backdrop[data-starting-style],
+  .drawer-backdrop[data-ending-style] {
+    opacity: 0;
   }
 
   /* Reduced motion: the sheet stays where it is and fades, quickly */
   @media (prefers-reduced-motion: reduce) {
-    .drawer {
+    .drawer-popup {
       --drawer-duration: 150ms;
       --drawer-ease: ease-out;
+      transition-property: opacity;
     }
-    .drawer-panel {
-      translate: none;
+    .drawer-popup[data-starting-style],
+    .drawer-popup[data-ending-style] {
+      transform: none;
       opacity: 0;
-      transition: opacity var(--drawer-duration) var(--drawer-ease);
     }
-    .drawer[open] > .drawer-panel {
-      translate: none;
-      opacity: 1;
-    }
-    @starting-style {
-      .drawer[open] > .drawer-panel {
-        translate: none;
-        opacity: 0;
-      }
+    .drawer-backdrop {
+      transition-duration: 150ms;
     }
   }
 }

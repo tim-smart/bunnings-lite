@@ -119,10 +119,12 @@ test("an invite that arrives over an open drawer takes its place", async ({
   ]
   for (const { drawer, open } of drawers) {
     await open()
-    await expect(page.getByRole("dialog", { name: drawer })).toBeVisible()
+    await expect(
+      page.getByRole("dialog", { name: drawer }).locator(".drawer-popup"),
+    ).toBeVisible()
 
     await arrive(link)
-    await expect(prompt).toBeVisible()
+    await expect(prompt.locator(".drawer-popup")).toBeVisible()
     await expect(dialogs).toHaveCount(1)
     await expect(cancel).toBeFocused()
 
