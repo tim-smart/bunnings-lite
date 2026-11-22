@@ -307,5 +307,7 @@ test("rows that trade heights don't leave the window empty", async ({
   await expect.poll(inView).toBeGreaterThan(0)
   const after = await read(page)
   expect(after.listHeight).toBe(before.listHeight)
-  expect(after.scrollY).toBe(before.scrollY)
+  // A row above the window grew, and the list scrolled by as much, so what
+  // was in view stays in place
+  expect(after.scrollY - before.scrollY).toBe(2500)
 })
