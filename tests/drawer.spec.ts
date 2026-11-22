@@ -11,8 +11,9 @@ interface Frame {
 
 /**
  * Where the drawer's panel and backdrop are on each frame of the next
- * `ms`, for as long as the drawer is on the screen. Start it, act, then
- * await it.
+ * `ms`, for as long as the drawer is on the screen, and on until it has
+ * shown and its transitions end: a slow machine can start them late. Start
+ * it, act, then await it.
  */
 const frames = (page: Page, ms = 900) =>
   page.evaluate(
@@ -32,8 +33,14 @@ const frames = (page: Page, ms = 900) =>
               backdropOpacity: Number(getComputedStyle(backdrop).opacity),
             })
           }
-          if (performance.now() - start < ms) requestAnimationFrame(tick)
-          else resolve(seen)
+          const elapsed = performance.now() - start
+          const moving =
+            dialog !== null &&
+            dialog.getAnimations({ subtree: true }).length > 0
+          const waiting = seen.length === 0 || moving
+          if (elapsed < ms || (waiting && elapsed < 5000)) {
+            requestAnimationFrame(tick)
+          } else resolve(seen)
         }
         requestAnimationFrame(tick)
       }),
@@ -63,11 +70,15 @@ const rising = (values: ReadonlyArray<number>) =>
 const falling = (values: ReadonlyArray<number>) =>
   values.every((value, i) => i === 0 || value <= values[i - 1]!)
 
-async function openSettings(page: Page) {
+async function openSettings(page: Page, by: "mouse" | "keyboard" = "mouse") {
   await page.goto("/")
   const trigger = page.getByRole("button", { name: "Sync settings" })
   const recording = frames(page)
-  await trigger.click()
+  if (by === "mouse") await trigger.click()
+  else {
+    await trigger.focus()
+    await page.keyboard.press("Enter")
+  }
   const drawer = page.getByRole("dialog", { name: "Sync settings" })
   // The dialog is an empty box in the top layer, around the sheet
   const sheet = drawer.locator(".drawer-popup")
@@ -100,22 +111,33 @@ test("drawer: slides up from the bottom while its backdrop fades in place", asyn
 test("drawer: slides away when it is closed, and gives the page back at once", async ({
   page,
 }) => {
-  const { trigger } = await openSettings(page)
+  const { trigger, drawer } = await openSettings(page, "keyboard")
+  // Focus starts on Remote URL, or on Close when the sheet opened before
+  // the fields loaded
+  await drawer.getByLabel("Remote URL").focus()
   const rest = await panelTop(page)
+  const leaving = page.locator(".drawer-popup[data-ending-style]")
+  const search = page.getByRole("searchbox", { name: "Search for products" })
 
   const recording = frames(page)
   await page.keyboard.press("Escape")
-  // The page takes presses and scrolls while the sheet is still leaving
-  await expect(page.locator(".drawer-popup[data-ending-style]")).toHaveCount(1)
+  // The page takes presses, scrolls and has focus back while the sheet is
+  // still leaving, and a Tab then moves on through the page
+  await expect(leaving).toHaveCount(1)
   await expect(page.locator("main")).not.toHaveAttribute("aria-hidden")
-  const closing = await recording
   await expect(trigger).toBeFocused()
+  await page.keyboard.press("Tab")
+  await expect(search).toBeFocused()
+  await expect(leaving).toHaveCount(1)
+  const closing = await recording
 
   const tops = closing.map((frame) => frame.panelTop)
   expect(tops.at(-1)! - rest).toBeGreaterThan(100)
   expect(rising(tops)).toBe(true)
   expect(rising(closing.map((frame) => -frame.backdropOpacity))).toBe(true)
+  // Where the Tab left it, once the sheet has gone
   await expect(page.locator("dialog")).toHaveCount(0)
+  await expect(search).toBeFocused()
 })
 
 test("drawer: opened again while it slides away, it stays open", async ({
@@ -131,7 +153,7 @@ test("drawer: opened again while it slides away, it stays open", async ({
   await page.waitForTimeout(700)
 
   await expect(sheet).toBeVisible()
-  await expect(drawer.getByLabel("Remote URL")).toBeFocused()
+  await expect(drawer.locator(":focus")).toHaveCount(1)
   await settled(page)
   expect(await panelTop(page)).toBe(rest)
 })
@@ -192,9 +214,12 @@ test("drawer: dragging its handle down closes it, and a short drag settles back"
   await expect.poll(() => panelTop(page)).toBe(rest)
   await expect(sheet).toBeVisible()
 
+  // Past half its height closes it, however slowly it was dragged
+  const height = (await sheet.boundingBox())!.height
   await page.mouse.move(x, y)
   await page.mouse.down()
-  await page.mouse.move(x, y + 250, { steps: 10 })
+  await page.mouse.move(x, y + height * 0.6, { steps: 10 })
+  await page.waitForTimeout(300)
   await page.mouse.up()
   await expect(page.locator("dialog")).toHaveCount(0)
 })
