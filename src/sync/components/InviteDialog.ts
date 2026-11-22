@@ -75,13 +75,17 @@ export const InviteDialogNoDeps = Component.define({
   init: () => ({ invite: null, open: false }),
   update: (model, message, $) =>
     InviteDialogMessage.match(message, {
-      // An invite can replace one that is already showing, and `autofocus`
-      // only counts when a dialog is shown. Focus is moved for every invite,
-      // so that Enter never joins one the user hasn't read.
+      // The sheet focuses its first button, the one that turns the invite
+      // down, as it opens. An invite that replaces one already showing moves
+      // focus back there too, so that Enter never joins one the user hasn't
+      // read. Only then: on an open, focusing it here as well races the
+      // sheet's own focus, which comes a frame later.
       OpenedInvite: ({ invite }) =>
-        $.set({ invite, open: true })
-          .run(DomCommand.focus(dismissRef, () => Component.noop))
-          .emit(InviteDialogEvents.Opened()),
+        model.open
+          ? $.set({ invite, open: true })
+              .run(DomCommand.focus(dismissRef, () => Component.noop))
+              .emit(InviteDialogEvents.Opened())
+          : $.set({ invite, open: true }).emit(InviteDialogEvents.Opened()),
       RequestedClose: () =>
         $.evolve({ open: false }).emit(InviteDialogEvents.Closed()),
       ClickedJoin: () =>
