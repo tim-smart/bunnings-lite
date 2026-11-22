@@ -3,65 +3,32 @@ import { Mount, type View } from "@effect/ui"
 import { Drawer } from "@effect/ui-kit"
 
 /**
- * What had focus as each sheet's dialog opened, read before the kit moves
- * focus into it.
- */
-const openers = new WeakMap<Element, Element | null>()
-if (typeof document !== "undefined") {
-  document.addEventListener(
-    "beforetoggle",
-    (event) => {
-      if (
-        (event as ToggleEvent).newState === "open" &&
-        event.target instanceof HTMLDialogElement
-      ) {
-        openers.set(event.target, document.activeElement)
-      }
-    },
-    true,
-  )
-}
-
-/**
- * Gives focus back to the control that opened a sheet as soon as the sheet
- * is closed. The kit gives it back once the sheet has slid away, and until
- * then a Tab would move through a sheet that is already leaving. Mount it on
- * an element inside the sheet's dialog.
+ * Focuses the element whose id is `target` as the sheet closes, unless focus
+ * has already left the sheet. Mount it on an element inside the sheet's
+ * dialog.
  *
- * The opener is the element whose id is `returnTo`, or else what had focus
- * when the dialog opened, or when the sheet was opened again on its way out.
- * Without one, or when focus has already left the sheet, it does nothing,
- * and the kit hands focus back once the sheet has gone.
- *
- * It moves focus in the render that closes the sheet. A sheet closed before
- * its opening transition starts settles at once, and the kit, seeing focus
- * still inside, would otherwise hand it to a control of its own choosing.
+ * The kit moves focus back on its own as the close starts: to the control
+ * that opened the dialog, or else to what had focus before it opened. A
+ * sheet that nothing on the page opened, such as one that opens itself when
+ * a link arrives, has neither, and the kit's `finalFocus` part only marks an
+ * element drawn inside the sheet's own view. Focus that this moves out first
+ * is left where it is by the kit.
  */
-const ReturnFocus = Mount.makeStream(
-  "ReturnFocus",
-  { args: { open: Schema.Boolean, returnTo: Schema.NullOr(Schema.String) } },
+const FocusOnClose = Mount.makeStream(
+  "FocusOnClose",
+  { args: { open: Schema.Boolean, target: Schema.NullOr(Schema.String) } },
   (node: HTMLElement, args, changes) => {
     const dialog = node.closest("dialog")!
-    const outside = (element: Element | null | undefined) =>
-      element instanceof HTMLElement &&
-      element !== element.ownerDocument.body &&
-      !dialog.contains(element)
-        ? element
-        : undefined
-    let opener = outside(openers.get(dialog))
     let open = args.open
     return changes.pipe(
-      Stream.tap((next) =>
+      Stream.tap(({ open: next, target }) =>
         Effect.sync(() => {
-          if (next.open && !open) opener = outside(document.activeElement)
-          if (!next.open && open && !outside(document.activeElement)) {
-            const target =
-              next.returnTo === null
-                ? opener
-                : outside(document.getElementById(next.returnTo))
-            target?.focus({ preventScroll: true })
+          const focused = document.activeElement
+          const inside = focused === document.body || dialog.contains(focused)
+          if (open && !next && target !== null && inside) {
+            document.getElementById(target)?.focus({ preventScroll: true })
           }
-          open = next.open
+          open = next
         }),
       ),
       Stream.drain,
@@ -80,10 +47,10 @@ const ReturnFocus = Mount.makeStream(
  * mounts the sheet only while it is in use keeps it mounted until then.
  *
  * Focus starts on the first control in the sheet, or on the sheet itself
- * when it was opened by touch, so the keyboard doesn't come up. When the
- * sheet closes, focus goes back at once to where it was before it opened,
- * or to the element whose id is `returnFocusTo`, for a sheet nothing on the
- * page opened. The sheet is inert while it leaves.
+ * when it was opened by touch, so the keyboard doesn't come up. As the
+ * sheet starts to close, the kit moves focus back to where it was before it
+ * opened, and the sheet is inert while it leaves. A sheet that nothing on the
+ * page opened sends focus to the element whose id is `returnFocusTo`.
  */
 export const Sheet = <
   M,
@@ -127,22 +94,19 @@ export const Sheet = <
             .children(
               drawer
                 .popup(
-                  h.div
-                    .class(
-                      "drawer-popup pointer-events-auto flex max-h-[80vh] w-full max-w-md flex-col rounded-t-lg border-t bg-background text-foreground",
-                      options.class,
-                    )
-                    // On its way out it is only something to look at
-                    .attr("inert", options.open ? undefined : ""),
+                  h.div.class(
+                    "drawer-popup pointer-events-auto flex max-h-[80vh] w-full max-w-md flex-col rounded-t-lg border-t bg-background text-foreground",
+                    options.class,
+                  ),
                 )
                 .children(
                   h.div
                     .class("shrink-0 pt-4")
                     .attr("aria-hidden", "true")
                     .onMount(
-                      ReturnFocus({
+                      FocusOnClose({
                         open: options.open,
-                        returnTo: options.returnFocusTo ?? null,
+                        target: options.returnFocusTo ?? null,
                       }),
                     )
                     .children(
