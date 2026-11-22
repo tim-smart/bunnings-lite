@@ -28,14 +28,18 @@ if (typeof document !== "undefined") {
  * then a Tab would move through a sheet that is already leaving. Mount it on
  * an element inside the sheet's dialog.
  *
- * The opener is what had focus when the dialog opened, or when the sheet was
- * opened again on its way out. Without one, or when focus has already left
- * the sheet, it does nothing, and the kit hands focus back once the sheet has
- * gone.
+ * The opener is the element whose id is `returnTo`, or else what had focus
+ * when the dialog opened, or when the sheet was opened again on its way out.
+ * Without one, or when focus has already left the sheet, it does nothing,
+ * and the kit hands focus back once the sheet has gone.
+ *
+ * It moves focus in the render that closes the sheet. A sheet closed before
+ * its opening transition starts settles at once, and the kit, seeing focus
+ * still inside, would otherwise hand it to a control of its own choosing.
  */
 const ReturnFocus = Mount.makeStream(
   "ReturnFocus",
-  { args: { open: Schema.Boolean } },
+  { args: { open: Schema.Boolean, returnTo: Schema.NullOr(Schema.String) } },
   (node: HTMLElement, args, changes) => {
     const dialog = node.closest("dialog")!
     const outside = (element: Element | null | undefined) =>
@@ -51,7 +55,11 @@ const ReturnFocus = Mount.makeStream(
         Effect.sync(() => {
           if (next.open && !open) opener = outside(document.activeElement)
           if (!next.open && open && !outside(document.activeElement)) {
-            opener?.focus({ preventScroll: true })
+            const target =
+              next.returnTo === null
+                ? opener
+                : outside(document.getElementById(next.returnTo))
+            target?.focus({ preventScroll: true })
           }
           open = next.open
         }),
@@ -74,7 +82,8 @@ const ReturnFocus = Mount.makeStream(
  * Focus starts on the first control in the sheet, or on the sheet itself
  * when it was opened by touch, so the keyboard doesn't come up. When the
  * sheet closes, focus goes back at once to where it was before it opened,
- * unless `finalFocus` is false, and the sheet is inert while it leaves.
+ * or to the element whose id is `returnFocusTo`, for a sheet nothing on the
+ * page opened. The sheet is inert while it leaves.
  */
 export const Sheet = <
   M,
@@ -86,18 +95,15 @@ export const Sheet = <
     readonly open: boolean
     readonly onDismissed: M
     readonly onSettled?: M | undefined
-    readonly finalFocus?: boolean | undefined
+    readonly returnFocusTo?: string | undefined
     readonly title: string
     readonly description: D
     readonly class?: string | undefined
     readonly children: C
   },
-) => {
-  // A sheet whose owner places focus itself, with `finalFocus: false`, only
-  // tracks whether it is open, and returns nothing
-  const returnFocus = options.finalFocus !== false
-  return Drawer(h, {
-    props: { open: options.open, finalFocus: options.finalFocus },
+) =>
+  Drawer(h, {
+    props: { open: options.open },
     onEmit: (event) =>
       event._tag === "Dismissed"
         ? options.onDismissed
@@ -133,7 +139,12 @@ export const Sheet = <
                   h.div
                     .class("shrink-0 pt-4")
                     .attr("aria-hidden", "true")
-                    .onMount(ReturnFocus({ open: returnFocus && options.open }))
+                    .onMount(
+                      ReturnFocus({
+                        open: options.open,
+                        returnTo: options.returnFocusTo ?? null,
+                      }),
+                    )
                     .children(
                       h.div.class(
                         "bg-muted mx-auto h-2 w-[100px] rounded-full",
@@ -166,7 +177,6 @@ export const Sheet = <
         ),
       ),
   })
-}
 
 /** The buttons at the foot of a sheet. */
 export const SheetFooter = <M>(h: View.H<M>) =>

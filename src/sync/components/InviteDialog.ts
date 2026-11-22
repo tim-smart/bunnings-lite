@@ -57,6 +57,10 @@ const dismissRef = Html.ref("invite-dismiss", "button")
 export const InviteDialogNoDeps = Component.define({
   name: "InviteDialog",
   scoped: false,
+  props: Schema.Struct({
+    /** The id of the element that gets focus when the dialog closes. */
+    returnFocusTo: Schema.String,
+  }),
   model: Schema.Struct({
     /**
      * The invite waiting for an answer. It stays after the answer, for the
@@ -104,12 +108,12 @@ export const InviteDialogNoDeps = Component.define({
     const dismissed = InviteDialogMessage.RequestedClose()
     const left = InviteDialogMessage.SettledSheet()
 
-    // `Shell` gives focus to the sync settings button when it closes
+    // Nothing on the page opened it, so focus goes where the owner says
     const sheet = {
       open,
       onDismissed: dismissed,
       onSettled: left,
-      finalFocus: false,
+      returnFocusTo: h.props.returnFocusTo,
     }
 
     if (invite._tag === "Invalid") {

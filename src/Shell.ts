@@ -79,12 +79,8 @@ const storeSearchAskedSubscription = Subscription.make(
 
 const headerRef = Html.ref("header", "header")
 const searchRef = Html.ref("search", "input")
-const syncSettingsRef = Html.ref("sync-settings-open", "button")
-
-const focusSyncSettings = DomCommand.focus(
-  syncSettingsRef,
-  () => Component.noop,
-)
+/** The sync settings button, which an invite gives focus back to. */
+const syncSettingsId = "sync-settings"
 const noStoreFound = AnswerStoreSearch.make({ store: Option.none() })
 
 /** Which drawer is open, if any. Only one is open at a time. */
@@ -185,14 +181,6 @@ const openedInvite = ShellDef.update("OpenedInvite", (model, _message, $) => {
   return model.drawer === "storeSearch" ? $.set(next).run(noStoreFound) : next
 })
 
-// An invite has nothing on the page that opened it, so focus goes to the
-// button for what it was about
-const closedInvite = ShellDef.update("ClosedInvite", (model, _message, $) =>
-  model.drawer === "invite"
-    ? $.set(closed(model)).run(focusSyncSettings)
-    : model,
-)
-
 const changedStoreSearchPrompt = ShellDef.update(
   "ChangedStoreSearchPrompt",
   (model, { asking }, $) => {
@@ -246,7 +234,7 @@ const logo = ShellDef.fragment((h, minimize: boolean) =>
 const syncSettingsButton = ShellDef.fragment((h) =>
   h.div.class("col-start-3 row-start-1 self-start justify-self-end").children(
     h.button
-      .ref(syncSettingsRef)
+      .id(syncSettingsId)
       .attr("type", "button")
       .attr("aria-label", "Sync settings")
       .class(
@@ -406,6 +394,9 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
   return [
     InviteDialog(h, {
       key: "invite",
+      // An invite has nothing on the page that opened it, so focus goes to
+      // the button for what it was about
+      props: { returnFocusTo: syncSettingsId },
       onEmit: {
         Opened: () => ShellMessage.OpenedInvite(),
         Closed: () => ShellMessage.ClosedInvite(),
@@ -482,7 +473,8 @@ export const ShellNoDeps = ShellDef.make({
       model.drawer === "syncSettings" ? closed(model) : model,
     LeftSyncSettings: (model) => left(model, "syncSettings"),
     OpenedInvite: openedInvite,
-    ClosedInvite: closedInvite,
+    ClosedInvite: (model) =>
+      model.drawer === "invite" ? closed(model) : model,
     ChangedStoreSearchPrompt: changedStoreSearchPrompt,
     AnsweredStoreSearch: answeredStoreSearch,
     LeftStoreSearch: (model) => left(model, "storeSearch"),
