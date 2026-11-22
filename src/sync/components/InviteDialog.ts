@@ -80,12 +80,14 @@ export const InviteDialogNoDeps = Component.define({
       // focus back there too, so that Enter never joins one the user hasn't
       // read. Only then: on an open, focusing it here as well races the
       // sheet's own focus, which comes a frame later.
-      OpenedInvite: ({ invite }) =>
-        model.open
-          ? $.set({ invite, open: true })
-              .run(DomCommand.focus(dismissRef, () => Component.noop))
-              .emit(InviteDialogEvents.Opened())
-          : $.set({ invite, open: true }).emit(InviteDialogEvents.Opened()),
+      OpenedInvite: ({ invite }) => {
+        const opened = $.set({ invite, open: true }).emit(
+          InviteDialogEvents.Opened(),
+        )
+        return model.open
+          ? opened.run(DomCommand.focus(dismissRef, () => Component.noop))
+          : opened
+      },
       RequestedClose: () =>
         $.evolve({ open: false }).emit(InviteDialogEvents.Closed()),
       ClickedJoin: () =>

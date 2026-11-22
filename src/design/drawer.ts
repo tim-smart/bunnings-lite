@@ -26,46 +26,39 @@ if (typeof document !== "undefined") {
  * Gives focus back to the control that opened a sheet as soon as the sheet
  * is closed. The kit gives it back once the sheet has slid away, and until
  * then a Tab would move through a sheet that is already leaving. Mount it on
- * an element inside the sheet.
+ * an element inside the sheet's dialog.
  *
- * The opener is what had focus when the sheet's dialog opened, or when the
- * sheet was opened again on its way out. Without one, or when focus has
- * already left the sheet, it does nothing, and the kit hands focus back once
- * the sheet has gone.
+ * The opener is what had focus when the dialog opened, or when the sheet was
+ * opened again on its way out. Without one, or when focus has already left
+ * the sheet, it does nothing, and the kit hands focus back once the sheet has
+ * gone.
  */
 const ReturnFocus = Mount.makeStream(
   "ReturnFocus",
   { args: { open: Schema.Boolean } },
-  (node: HTMLElement, args, changes) =>
-    Stream.callback<never>(() =>
-      Effect.gen(function* () {
-        const document = node.ownerDocument
-        const sheet = node.closest<HTMLElement>(".drawer-popup") ?? node
-        const dialog = node.closest("dialog")
-        const outside = (element: unknown) =>
-          element instanceof HTMLElement &&
-          element !== document.body &&
-          !sheet.contains(element)
-            ? element
-            : null
-        let opener = outside(
-          dialog === null ? document.activeElement : openers.get(dialog),
-        )
-        let open = args.open
-        yield* Stream.runForEach(changes, (next) =>
-          Effect.sync(() => {
-            if (next.open && !open) opener = outside(document.activeElement)
-            if (!next.open && open && opener?.isConnected === true) {
-              const focused = document.activeElement
-              if (focused === null || outside(focused) === null) {
-                opener.focus({ preventScroll: true })
-              }
-            }
-            open = next.open
-          }),
-        ).pipe(Effect.forkScoped)
-      }),
-    ),
+  (node: HTMLElement, args, changes) => {
+    const dialog = node.closest("dialog")!
+    const outside = (element: Element | null | undefined) =>
+      element instanceof HTMLElement &&
+      element !== element.ownerDocument.body &&
+      !dialog.contains(element)
+        ? element
+        : undefined
+    let opener = outside(openers.get(dialog))
+    let open = args.open
+    return changes.pipe(
+      Stream.tap((next) =>
+        Effect.sync(() => {
+          if (next.open && !open) opener = outside(document.activeElement)
+          if (!next.open && open && !outside(document.activeElement)) {
+            opener?.focus({ preventScroll: true })
+          }
+          open = next.open
+        }),
+      ),
+      Stream.drain,
+    )
+  },
 )
 
 /**
