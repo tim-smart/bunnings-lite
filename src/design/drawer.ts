@@ -72,7 +72,7 @@ export const Sheet = <
   Drawer(h, {
     props: { open: options.open },
     onEmit: (event) =>
-      event._tag === "Dismissed"
+      event._tag === "RequestedClose"
         ? options.onDismissed
         : event._tag === "Settled" && !event.open
           ? options.onSettled

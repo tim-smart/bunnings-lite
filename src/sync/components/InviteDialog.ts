@@ -77,7 +77,7 @@ export const InviteDialogNoDeps = Component.define({
   },
 }).make({
   init: () => ({ invite: null, open: false }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     InviteDialogMessage.match(message, {
       // The sheet focuses its first button, the one that turns the invite
       // down, as it opens. An invite that replaces one already showing moves
@@ -88,7 +88,7 @@ export const InviteDialogNoDeps = Component.define({
         const opened = $.set({ invite, open: true }).emit(
           InviteDialogEvents.Opened(),
         )
-        return model.open
+        return $.model.open
           ? opened.run(DomCommand.focus(dismissRef, () => Component.noop))
           : opened
       },
@@ -99,10 +99,10 @@ export const InviteDialogNoDeps = Component.define({
           .run(JoinSync.make())
           .emit(InviteDialogEvents.Closed()),
       // Unless another invite arrived while it was leaving
-      SettledSheet: () => (model.open ? model : $.evolve({ invite: null })),
+      SettledSheet: () => ($.model.open ? $.model : $.evolve({ invite: null })),
     }),
   subscriptions: () => [invitesOpened],
-  view: (model, h) => {
+  view: (h, model) => {
     const { invite, open } = model
     if (invite === null) return h.div()
     const dismissed = InviteDialogMessage.RequestedClose()

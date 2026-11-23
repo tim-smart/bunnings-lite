@@ -85,25 +85,25 @@ export const StoreSelectorNoDeps = Component.define({
     // until the picker is reached for
     nearby: {
       query: NearbyStores,
-      args: (model) => (model.nearbyWanted ? {} : undefined),
+      args: ({ model }) => (model.nearbyWanted ? {} : undefined),
     },
   },
 }).make({
   init: () => ({ nearbyWanted: false }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     StoreSelectorMessage.match(message, {
       ReachedPicker: () =>
-        model.nearbyWanted ? model : $.evolve({ nearbyWanted: true }),
+        $.model.nearbyWanted ? $.model : $.evolve({ nearbyWanted: true }),
       SelectedStore: ({ location }) => $.run(ChooseStore.make({ location })),
       SelectedSearchAllStores: () => $.run(SearchAllStores.make()),
       // The host hands focus back to the select that opened the search
       AnsweredStoreSearch: ({ store }) =>
         Option.match(store, {
-          onNone: () => model,
+          onNone: () => $.model,
           onSome: (location) => $.run(ChooseStore.make({ location })),
         }),
     }),
-  view: (model, h) => {
+  view: (h, model) => {
     const shown = Option.flatten(AsyncResult.value(h.queries.current))
     const isShown = (code: string) =>
       Option.exists(shown, (location) => location.code === code)

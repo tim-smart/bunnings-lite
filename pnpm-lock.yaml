@@ -12,11 +12,11 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5(effect@4.1.5)
       '@effect/ui':
-        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20
-        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20(effect@4.1.5)
+        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807
+        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807(effect@4.1.5)
       '@effect/ui-kit':
-        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@75a5e20
-        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@75a5e20(@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20(effect@4.1.5))(effect@4.1.5)
+        specifier: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e34b807
+        version: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e34b807(@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807(effect@4.1.5))(effect@4.1.5)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -660,15 +660,15 @@ packages:
     resolution: {integrity: sha512-eM5ayjlp0fD2l+aL+4O/y9d1LwF1m5in5EdNkOYwLFcXI3kcee8CWP4wr2xTc4L/+KJmS/uaYUGWdOj4G46BDA==}
     hasBin: true
 
-  '@effect/ui-kit@https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@75a5e20':
-    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@75a5e20}
+  '@effect/ui-kit@https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e34b807':
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e34b807}
     version: 0.0.0
     peerDependencies:
       '@effect/ui': ^0.0.0
       effect: ^4.1.4
 
-  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20':
-    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20}
+  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807':
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807}
     version: 0.0.0
     peerDependencies:
       effect: ^4.1.4
@@ -3596,12 +3596,12 @@ snapshots:
       '@effect/tsgo-win32-arm64': 0.73.2
       '@effect/tsgo-win32-x64': 0.73.2
 
-  '@effect/ui-kit@https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@75a5e20(@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20(effect@4.1.5))(effect@4.1.5)':
+  '@effect/ui-kit@https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e34b807(@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807(effect@4.1.5))(effect@4.1.5)':
     dependencies:
-      '@effect/ui': https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20(effect@4.1.5)
+      '@effect/ui': https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807(effect@4.1.5)
       effect: 4.1.5
 
-  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@75a5e20(effect@4.1.5)':
+  '@effect/ui@https://pkg.pr.new/Effect-TS/ui/@effect/ui@e34b807(effect@4.1.5)':
     dependencies:
       effect: 4.1.5
 

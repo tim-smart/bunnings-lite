@@ -64,13 +64,14 @@ export const AppNoDeps = Component.define({
         }),
       ),
     ),
-  update: (model, message, $) =>
+  update: ($, message) =>
     AppMessage.match(message, {
       ChangedRoute: ({ route }) =>
         $.evolve({
           route,
           searchesCleared:
-            model.searchesCleared + (searchCleared(model.route, route) ? 1 : 0),
+            $.model.searchesCleared +
+            (searchCleared($.model.route, route) ? 1 : 0),
         }),
       ProgressedJoin: ({ progress }) =>
         $.evolve({
@@ -80,7 +81,7 @@ export const AppNoDeps = Component.define({
       FailedFinishJoin: () => $.evolve({ join: "Failed" as const }),
       ClickedRetry: () => $.run(ReloadPage.make()),
     }),
-  subscriptions: (model) => [
+  subscriptions: ({ model }) => [
     Router.subscription(AppRoute, model.route, (route) =>
       AppMessage.ChangedRoute({ route }),
     ),
@@ -91,7 +92,7 @@ export const AppNoDeps = Component.define({
     Head.titleTemplate((title) => `${title} · Bunnings Lite`),
     HtmlHead.lang("en"),
   ],
-  view: (model, h) => {
+  view: (h, model) => {
     switch (model.join) {
       case "Ready":
         return Shell(h, {

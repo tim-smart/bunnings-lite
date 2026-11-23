@@ -69,21 +69,21 @@ export const StoreSearchNoDeps = Component.define({
   },
 }).make({
   init: () => ({ search: "" }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     StoreSearchMessage.match(message, {
       UpdatedSearch: ({ text }) => $.evolve({ search: text }),
       ClickedStore: ({ location }) =>
-        $.set(model).emit(
+        $.emit(
           StoreSearchEvents.Answered({
             store: Option.some(location),
           }),
         ),
       RequestedClose: () =>
-        $.set(model).emit(StoreSearchEvents.Answered({ store: Option.none() })),
+        $.emit(StoreSearchEvents.Answered({ store: Option.none() })),
       ClickedRetry: () => $.run(RetryAllStores.make()),
-      SettledSheet: () => $.set(model).emit(StoreSearchEvents.Left()),
+      SettledSheet: () => $.emit(StoreSearchEvents.Left()),
     }),
-  view: (model, h) => {
+  view: (h, model) => {
     const current = Option.flatten(AsyncResult.value(h.queries.current))
     const isShown = (code: string) =>
       Option.exists(current, (location) => location.code === code)

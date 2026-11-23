@@ -144,38 +144,36 @@ const ShellDef = Component.define({
     results: {
       query: SearchProducts,
       debounce: searchDebounce,
-      args: (_model, props) => searchArgs(props.route),
+      args: ({ props }) => searchArgs(props.route),
     },
   },
 })
 
 // Typing in the search box searches from any page
-const updatedSearch = ShellDef.update(
-  "UpdatedSearch",
-  (_model, { text }, $) => {
-    const { route } = $.props
-    return route._tag === "Search"
-      ? // A new search starts without the last one's filters
-        $.run(
-          Router.patchSearch(AppRoute, route, {
-            query: text,
-            priceMin: undefined,
-            priceMax: undefined,
-            ratingMin: undefined,
-            ratingMax: undefined,
-          }).pipe(Command.asNoop),
-        )
-      : $.run(
-          Router.push(
-            AppRoute,
-            AppRoute.make({ _tag: "Search", search: { query: text } }),
-          ).pipe(Command.asNoop),
-        )
-  },
-)
+const updatedSearch = ShellDef.update("UpdatedSearch", ($, { text }) => {
+  const { route } = $.props
+  return route._tag === "Search"
+    ? // A new search starts without the last one's filters
+      $.run(
+        Router.patchSearch(AppRoute, route, {
+          query: text,
+          priceMin: undefined,
+          priceMax: undefined,
+          ratingMin: undefined,
+          ratingMax: undefined,
+        }).pipe(Command.asNoop),
+      )
+    : $.run(
+        Router.push(
+          AppRoute,
+          AppRoute.make({ _tag: "Search", search: { query: text } }),
+        ).pipe(Command.asNoop),
+      )
+})
 
 // An invite takes the place of whichever drawer is open
-const openedInvite = ShellDef.update("OpenedInvite", (model, _message, $) => {
+const openedInvite = ShellDef.update("OpenedInvite", ($) => {
+  const { model } = $
   const next = opened(closed(model), "invite")
   // The selector is still waiting to hear from its search
   return model.drawer === "storeSearch" ? $.set(next).run(noStoreFound) : next
@@ -183,7 +181,8 @@ const openedInvite = ShellDef.update("OpenedInvite", (model, _message, $) => {
 
 const changedStoreSearchPrompt = ShellDef.update(
   "ChangedStoreSearchPrompt",
-  (model, { asking }, $) => {
+  ($, { asking }) => {
+    const { model } = $
     if (!asking) {
       // Without an answer when the page that asked has gone
       return model.drawer === "storeSearch" ? closed(model) : model
@@ -197,10 +196,12 @@ const changedStoreSearchPrompt = ShellDef.update(
 // Closed here first, so the page is live before the selector hears
 const answeredStoreSearch = ShellDef.update(
   "AnsweredStoreSearch",
-  (model, { store }, $) =>
-    $.set(model.drawer === "storeSearch" ? closed(model) : model).run(
+  ($, { store }) => {
+    const { model } = $
+    return $.set(model.drawer === "storeSearch" ? closed(model) : model).run(
       AnswerStoreSearch.make({ store }),
-    ),
+    )
+  },
 )
 
 const logo = ShellDef.fragment((h, minimize: boolean) =>
@@ -423,7 +424,7 @@ const drawers = ShellDef.fragment((h, { drawer, leaving }: ShellModel) => {
   ] as const
 })
 
-const shellView = ShellDef.view((model, h) =>
+const shellView = ShellDef.view((h, model) =>
   h.div(
     // A drawer is a modal: nothing behind it can be reached while it is open
     h.div
@@ -454,9 +455,9 @@ export const ShellNoDeps = ShellDef.make({
   init: () => ({ drawer: null, leaving: [] }),
   update: {
     UpdatedSearch: updatedSearch,
-    SubmittedSearch: (_model, _message, $) =>
+    SubmittedSearch: ($) =>
       $.run(DomCommand.blur(searchRef, () => Component.noop)),
-    RequestedSearch: (_model, _message, $) =>
+    RequestedSearch: ($) =>
       $.run(
         DomCommand.focus(searchRef, () => Component.noop, {
           preventScroll: true,
@@ -466,21 +467,21 @@ export const ShellNoDeps = ShellDef.make({
           block: "start",
         }),
       ),
-    ClickedSyncSettings: (model) =>
+    ClickedSyncSettings: ({ model }) =>
       model.drawer === null ? opened(model, "syncSettings") : model,
     // The drawer hands focus back to the button that opened it
-    ClosedSyncSettings: (model) =>
+    ClosedSyncSettings: ({ model }) =>
       model.drawer === "syncSettings" ? closed(model) : model,
-    LeftSyncSettings: (model) => left(model, "syncSettings"),
+    LeftSyncSettings: ({ model }) => left(model, "syncSettings"),
     OpenedInvite: openedInvite,
-    ClosedInvite: (model) =>
+    ClosedInvite: ({ model }) =>
       model.drawer === "invite" ? closed(model) : model,
     ChangedStoreSearchPrompt: changedStoreSearchPrompt,
     AnsweredStoreSearch: answeredStoreSearch,
-    LeftStoreSearch: (model) => left(model, "storeSearch"),
+    LeftStoreSearch: ({ model }) => left(model, "storeSearch"),
   },
   subscriptions: () => [storeSearchAskedSubscription],
-  head: (_model, { route }) =>
+  head: ({ props: { route } }) =>
     route._tag === "NotFound" ? [Head.title("Page not found")] : [],
   view: shellView,
 })
