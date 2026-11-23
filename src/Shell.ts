@@ -196,10 +196,12 @@ const changedStoreSearchPrompt = ShellDef.update(
 // Closed here first, so the page is live before the selector hears
 const answeredStoreSearch = ShellDef.update(
   "AnsweredStoreSearch",
-  ($, { store }) =>
-    $.set($.model.drawer === "storeSearch" ? closed($.model) : $.model).run(
+  ($, { store }) => {
+    const { model } = $
+    return $.set(model.drawer === "storeSearch" ? closed(model) : model).run(
       AnswerStoreSearch.make({ store }),
-    ),
+    )
+  },
 )
 
 const logo = ShellDef.fragment((h, minimize: boolean) =>

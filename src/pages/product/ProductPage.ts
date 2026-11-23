@@ -516,12 +516,12 @@ export const ProductPageNoDeps = ProductPageDef.make({
         hasMore($.queries.reviews) ? $.loadMore("reviews") : $.model,
     }),
   subscriptions: () => [bottomReached(ProductPageMessage.ReachedBottom())],
-  head: ({ queries: loaded }) => [
+  head: ({ queries }) => [
     Head.title(
       Option.match(
         productOf(
-          AsyncResult.value(loaded.product),
-          AsyncResult.value(loaded.known),
+          AsyncResult.value(queries.product),
+          AsyncResult.value(queries.known),
         ),
         { onNone: () => "Product", onSome: (product) => product.title },
       ),
