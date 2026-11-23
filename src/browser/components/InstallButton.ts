@@ -38,13 +38,13 @@ export const InstallButtonNoDeps = Component.define({
   message: InstallButtonMessage,
 }).make({
   init: () => ({ available: false }),
-  update: (_model, message, $) =>
+  update: ($, message) =>
     InstallButtonMessage.match(message, {
       ChangedAvailability: ({ available }) => ({ available }),
       ClickedInstall: () => $.run(PromptInstall.make()),
     }),
   subscriptions: () => [installAvailable],
-  view: (model, h) =>
+  view: (h, model) =>
     h.div(
       model.available &&
         h.button

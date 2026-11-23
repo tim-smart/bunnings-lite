@@ -69,7 +69,8 @@ export const Filters = Component.define({
     ratingMin: null,
     ratingMax: null,
   }),
-  update: (model, message, $) => {
+  update: ($, message) => {
+    const { model } = $
     const { price, route } = $.props
     const { priceMax, priceMin, ratingMax, ratingMin } = route.search
     const patch = (query: Router.SearchPatch<SearchRoute>) =>
@@ -132,7 +133,7 @@ export const Filters = Component.define({
             ),
     })
   },
-  view: (model, h) => {
+  view: (h, model) => {
     const { price, route } = h.props
     const { priceMax, priceMin, ratingMax, ratingMin } = route.search
 

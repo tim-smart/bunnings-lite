@@ -68,18 +68,18 @@ const ProductPageDef = Component.define({
   }),
   message: ProductPageMessage,
   queries: {
-    product: { query: GetProduct, args: (_model, props) => ({ id: props.id }) },
+    product: { query: GetProduct, args: ({ props }) => ({ id: props.id }) },
     known: {
       query: GetKnownProduct,
-      args: (_model, props) => ({ id: props.id }),
+      args: ({ props }) => ({ id: props.id }),
     },
     stats: {
       query: GetReviewStats,
-      args: (_model, props) => ({ id: props.id }),
+      args: ({ props }) => ({ id: props.id }),
     },
     reviews: {
       query: ListReviews,
-      args: (_model, props) => ({ id: props.id }),
+      args: ({ props }) => ({ id: props.id }),
     },
   },
 })
@@ -332,7 +332,7 @@ const reviewCard = ProductPageDef.fragment((h, review: ProductReview) =>
     ),
 )
 
-const productPageView = ProductPageDef.view((model, h) => {
+const productPageView = ProductPageDef.view((h, model) => {
   const fullInfo: Option.Option<ProductPriceInfo> = AsyncResult.value(
     h.queries.product,
   )
@@ -507,16 +507,16 @@ const productPageView = ProductPageDef.view((model, h) => {
  */
 export const ProductPageNoDeps = ProductPageDef.make({
   init: () => ({ image: 0 }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     ProductPageMessage.match(message, {
       ClickedImage: ({ index }) => $.evolve({ image: index }),
       ClickedBack: () => $.run(Router.Back.make().pipe(Command.asNoop)),
       ClickedShare: ({ title }) => $.run(ShareProduct.make({ title })),
       ReachedBottom: () =>
-        hasMore($.queries.reviews) ? $.loadMore("reviews") : model,
+        hasMore($.queries.reviews) ? $.loadMore("reviews") : $.model,
     }),
   subscriptions: () => [bottomReached(ProductPageMessage.ReachedBottom())],
-  head: (_model, _props, loaded) => [
+  head: ({ queries: loaded }) => [
     Head.title(
       Option.match(
         productOf(

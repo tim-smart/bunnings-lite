@@ -25,13 +25,13 @@ export const FulfillmentBadgeNoDeps = Component.define({
   queries: {
     fulfillment: {
       query: GetFulfillment,
-      args: (_model, props) => ({ id: props.id }),
+      args: ({ props }) => ({ id: props.id }),
     },
   },
 }).make({
   init: () => ({}),
-  update: (model) => model,
-  view: (_model, h) => {
+  update: ($) => $.model,
+  view: (h) => {
     const fulfillment = Option.flatten(AsyncResult.value(h.queries.fulfillment))
     const badge = Option.match(fulfillment, {
       onNone: () => undefined,

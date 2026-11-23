@@ -36,11 +36,11 @@ export const FavoritesListNoDeps = Component.define({
   },
 }).make({
   init: () => ({}),
-  update: (_model, message, $) =>
+  update: ($, message) =>
     FavoritesListMessage.match(message, {
       ClickedClear: () => $.run(ClearFavorites.make()),
     }),
-  view: (_model, h) => {
+  view: (h) => {
     const favorites = AsyncResult.getOrElse(h.queries.favorites, () => [])
     if (favorites.length === 0) {
       return h.section

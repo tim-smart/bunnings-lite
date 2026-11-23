@@ -25,8 +25,8 @@ export const ProductCard = Component.define({
   message: Schema.Never,
 }).make({
   init: () => ({}),
-  update: (model) => model,
-  view: (_model, h) => {
+  update: ($) => $.model,
+  view: (h) => {
     const { product, query } = h.props
     return h.article.class("group relative min-w-0").children(
       h.a

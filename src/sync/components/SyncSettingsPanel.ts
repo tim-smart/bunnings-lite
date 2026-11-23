@@ -102,9 +102,9 @@ export const SyncSettingsPanelNoDeps = Component.define({
   },
 }).make({
   init: () => ({ remoteUrl: null, copied: false }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     SyncSettingsPanelMessage.match(message, {
-      RequestedClose: () => $.set(model).emit(SyncSettingsPanelEvents.Closed()),
+      RequestedClose: () => $.emit(SyncSettingsPanelEvents.Closed()),
       UpdatedRemoteUrl: ({ text }) => {
         const url = remoteUrlOf(text)
         return url === undefined
@@ -114,9 +114,9 @@ export const SyncSettingsPanelNoDeps = Component.define({
       ClickedCopyInvite: () => $.run(CopyInvite.make()),
       CompletedCopyInvite: ({ copied }) => $.evolve({ copied }),
       ExpiredCopiedNotice: () => $.evolve({ copied: false }),
-      SettledSheet: () => $.set(model).emit(SyncSettingsPanelEvents.Left()),
+      SettledSheet: () => $.emit(SyncSettingsPanelEvents.Left()),
     }),
-  subscriptions: (model) => [
+  subscriptions: ({ model }) => [
     model.copied &&
       Subscription.make(
         "sync/copiedExpires",
@@ -128,7 +128,7 @@ export const SyncSettingsPanelNoDeps = Component.define({
         ),
       ),
   ],
-  view: (model, h) => {
+  view: (h, model) => {
     const labelClass = "flex flex-col gap-1.5 text-sm font-medium"
 
     return Sheet(h, {

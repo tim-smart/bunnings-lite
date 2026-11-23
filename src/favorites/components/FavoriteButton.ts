@@ -46,12 +46,12 @@ export const FavoriteButtonNoDeps = Component.define({
   },
 }).make({
   init: () => ({}),
-  update: (_model, message, $) =>
+  update: ($, message) =>
     FavoriteButtonMessage.match(message, {
       ToggledFavorite: () =>
         $.run(ToggleFavorite.make({ product: $.props.product })),
     }),
-  view: (_model, h) => {
+  view: (h) => {
     const { product, variant } = h.props
     const isFavorite = AsyncResult.getOrElse(
       h.queries.favorites,

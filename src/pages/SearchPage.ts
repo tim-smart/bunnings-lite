@@ -54,7 +54,7 @@ export const SearchPageNoDeps = Component.define({
     results: {
       query: SearchProducts,
       debounce: searchDebounce,
-      args: (_model, props) => searchArgs(props.route),
+      args: ({ props }) => searchArgs(props.route),
     },
     // The search without its filters, whose first page gives the ranges the
     // filters can take: applying a filter narrows what the server reports.
@@ -62,7 +62,7 @@ export const SearchPageNoDeps = Component.define({
     unfiltered: {
       query: SearchProducts,
       debounce: searchDebounce,
-      args: (_model, props) => {
+      args: ({ props }) => {
         const args = searchArgs(props.route)
         return args && { ...args, price: null, rating: null }
       },
@@ -70,26 +70,25 @@ export const SearchPageNoDeps = Component.define({
   },
 }).make({
   init: () => ({ scrolled: false }),
-  update: (model, message, $) =>
+  update: ($, message) =>
     SearchPageMessage.match(message, {
       ReachedBottom: () =>
-        hasMore($.queries.results) ? $.loadMore("results") : model,
+        hasMore($.queries.results) ? $.loadMore("results") : $.model,
       Scrolled: ({ scrolled }) => $.evolve({ scrolled }),
-      RequestedSearch: () =>
-        $.set(model).emit(SearchPageEvents.RequestedSearch()),
+      RequestedSearch: () => $.emit(SearchPageEvents.RequestedSearch()),
     }),
-  subscriptions: (_model, props) => {
+  subscriptions: ({ props }) => {
     if (searchArgs(props.route) === undefined) return []
     return [
       bottomReached(SearchPageMessage.ReachedBottom()),
       scrolledPast(200, (scrolled) => SearchPageMessage.Scrolled({ scrolled })),
     ]
   },
-  head: (_model, props) => {
+  head: ({ props }) => {
     const query = props.route.search.query.trim()
     return query === "" ? [] : [Head.title(query)]
   },
-  view: (model, h) => {
+  view: (h, model) => {
     const { route } = h.props
     const args = searchArgs(route)
 
