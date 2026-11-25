@@ -1,5 +1,6 @@
 import { Effect, Schema, Stream } from "effect"
 import { Mount, type View } from "@effect/ui"
+import type { Html } from "@effect/ui/html"
 import { Drawer } from "@effect/ui-kit"
 
 /**
@@ -57,7 +58,7 @@ export const Sheet = <
   const D extends View.Children<M>,
   const C extends View.Children<M>,
 >(
-  h: View.H<M>,
+  h: Html.H<M>,
   options: {
     readonly open: boolean
     readonly onDismissed: M
@@ -143,5 +144,5 @@ export const Sheet = <
   })
 
 /** The buttons at the foot of a sheet. */
-export const SheetFooter = <M>(h: View.H<M>) =>
+export const SheetFooter = <M>(h: Html.H<M>) =>
   h.div.class("mt-auto flex flex-col gap-2 p-4")

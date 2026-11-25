@@ -1,6 +1,7 @@
 import { Effect, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import {
   SessionLocation,
   type Store,
@@ -71,9 +72,8 @@ export class SearchAllStores extends Command.Service<SearchAllStores>()(
  */
 const searchValue = "search-all-stores"
 
-export const StoreSelectorNoDeps = Component.define({
+export const StoreSelectorNoDeps = Html.component({
   name: "StoreSelector",
-  scoped: false,
   model: Schema.Struct({
     /** Whether the nearby stores have been asked for. */
     nearbyWanted: Schema.Boolean,

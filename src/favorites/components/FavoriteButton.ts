@@ -32,9 +32,8 @@ export class ToggleFavorite extends Command.Service<ToggleFavorite>()(
  * The star that makes a product a favourite. `icon` is the round one on a
  * product card, `button` the labelled one on a product page.
  */
-export const FavoriteButtonNoDeps = Component.define({
+export const FavoriteButtonNoDeps = Html.component({
   name: "FavoriteButton",
-  scoped: false,
   props: Schema.Struct({
     product: ProductBaseInfo,
     variant: Schema.Literals(["icon", "button"]),

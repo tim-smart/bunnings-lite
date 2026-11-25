@@ -1,9 +1,10 @@
+import type { Html } from "@effect/ui/html"
 import type { View } from "@effect/ui"
 import type { RichNode } from "../product/domain/RichText.ts"
 
 /** Renders parsed rich text. Links open in a new tab. */
 export const RichText = <Msg>(
-  h: View.H<Msg>,
+  h: Html.H<Msg>,
   nodes: ReadonlyArray<RichNode>,
 ): Array<View.Content<Msg, never> | string> =>
   nodes.map((node) => {

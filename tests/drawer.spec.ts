@@ -22,8 +22,10 @@ const frames = (page: Page, ms = 900) =>
         const seen: Array<Frame> = []
         const start = performance.now()
         const tick = () => {
+          // The dialog can be in the document a frame before its popover
+          // is shown: until then it is `display: none` and has no position
           const dialog = document.querySelector("dialog")
-          if (dialog !== null) {
+          if (dialog !== null && getComputedStyle(dialog).display !== "none") {
             const backdrop = dialog.querySelector(".drawer-backdrop")!
             const panel = dialog.querySelector(".drawer-popup")!
             seen.push({

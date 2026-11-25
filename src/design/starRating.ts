@@ -1,10 +1,9 @@
 import { Html } from "@effect/ui/html"
-import type { View } from "@effect/ui"
 import { Icon } from "./icons"
 
 /** Five stars, filled up to `rating`, with a half star for a fraction. */
 export const StarRating = <Msg>(
-  h: View.H<Msg>,
+  h: Html.H<Msg>,
   options: { readonly rating: number; readonly size?: "sm" | "md" },
 ) => {
   const { rating } = options

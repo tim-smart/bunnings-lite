@@ -1,5 +1,4 @@
 import { Html } from "@effect/ui/html"
-import type { View } from "@effect/ui"
 
 type Shape = readonly [tag: string, attrs: Readonly<Record<string, string>>]
 
@@ -98,7 +97,7 @@ export type IconName = keyof typeof shapes
  * `key` keeps its node when it moves among siblings.
  */
 export const Icon = <Msg>(
-  h: View.H<Msg>,
+  h: Html.H<Msg>,
   name: IconName,
   options?: {
     readonly class?: string

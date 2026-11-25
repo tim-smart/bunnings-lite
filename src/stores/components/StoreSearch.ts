@@ -1,6 +1,7 @@
 import { Effect, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import {
   SessionLocation,
   type Store,
@@ -54,9 +55,8 @@ const matches = (store: Store, terms: ReadonlyArray<string>) => {
  * the store that was picked, or that it was closed, and leaves choosing the
  * store to whoever asked.
  */
-export const StoreSearchNoDeps = Component.define({
+export const StoreSearchNoDeps = Html.component({
   name: "StoreSearch",
-  scoped: false,
   props: Schema.Struct({ open: Schema.Boolean }),
   model: Schema.Struct({
     search: Schema.String,

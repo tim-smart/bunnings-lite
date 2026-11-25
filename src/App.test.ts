@@ -1,4 +1,3 @@
-import "@effect/ui/html/register"
 import { assert, describe, it } from "@effect/vitest"
 import { Effect } from "effect"
 import { Component } from "@effect/ui"

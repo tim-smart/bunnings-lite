@@ -2,6 +2,7 @@ import { Layer, Option, Schema } from "effect"
 import { Session } from "../../rpc/services/Session.ts"
 import { AsyncResult } from "effect/reactivity"
 import { Component } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import { badgeClass } from "../../design/classes.ts"
 import { Icon } from "../../design/icons.ts"
 import { GetFulfillment } from "../queries/GetFulfillment.ts"
@@ -10,9 +11,8 @@ import { GetFulfillment } from "../queries/GetFulfillment.ts"
  * Where a product is in the chosen store, or that the store is out of it. It
  * shows nothing until that is known, and its wrapper hides while empty.
  */
-export const FulfillmentBadgeNoDeps = Component.define({
+export const FulfillmentBadgeNoDeps = Html.component({
   name: "FulfillmentBadge",
-  scoped: false,
   props: Schema.Struct({
     id: Schema.String,
     /** Also say so when the product is in stock with no known aisle. */

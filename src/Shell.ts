@@ -10,7 +10,7 @@ import {
   UiSchema,
   UiStruct,
 } from "@effect/ui"
-import { DomCommand, Html } from "@effect/ui/html"
+import { Html, HtmlCommand } from "@effect/ui/html"
 import { SessionLocation } from "../server/src/domain/Bunnings.ts"
 import { buttonClass, inputClass } from "./design/classes.ts"
 import { Icon } from "./design/icons.ts"
@@ -126,9 +126,8 @@ const left = (model: ShellModel, drawer: typeof Sheet.Type): ShellModel =>
     leaving: (leaving) => leaving.filter((sheet) => sheet !== drawer),
   })
 
-const ShellDef = Component.define({
+const ShellDef = Html.component({
   name: "Shell",
-  scoped: false,
   props: Schema.Struct({
     route: AppRoute,
     /** Starts the search page over when it changes. */
@@ -456,13 +455,13 @@ export const ShellNoDeps = ShellDef.make({
   update: {
     UpdatedSearch: updatedSearch,
     SubmittedSearch: ($) =>
-      $.run(DomCommand.blur(searchRef, () => Component.noop)),
+      $.run(HtmlCommand.blur(searchRef, () => Component.noop)),
     RequestedSearch: ($) =>
       $.run(
-        DomCommand.focus(searchRef, () => Component.noop, {
+        HtmlCommand.focus(searchRef, () => Component.noop, {
           preventScroll: true,
         }),
-        DomCommand.scrollIntoView(headerRef, () => Component.noop, {
+        HtmlCommand.scrollIntoView(headerRef, () => Component.noop, {
           behavior: "smooth",
           block: "start",
         }),

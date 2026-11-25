@@ -1,6 +1,7 @@
 import { Effect, Layer, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import { Icon } from "../../design/icons.ts"
 import { ProductCard } from "../../product/components/ProductCard.ts"
 import { KnownProducts } from "../../product/services/KnownProducts.ts"
@@ -26,9 +27,8 @@ export class ClearFavorites extends Command.Service<ClearFavorites>()(
 ) {}
 
 /** The favourites as a grid of product cards, newest first. */
-export const FavoritesListNoDeps = Component.define({
+export const FavoritesListNoDeps = Html.component({
   name: "FavoritesList",
-  scoped: false,
   model: Schema.Struct({}),
   message: FavoritesListMessage,
   queries: {
