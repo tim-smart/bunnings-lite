@@ -2,6 +2,7 @@ import * as Clipboard from "@effect/platform-browser/Clipboard"
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import { buttonClass, inputClass } from "../../design/classes.ts"
 import { Sheet, SheetFooter } from "../../design/drawer.ts"
 import { Icon } from "../../design/icons.ts"
@@ -85,9 +86,8 @@ const remoteUrlOf = (text: string): string | null | undefined => {
  * it is open and then until the drawer has left. It reports when it is
  * closed.
  */
-export const SyncSettingsPanelNoDeps = Component.define({
+export const SyncSettingsPanelNoDeps = Html.component({
   name: "SyncSettingsPanel",
-  scoped: false,
   props: Schema.Struct({ open: Schema.Boolean }),
   model: Schema.Struct({
     /** What was typed into the remote field. It shows the saved one until then. */

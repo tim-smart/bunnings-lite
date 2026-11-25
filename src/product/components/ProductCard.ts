@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { Component } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import { ProductBaseInfo } from "../../../server/src/domain/Bunnings.ts"
 import { cardClass } from "../../design/classes.ts"
 import { StarRating } from "../../design/starRating.ts"
@@ -13,9 +13,8 @@ import { FulfillmentBadge } from "./FulfillmentBadge.ts"
  * favourite star. The star sits beside the link, not inside it, so pressing
  * it doesn't follow the link.
  */
-export const ProductCard = Component.define({
+export const ProductCard = Html.component({
   name: "ProductCard",
-  scoped: false,
   props: Schema.Struct({
     product: ProductBaseInfo,
     /** The search the card is shown under, which its link keeps. */

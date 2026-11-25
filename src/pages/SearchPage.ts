@@ -1,6 +1,7 @@
 import { Array as Arr, Cause, Layer, Option, Schema } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Component, Head, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import type { ProductBaseInfo } from "../../server/src/domain/Bunnings.ts"
 import { InstallButton } from "../browser/components/InstallButton.ts"
 import {
@@ -43,9 +44,8 @@ const gridClass =
  * otherwise the results of the search in the URL, a page at a time as the
  * page is scrolled.
  */
-export const SearchPageNoDeps = Component.define({
+export const SearchPageNoDeps = Html.component({
   name: "SearchPage",
-  scoped: false,
   props: Schema.Struct({ route: SearchRoute }),
   model: Schema.Struct({ scrolled: Schema.Boolean }),
   message: SearchPageMessage,

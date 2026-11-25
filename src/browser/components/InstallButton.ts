@@ -1,5 +1,6 @@
 import { Effect, Schema, Stream } from "effect"
 import { Command, Component, Subscription, UiSchema } from "@effect/ui"
+import { Html } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
 import { Icon } from "../../design/icons.ts"
 import { InstallPrompt } from "../services/InstallPrompt.ts"
@@ -31,9 +32,8 @@ const installAvailable = Subscription.make(
 )
 
 /** Offers to install the app, once the browser says it can be. */
-export const InstallButtonNoDeps = Component.define({
+export const InstallButtonNoDeps = Html.component({
   name: "InstallButton",
-  scoped: false,
   model: Schema.Struct({ available: Schema.Boolean }),
   message: InstallButtonMessage,
 }).make({

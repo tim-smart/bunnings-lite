@@ -1,7 +1,7 @@
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { AsyncResult } from "effect/reactivity"
 import { Command, Component, Subscription, UiSchema } from "@effect/ui"
-import { DomCommand, Html } from "@effect/ui/html"
+import { Html, HtmlCommand } from "@effect/ui/html"
 import { buttonClass } from "../../design/classes.ts"
 import { Sheet, SheetFooter } from "../../design/drawer.ts"
 import { PendingInvite } from "../domain/Invite.ts"
@@ -54,9 +54,8 @@ const dismissRef = Html.ref("invite-dismiss", "button")
  * says so when the link can't be read. It is a drawer, and `Shell`
  * mounts it with the others so that only one is open.
  */
-export const InviteDialogNoDeps = Component.define({
+export const InviteDialogNoDeps = Html.component({
   name: "InviteDialog",
-  scoped: false,
   props: Schema.Struct({
     /** The id of the element that gets focus when the dialog closes. */
     returnFocusTo: Schema.String,
@@ -89,7 +88,7 @@ export const InviteDialogNoDeps = Component.define({
           InviteDialogEvents.Opened(),
         )
         return $.model.open
-          ? opened.run(DomCommand.focus(dismissRef, () => Component.noop))
+          ? opened.run(HtmlCommand.focus(dismissRef, () => Component.noop))
           : opened
       },
       RequestedClose: () =>

@@ -1,6 +1,6 @@
 import { Schema } from "effect"
 import { Command, Component, Router, UiSchema, UiStruct } from "@effect/ui"
-import { DomCommand, Html } from "@effect/ui/html"
+import { Html, HtmlCommand } from "@effect/ui/html"
 import { Slider } from "@effect/ui-kit"
 import { inputClass, labelClass } from "../../design/classes.ts"
 import { AppRoute, SearchRoute } from "../../routes.ts"
@@ -52,9 +52,8 @@ const ratingRange = (model: FiltersModel, route: SearchRoute) => ({
  * Its parent keys it by the search text, so edits that weren't applied don't
  * carry to another search.
  */
-export const Filters = Component.define({
+export const Filters = Html.component({
   name: "Filters",
-  scoped: false,
   props: Schema.Struct({
     route: SearchRoute,
     /** The range of prices in the search. Without one, no price filter. */
@@ -108,8 +107,8 @@ export const Filters = Component.define({
               parse(model.priceMin) ?? priceMin ?? Math.floor(price.start),
             priceMax: parse(model.priceMax) ?? priceMax ?? Math.ceil(price.end),
           }),
-          DomCommand.blur(minRef, () => Component.noop),
-          DomCommand.blur(maxRef, () => Component.noop),
+          HtmlCommand.blur(minRef, () => Component.noop),
+          HtmlCommand.blur(maxRef, () => Component.noop),
         )
       },
       MovedRating: ({ max, min }) =>

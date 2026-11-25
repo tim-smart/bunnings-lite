@@ -1,6 +1,6 @@
-import type { View } from "@effect/ui"
+import type { Html } from "@effect/ui/html"
 import { skeletonClass } from "./classes"
 
 /** A grey block standing in for content that is loading. */
-export const Skeleton = <Msg>(h: View.H<Msg>, className: string) =>
+export const Skeleton = <Msg>(h: Html.H<Msg>, className: string) =>
   h.div.class(skeletonClass(className))

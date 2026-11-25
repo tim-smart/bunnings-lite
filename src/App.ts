@@ -1,6 +1,6 @@
 import { Effect, Layer, Schema } from "effect"
 import { Command, Component, Head, Router, UiSchema } from "@effect/ui"
-import { HtmlHead } from "@effect/ui/html"
+import { Html, HtmlHead } from "@effect/ui/html"
 import { Reload } from "./browser/services/Reload.ts"
 import { buttonClass } from "./design/classes.ts"
 import { AppRoute } from "./routes.ts"
@@ -38,9 +38,8 @@ export class ReloadPage extends Command.Service<ReloadPage>()(
   }),
 ) {}
 
-export const AppNoDeps = Component.define({
+export const AppNoDeps = Html.component({
   name: "App",
-  scoped: false,
   props: Schema.Struct({ route: AppRoute }),
   model: Schema.Struct({
     route: AppRoute,
