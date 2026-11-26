@@ -100,20 +100,24 @@ export const StoreSearchNoDeps = Html.component({
       class: "h-[80vh]",
       children: [
         h.div.class("flex flex-col min-h-0 flex-1").children(
-          h.div.class("px-4 pb-2 relative").children(
-            Icon(h, "search", {
-              class:
-                "absolute left-7 top-1/2 -translate-y-1/2 -mt-1 size-4 text-muted-foreground",
-            }),
-            h.input
-              .attr("type", "search")
-              .attr("aria-label", "Search stores")
-              .attr("placeholder", "Store, suburb or postcode")
-              .class(inputClass("pl-9"))
-              .value(model.search)
-              .on("input", ({ value }) =>
-                StoreSearchMessage.UpdatedSearch({ text: value }),
-              ),
+          // The sheet's content scrolls, so the top padding keeps the focus
+          // ring from being clipped
+          h.div.class("px-4 pt-1 pb-2").children(
+            h.div.class("relative").children(
+              Icon(h, "search", {
+                class:
+                  "absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground",
+              }),
+              h.input
+                .attr("type", "search")
+                .attr("aria-label", "Search stores")
+                .attr("placeholder", "Store, suburb or postcode")
+                .class(inputClass("pl-9"))
+                .value(model.search)
+                .on("input", ({ value }) =>
+                  StoreSearchMessage.UpdatedSearch({ text: value }),
+                ),
+            ),
           ),
           h.div.class("overflow-y-auto flex-1 px-4 pb-safe").children(
             AsyncResult.match(h.queries.all, {
