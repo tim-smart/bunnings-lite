@@ -15,8 +15,11 @@ export class GetProduct extends Query.Service<GetProduct>()(
     staleTime: "10 minutes",
     tags: [SessionTag],
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return ({ id }) => session.use((client) => client.productInfo({ id }))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return ({ id }) => session.use((client) => client.productInfo({ id }))
+    }),
+  )
+}

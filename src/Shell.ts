@@ -57,12 +57,16 @@ export class AnswerStoreSearch extends Command.Service<AnswerStoreSearch>()(
   "Shell/AnswerStoreSearch",
   {
     args: { store: Schema.Option(SessionLocation) },
+    success: Component.Noop,
   },
-  Effect.gen(function* () {
-    const prompt = yield* StoreSearchPrompt
-    return ({ store }) => Effect.as(prompt.answer(store), Component.noop)
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const prompt = yield* StoreSearchPrompt
+      return ({ store }) => Effect.as(prompt.answer(store), Component.noop)
+    }),
+  )
+}
 
 const storeSearchAskedSubscription = Subscription.make(
   "Shell/storeSearchAsked",
@@ -240,7 +244,7 @@ const syncSettingsButton = ShellDef.fragment((h) =>
       .class(
         "grid size-10 cursor-pointer place-items-center rounded-full text-white/90 transition-colors hover:bg-white/10 hover:text-white active:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
       )
-      .onClick(ShellMessage.ClickedSyncSettings())
+      .on("click", ShellMessage.ClickedSyncSettings())
       .children(Icon(h, "settings2", { class: "size-5" })),
   ),
 )
@@ -264,7 +268,7 @@ const searchBox = ShellDef.fragment(
             }),
             h.form
               .attr("role", "search")
-              .onSubmit(ShellMessage.SubmittedSearch())
+              .on("submit", ShellMessage.SubmittedSearch())
               .children(
                 h.input
                   .ref(searchRef)
@@ -284,7 +288,7 @@ const searchBox = ShellDef.fragment(
                     ),
                   )
                   .value(query)
-                  .onInput(({ value }) =>
+                  .on("input", ({ value }) =>
                     ShellMessage.UpdatedSearch({ text: value }),
                   ),
               ),

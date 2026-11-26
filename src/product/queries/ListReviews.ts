@@ -24,8 +24,11 @@ export class ListReviews extends Query.InfiniteService<ListReviews>()(
     // A refetch restarts the server's stream, so it isn't worth doing often
     staleTime: "1 hour",
   },
-  Effect.gen(function* () {
-    const feed = yield* ReviewFeed
-    return ({ id }, cursor) => feed.next(id, Option.isNone(cursor))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const feed = yield* ReviewFeed
+      return ({ id }, cursor) => feed.next(id, Option.isNone(cursor))
+    }),
+  )
+}

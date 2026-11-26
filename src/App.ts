@@ -22,21 +22,27 @@ export const AppMessage = UiSchema.TaggedEnum({
  */
 export class FinishJoin extends Command.Service<FinishJoin>()(
   "App/FinishJoin",
-  { args: {}, stream: true },
-  Effect.gen(function* () {
-    const join = yield* PendingJoin
-    return () => join.finish
-  }),
-) {}
+  { args: {}, success: JoinProgress, error: JoinFailed, stream: true },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const join = yield* PendingJoin
+      return () => join.finish
+    }),
+  )
+}
 
 export class ReloadPage extends Command.Service<ReloadPage>()(
   "App/ReloadPage",
-  { args: {} },
-  Effect.gen(function* () {
-    const page = yield* Reload
-    return () => Effect.as(page.reload, Component.noop)
-  }),
-) {}
+  { args: {}, success: Component.Noop },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const page = yield* Reload
+      return () => Effect.as(page.reload, Component.noop)
+    }),
+  )
+}
 
 export const AppNoDeps = Html.component({
   name: "App",
@@ -129,7 +135,7 @@ export const AppNoDeps = Html.component({
             h.button
               .attr("type", "button")
               .class(buttonClass())
-              .onClick(AppMessage.ClickedRetry())
+              .on("click", AppMessage.ClickedRetry())
               .children("ClickedRetry"),
           )
     }

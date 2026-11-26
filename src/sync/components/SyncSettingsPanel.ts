@@ -32,16 +32,20 @@ export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
   "sync/SetRemoteUrl",
   {
     args: { url: Schema.NullOr(Schema.String) },
+    success: Component.Noop,
     invalidates: () => [GetSyncSettings],
   },
-  Effect.gen(function* () {
-    const remote = yield* SyncRemote
-    return ({ url }) =>
-      remote
-        .setUrl(Option.map(Option.fromNullishOr(url), (url) => new URL(url)))
-        .pipe(Effect.as(Component.noop))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const remote = yield* SyncRemote
+      return ({ url }) =>
+        remote
+          .setUrl(Option.map(Option.fromNullishOr(url), (url) => new URL(url)))
+          .pipe(Effect.as(Component.noop))
+    }),
+  )
+}
 
 /**
  * Copies a link that invites another device, and answers with whether a link
@@ -50,28 +54,31 @@ export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
  */
 export class CopyInvite extends Command.Service<CopyInvite>()(
   "sync/CopyInvite",
-  { args: {} },
-  Effect.gen(function* () {
-    const invites = yield* Invites
-    const clipboard = yield* Clipboard.Clipboard
-    return () =>
-      invites.link.pipe(
-        Effect.flatMap(
-          Option.match({
-            onNone: () => Effect.succeed(false),
-            onSome: (link) =>
-              clipboard.writeString(link).pipe(
-                Effect.as(true),
-                Effect.orElseSucceed(() => false),
-              ),
-          }),
-        ),
-        Effect.map((copied) =>
-          SyncSettingsPanelMessage.CompletedCopyInvite({ copied }),
-        ),
-      )
-  }),
-) {}
+  { args: {}, success: SyncSettingsPanelMessage },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const invites = yield* Invites
+      const clipboard = yield* Clipboard.Clipboard
+      return () =>
+        invites.link.pipe(
+          Effect.flatMap(
+            Option.match({
+              onNone: () => Effect.succeed(false),
+              onSome: (link) =>
+                clipboard.writeString(link).pipe(
+                  Effect.as(true),
+                  Effect.orElseSucceed(() => false),
+                ),
+            }),
+          ),
+          Effect.map((copied) =>
+            SyncSettingsPanelMessage.CompletedCopyInvite({ copied }),
+          ),
+        )
+    }),
+  )
+}
 
 // The URL a remote field holds: none when blank, and nothing to save while
 // what is typed isn't a URL yet
@@ -153,7 +160,7 @@ export const SyncSettingsPanelNoDeps = Html.component({
                   .attr("placeholder", "https://")
                   .class(inputClass())
                   .value(model.remoteUrl ?? settings.remoteUrl ?? "")
-                  .onInput(({ value }) =>
+                  .on("input", ({ value }) =>
                     SyncSettingsPanelMessage.UpdatedRemoteUrl({ text: value }),
                   ),
               ),
@@ -186,7 +193,7 @@ export const SyncSettingsPanelNoDeps = Html.component({
                     .attr("type", "button")
                     .disabled(settings.remoteUrl === null)
                     .class(buttonClass({ variant: "outline" }))
-                    .onClick(SyncSettingsPanelMessage.ClickedCopyInvite())
+                    .on("click", SyncSettingsPanelMessage.ClickedCopyInvite())
                     .children(
                       Icon(h, model.copied ? "check" : "copy"),
                       "Copy invite link",
@@ -207,7 +214,7 @@ export const SyncSettingsPanelNoDeps = Html.component({
           h.button
             .attr("type", "button")
             .class(buttonClass({ variant: "outline" }))
-            .onClick(SyncSettingsPanelMessage.RequestedClose())
+            .on("click", SyncSettingsPanelMessage.RequestedClose())
             .children("Close"),
         ),
       ],

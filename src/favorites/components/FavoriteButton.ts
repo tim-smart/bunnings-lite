@@ -21,12 +21,17 @@ export class ToggleFavorite extends Command.Service<ToggleFavorite>()(
     // Invalidates nothing: the favourites refetch themselves after every
     // change.
     args: { product: ProductBaseInfo },
+    success: Component.Noop,
   },
-  Effect.gen(function* () {
-    const favorites = yield* Favorites
-    return ({ product }) => Effect.as(favorites.toggle(product), Component.noop)
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const favorites = yield* Favorites
+      return ({ product }) =>
+        Effect.as(favorites.toggle(product), Component.noop)
+    }),
+  )
+}
 
 /**
  * The star that makes a product a favourite. `icon` is the round one on a
@@ -85,7 +90,7 @@ export const FavoriteButtonNoDeps = Html.component({
           class: "cursor-pointer",
         }),
       )
-      .onClick(toggled)
+      .on("click", toggled)
       .children(
         Icon(h, "star", {
           class: Html.classNames(

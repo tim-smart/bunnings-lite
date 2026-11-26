@@ -14,8 +14,11 @@ export class CurrentStore extends Query.Service<CurrentStore>()(
     staleTime: "1 hour",
     tags: [SessionTag],
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return () => session.location
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return () => session.location
+    }),
+  )
+}

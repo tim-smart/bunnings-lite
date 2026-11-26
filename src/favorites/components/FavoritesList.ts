@@ -19,12 +19,16 @@ export class ClearFavorites extends Command.Service<ClearFavorites>()(
     // Invalidates nothing: the favourites refetch themselves after every
     // change.
     args: {},
+    success: Component.Noop,
   },
-  Effect.gen(function* () {
-    const favorites = yield* Favorites
-    return () => Effect.as(favorites.clear, Component.noop)
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const favorites = yield* Favorites
+      return () => Effect.as(favorites.clear, Component.noop)
+    }),
+  )
+}
 
 /** The favourites as a grid of product cards, newest first. */
 export const FavoritesListNoDeps = Html.component({
@@ -82,7 +86,7 @@ export const FavoritesListNoDeps = Html.component({
             .class(
               "cursor-pointer rounded-sm text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             )
-            .onClick(FavoritesListMessage.ClickedClear())
+            .on("click", FavoritesListMessage.ClickedClear())
             .children("Clear all"),
         ),
         h.div

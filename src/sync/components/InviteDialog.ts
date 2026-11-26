@@ -26,14 +26,17 @@ export const InviteDialogEvents = UiSchema.TaggedEnum({
  * Joins through the invite that was opened. The page reloads to finish it,
  * so this only resolves if there was nothing to join.
  */
-export class JoinSync extends Command.Service<JoinSync>()(
-  "sync/JoinSync",
-  { args: {} },
-  Effect.gen(function* () {
-    const invites = yield* Invites
-    return () => Effect.as(invites.join, Component.noop)
-  }),
-) {}
+export class JoinSync extends Command.Service<JoinSync>()("sync/JoinSync", {
+  args: {},
+  success: Component.Noop,
+}) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const invites = yield* Invites
+      return () => Effect.as(invites.join, Component.noop)
+    }),
+  )
+}
 
 const invitesOpened = Subscription.make(
   "sync/invitesOpened",
@@ -128,7 +131,7 @@ export const InviteDialogNoDeps = Html.component({
               .ref(dismissRef)
               .attr("type", "button")
               .class(buttonClass({ variant: "outline" }))
-              .onClick(dismissed)
+              .on("click", dismissed)
               .children("Close"),
           ),
         ],
@@ -177,12 +180,12 @@ export const InviteDialogNoDeps = Html.component({
             .ref(dismissRef)
             .attr("type", "button")
             .class(buttonClass({ variant: "outline" }))
-            .onClick(dismissed)
+            .on("click", dismissed)
             .children("Cancel"),
           h.button
             .attr("type", "button")
             .class(buttonClass())
-            .onClick(InviteDialogMessage.ClickedJoin())
+            .on("click", InviteDialogMessage.ClickedJoin())
             .children("Join"),
         ),
       ],

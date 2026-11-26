@@ -32,9 +32,12 @@ export const StoreSearchEvents = UiSchema.TaggedEnum({
 /** Loads the list of every store again, after it failed. */
 export class RetryAllStores extends Command.Service<RetryAllStores>()(
   "stores/RetryAllStores",
-  { args: {}, invalidates: () => [AllStores] },
-  Effect.succeed(() => Effect.succeed(Component.noop)),
-) {}
+  { args: {}, success: Component.Noop, invalidates: () => [AllStores] },
+) {
+  static readonly layer = this.toLayer(
+    Effect.succeed(() => Effect.succeed(Component.noop)),
+  )
+}
 
 const matches = (store: Store, terms: ReadonlyArray<string>) => {
   const text = [
@@ -108,7 +111,7 @@ export const StoreSearchNoDeps = Html.component({
               .attr("placeholder", "Store, suburb or postcode")
               .class(inputClass("pl-9"))
               .value(model.search)
-              .onInput(({ value }) =>
+              .on("input", ({ value }) =>
                 StoreSearchMessage.UpdatedSearch({ text: value }),
               ),
           ),
@@ -130,7 +133,7 @@ export const StoreSearchNoDeps = Html.component({
                     h.button
                       .attr("type", "button")
                       .class(buttonClass({ variant: "outline" }))
-                      .onClick(StoreSearchMessage.ClickedRetry())
+                      .on("click", StoreSearchMessage.ClickedRetry())
                       .children("Try again"),
                   ),
               onSuccess: ({ value: stores }) => {
@@ -164,7 +167,8 @@ export const StoreSearchNoDeps = Html.component({
                     .class(
                       "flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
                     )
-                    .onClick(
+                    .on(
+                      "click",
                       StoreSearchMessage.ClickedStore({
                         location: SessionLocation.fromStore(store),
                       }),
