@@ -100,10 +100,13 @@ export const StoreSearchNoDeps = Html.component({
       class: "h-[80vh]",
       children: [
         h.div.class("flex flex-col min-h-0 flex-1").children(
-          h.div.class("px-4 pb-2 relative").children(
+          // Margins rather than padding keep the box the input's size, so the
+          // icon centres on it. The top margin keeps the focus ring from being
+          // clipped by the sheet's scrolling content.
+          h.div.class("relative mx-4 mt-1 mb-2").children(
             Icon(h, "search", {
               class:
-                "absolute left-7 top-1/2 -translate-y-1/2 -mt-1 size-4 text-muted-foreground",
+                "absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground",
             }),
             h.input
               .attr("type", "search")
