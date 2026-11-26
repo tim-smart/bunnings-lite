@@ -13,12 +13,15 @@ export const InstallButtonMessage = UiSchema.TaggedEnum({
 /** Shows the browser's prompt to install the app. */
 export class PromptInstall extends Command.Service<PromptInstall>()(
   "browser/PromptInstall",
-  { args: {} },
-  Effect.gen(function* () {
-    const install = yield* InstallPrompt
-    return () => Effect.as(install.prompt, Component.noop)
-  }),
-) {}
+  { args: {}, success: Component.Noop },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const install = yield* InstallPrompt
+      return () => Effect.as(install.prompt, Component.noop)
+    }),
+  )
+}
 
 const installAvailable = Subscription.make(
   "browser/installAvailable",
@@ -50,7 +53,7 @@ export const InstallButtonNoDeps = Html.component({
         h.button
           .attr("type", "button")
           .class(buttonClass({ class: "cursor-pointer" }))
-          .onClick(InstallButtonMessage.ClickedInstall())
+          .on("click", InstallButtonMessage.ClickedInstall())
           .children(Icon(h, "house"), "Add to home screen"),
     ),
 })

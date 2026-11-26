@@ -25,26 +25,31 @@ export class SearchProducts extends Query.InfiniteService<SearchProducts>()(
     staleTime: "5 minutes",
     tags: [SessionTag],
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    const known = yield* KnownProducts
-    return ({ price, query, rating }, cursor) =>
-      session
-        .use((client) =>
-          client.search({
-            query,
-            offset: Option.getOrElse(cursor, () => 0),
-            priceRange: Option.fromNullishOr(price),
-            ratingRange: Option.fromNullishOr(rating),
-          }),
-        )
-        .pipe(
-          Effect.tap((data) => Effect.sync(() => known.remember(data.results))),
-          Effect.map(({ facets, results, totalCount }): ResultsPage => ({
-            facets,
-            results,
-            totalCount,
-          })),
-        )
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      const known = yield* KnownProducts
+      return ({ price, query, rating }, cursor) =>
+        session
+          .use((client) =>
+            client.search({
+              query,
+              offset: Option.getOrElse(cursor, () => 0),
+              priceRange: Option.fromNullishOr(price),
+              ratingRange: Option.fromNullishOr(rating),
+            }),
+          )
+          .pipe(
+            Effect.tap((data) =>
+              Effect.sync(() => known.remember(data.results)),
+            ),
+            Effect.map(({ facets, results, totalCount }): ResultsPage => ({
+              facets,
+              results,
+              totalCount,
+            })),
+          )
+    }),
+  )
+}

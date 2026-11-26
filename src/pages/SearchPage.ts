@@ -158,7 +158,7 @@ export const SearchPageNoDeps = Html.component({
           h.button
             .attr("type", "button")
             .class(buttonClass({ class: "mt-3" }))
-            .onClick(SearchPageMessage.RequestedSearch())
+            .on("click", SearchPageMessage.RequestedSearch())
             .children("Try another search"),
         )
 
@@ -252,7 +252,7 @@ export const SearchPageNoDeps = Html.component({
                     "size-12 cursor-pointer rounded-full shadow-lg shadow-primary/25 animate-in fade-in zoom-in-90",
                 }),
               )
-              .onClick(SearchPageMessage.RequestedSearch())
+              .on("click", SearchPageMessage.RequestedSearch())
               .children(
                 Icon(h, "arrowUp", { class: "size-5", strokeWidth: 2.5 }),
               ),

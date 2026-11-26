@@ -9,18 +9,18 @@ import { Session } from "../../rpc/services/Session.ts"
  * unavailable. Only read while the store search is open, and kept for a
  * while after it closes.
  */
-export class AllStores extends Query.Service<AllStores>()(
-  "stores/AllStores",
-  {
-    args: {},
-    success: Schema.Array(Store),
-    error: ApiError,
-    staleTime: "10 minutes",
-    idleTimeToLive: "10 minutes",
-  },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return () =>
-      session.stream((client) => client.allStores()).pipe(Stream.runCollect)
-  }),
-) {}
+export class AllStores extends Query.Service<AllStores>()("stores/AllStores", {
+  args: {},
+  success: Schema.Array(Store),
+  error: ApiError,
+  staleTime: "10 minutes",
+  idleTimeToLive: "10 minutes",
+}) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return () =>
+        session.stream((client) => client.allStores()).pipe(Stream.runCollect)
+    }),
+  )
+}

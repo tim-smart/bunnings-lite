@@ -15,8 +15,11 @@ export class GetKnownProduct extends Query.Service<GetKnownProduct>()(
     error: Schema.Never,
     staleTime: "5 minutes",
   },
-  Effect.gen(function* () {
-    const known = yield* KnownProducts
-    return ({ id }) => Effect.sync(() => known.find(id))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const known = yield* KnownProducts
+      return ({ id }) => Effect.sync(() => known.find(id))
+    }),
+  )
+}

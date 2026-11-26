@@ -149,7 +149,7 @@ export const Filters = Html.component({
               .class(
                 "cursor-pointer rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               )
-              .onClick(FiltersMessage.ClickedClear({ filter }))
+              .on("click", FiltersMessage.ClickedClear({ filter }))
               .children("(clear)"),
         )
 
@@ -169,10 +169,10 @@ export const Filters = Html.component({
         )
         .class(inputClass("tabular-nums"))
         .value(edit ?? (applied === undefined ? "" : String(applied)))
-        .onInput(({ value }) =>
+        .on("input", ({ value }) =>
           FiltersMessage.UpdatedPrice({ end, text: value }),
         )
-        .onBlur(FiltersMessage.BlurredPrice({ end }))
+        .on("blur", FiltersMessage.BlurredPrice({ end }))
     }
 
     const priceFilter = (range: FacetRange) =>
@@ -190,7 +190,7 @@ export const Filters = Html.component({
             .children(
               h.form
                 .class("w-full")
-                .onSubmit(FiltersMessage.SubmittedPrice())
+                .on("submit", FiltersMessage.SubmittedPrice())
                 .children(
                   h.div
                     .class("flex gap-3 items-center")

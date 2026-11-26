@@ -13,9 +13,12 @@ export class GetReviewStats extends Query.Service<GetReviewStats>()(
     error: ApiError,
     staleTime: "10 minutes",
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return ({ id }) =>
-      session.use((client) => client.productReviewStats({ id }))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return ({ id }) =>
+        session.use((client) => client.productReviewStats({ id }))
+    }),
+  )
+}

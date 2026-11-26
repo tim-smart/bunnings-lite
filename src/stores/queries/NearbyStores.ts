@@ -14,27 +14,32 @@ export class NearbyStores extends Query.Service<NearbyStores>()(
     error: ApiError,
     staleTime: "5 minutes",
   },
-  Effect.gen(function* () {
-    const geolocation = yield* Geolocation.Geolocation
-    const session = yield* Session
-    return () =>
-      geolocation.getCurrentPosition().pipe(
-        // A browser without geolocation throws, where one that refuses fails
-        Effect.catchCause(() =>
-          Effect.fail(
-            new ApiError({ message: "The device's location is unavailable." }),
-          ),
-        ),
-        Effect.flatMap(({ coords }) =>
-          session
-            .stream((client) =>
-              client.stores({
-                latitude: coords.latitude,
-                longitude: coords.longitude,
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const geolocation = yield* Geolocation.Geolocation
+      const session = yield* Session
+      return () =>
+        geolocation.getCurrentPosition().pipe(
+          // A browser without geolocation throws, where one that refuses fails
+          Effect.catchCause(() =>
+            Effect.fail(
+              new ApiError({
+                message: "The device's location is unavailable.",
               }),
-            )
-            .pipe(Stream.take(10), Stream.runCollect),
-        ),
-      )
-  }),
-) {}
+            ),
+          ),
+          Effect.flatMap(({ coords }) =>
+            session
+              .stream((client) =>
+                client.stores({
+                  latitude: coords.latitude,
+                  longitude: coords.longitude,
+                }),
+              )
+              .pipe(Stream.take(10), Stream.runCollect),
+          ),
+        )
+    }),
+  )
+}

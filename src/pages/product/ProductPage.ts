@@ -39,12 +39,15 @@ export const ProductPageMessage = UiSchema.TaggedEnum({
 /** Offers the product's page to the device's share sheet. */
 export class ShareProduct extends Command.Service<ShareProduct>()(
   "product/ShareProduct",
-  { args: { title: Schema.String } },
-  Effect.gen(function* () {
-    const share = yield* Share
-    return ({ title }) => Effect.as(share.sharePage(title), Component.noop)
-  }),
-) {}
+  { args: { title: Schema.String }, success: Component.Noop },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const share = yield* Share
+      return ({ title }) => Effect.as(share.sharePage(title), Component.noop)
+    }),
+  )
+}
 
 /**
  * What is known of the product so far: all of it once it has loaded, until
@@ -210,7 +213,7 @@ const images = ProductPageDef.fragment(
                   ? "ring-2 ring-brand hover:ring-brand"
                   : "hover:ring-brand/30",
               )
-              .onClick(ProductPageMessage.ClickedImage({ index: i }))
+              .on("click", ProductPageMessage.ClickedImage({ index: i }))
               .key(String(i))
               .children(
                 h.img
@@ -385,7 +388,7 @@ const productPageView = ProductPageDef.view((h, model) => {
       h.button
         .attr("type", "button")
         .class(buttonClass({ variant: "link", class: "-ml-3 cursor-pointer" }))
-        .onClick(ProductPageMessage.ClickedBack())
+        .on("click", ProductPageMessage.ClickedBack())
         .children(Icon(h, "arrowLeft"), "Back"),
     ),
     h.div
@@ -464,7 +467,8 @@ const productPageView = ProductPageDef.view((h, model) => {
                 h.button
                   .attr("type", "button")
                   .class(buttonClass({ variant: "outline", size: "lg" }))
-                  .onClick(
+                  .on(
+                    "click",
                     ProductPageMessage.ClickedShare({
                       title: product.title,
                     }),

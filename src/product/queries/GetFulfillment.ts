@@ -15,8 +15,11 @@ export class GetFulfillment extends Query.Service<GetFulfillment>()(
     staleTime: "15 minutes",
     tags: [SessionTag],
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return ({ id }) => session.use((client) => client.fulfillment({ id }))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return ({ id }) => session.use((client) => client.fulfillment({ id }))
+    }),
+  )
+}

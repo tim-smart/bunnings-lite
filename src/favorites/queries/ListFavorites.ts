@@ -13,15 +13,18 @@ export class ListFavorites extends Query.Service<ListFavorites>()(
     error: Schema.Never,
     staleTime: "1 hour",
   },
-  Effect.gen(function* () {
-    const favorites = yield* Favorites
-    const known = yield* KnownProducts
-    return () =>
-      Effect.tap(favorites.all, (products) =>
-        Effect.sync(() => known.remember(products)),
-      )
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const favorites = yield* Favorites
+      const known = yield* KnownProducts
+      return () =>
+        Effect.tap(favorites.all, (products) =>
+          Effect.sync(() => known.remember(products)),
+        )
+    }),
+  )
+}
 
 /**
  * Refetches the favourites after each change to them. A change can come from

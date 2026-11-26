@@ -26,6 +26,7 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
   "stores/ChooseStore",
   {
     args: { location: SessionLocation },
+    success: Component.Noop,
     // Prices and stock are per store
     invalidates: () => [SessionTag],
     // Shown as the store at once, until the session has it too
@@ -33,12 +34,15 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
       CurrentStore.patch({}, () => Option.some(location)),
     ],
   },
-  Effect.gen(function* () {
-    const session = yield* Session
-    return ({ location }) =>
-      Effect.as(session.setLocation(location), Component.noop)
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return ({ location }) =>
+        Effect.as(session.setLocation(location), Component.noop)
+    }),
+  )
+}
 
 /**
  * Opens the search of every store and waits for what it comes back with:
@@ -46,15 +50,18 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
  */
 export class SearchAllStores extends Command.Service<SearchAllStores>()(
   "stores/SearchAllStores",
-  { args: {} },
-  Effect.gen(function* () {
-    const prompt = yield* StoreSearchPrompt
-    return () =>
-      Effect.map(prompt.ask, (store) =>
-        StoreSelectorMessage.AnsweredStoreSearch({ store }),
-      )
-  }),
-) {}
+  { args: {}, success: StoreSelectorMessage },
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const prompt = yield* StoreSearchPrompt
+      return () =>
+        Effect.map(prompt.ask, (store) =>
+          StoreSelectorMessage.AnsweredStoreSearch({ store }),
+        )
+    }),
+  )
+}
 
 /**
  * Chooses the store to shop at: from the ten nearest, which asks for the
@@ -133,10 +140,10 @@ export const StoreSelectorNoDeps = Html.component({
             "store-select h-11 w-full cursor-pointer rounded-md border border-input bg-card py-2 pr-9 pl-10 text-sm font-medium outline-none transition-[color,box-shadow] hover:border-primary/40 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15",
             Option.isNone(shown) ? "text-muted-foreground" : "text-foreground",
           )
-          .onFocus(StoreSelectorMessage.ReachedPicker())
+          .on("focus", StoreSelectorMessage.ReachedPicker())
           // A press that opens a styled list focuses an option, not the select
-          .onClick(StoreSelectorMessage.ReachedPicker())
-          .onChange(({ value }) => {
+          .on("click", StoreSelectorMessage.ReachedPicker())
+          .on("change", ({ value }) => {
             if (value === searchValue) {
               return StoreSelectorMessage.SelectedSearchAllStores()
             }

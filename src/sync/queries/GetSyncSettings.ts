@@ -16,16 +16,19 @@ export class GetSyncSettings extends Query.Service<GetSyncSettings>()(
     error: Schema.Never,
     staleTime: "1 hour",
   },
-  Effect.gen(function* () {
-    const settings = yield* SyncSettings
-    const identity = EventLog.encodeIdentityString(settings.identity)
-    return () =>
-      Effect.map(settings.remoteUrl, (url) => ({
-        identity,
-        remoteUrl: Option.match(url, {
-          onNone: () => null,
-          onSome: (url) => url.toString(),
-        }),
-      }))
-  }),
-) {}
+) {
+  static readonly layer = this.toLayer(
+    Effect.gen(function* () {
+      const settings = yield* SyncSettings
+      const identity = EventLog.encodeIdentityString(settings.identity)
+      return () =>
+        Effect.map(settings.remoteUrl, (url) => ({
+          identity,
+          remoteUrl: Option.match(url, {
+            onNone: () => null,
+            onSome: (url) => url.toString(),
+          }),
+        }))
+    }),
+  )
+}
