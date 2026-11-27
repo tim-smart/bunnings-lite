@@ -13,19 +13,20 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@effect/platform-browser": "^4.1.5",
-    "@effect/ui": "https://pkg.pr.new/Effect-TS/ui/@effect/ui@b47ee7a",
-    "@effect/ui-kit": "https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@b47ee7a",
+    "@effect/platform-browser": "^4.1.6",
+    "@effect/ui": "https://pkg.pr.new/Effect-TS/ui/@effect/ui@e0b7cec",
+    "@effect/ui-kit": "https://pkg.pr.new/Effect-TS/ui/@effect/ui-kit@e0b7cec",
     "clsx": "^2.1.1",
-    "effect": "^4.1.5",
+    "effect": "^4.1.6",
     "tailwind-merge": "^3.6.0",
     "workbox-precaching": "^7.4.0",
     "workbox-routing": "^7.4.0"
   },
   "devDependencies": {
-    "@effect/platform-node": "^4.1.5",
+    "@effect/platform-node": "^4.1.6",
     "@effect/tsgo": "0.73.2",
-    "@effect/vitest": "^4.1.5",
+    "@effect/ui-devtools": "https://pkg.pr.new/Effect-TS/ui/@effect/ui-devtools@e0b7cec",
+    "@effect/vitest": "^4.1.6",
     "@playwright/test": "1.59.1",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",

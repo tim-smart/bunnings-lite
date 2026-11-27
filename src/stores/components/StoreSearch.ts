@@ -32,11 +32,9 @@ export const StoreSearchEvents = UiSchema.TaggedEnum({
 /** Loads the list of every store again, after it failed. */
 export class RetryAllStores extends Command.Service<RetryAllStores>()(
   "stores/RetryAllStores",
-  { args: {}, success: Component.Noop, invalidates: () => [AllStores] },
+  { invalidates: () => [AllStores] },
 ) {
-  static readonly layer = this.toLayer(
-    Effect.succeed(() => Effect.succeed(Component.noop)),
-  )
+  static readonly layer = this.toLayer(Effect.succeed(() => Effect.void))
 }
 
 const matches = (store: Store, terms: ReadonlyArray<string>) => {

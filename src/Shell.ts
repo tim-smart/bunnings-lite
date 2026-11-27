@@ -57,13 +57,12 @@ export class AnswerStoreSearch extends Command.Service<AnswerStoreSearch>()(
   "Shell/AnswerStoreSearch",
   {
     args: { store: Schema.Option(SessionLocation) },
-    success: Component.Noop,
   },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const prompt = yield* StoreSearchPrompt
-      return ({ store }) => Effect.as(prompt.answer(store), Component.noop)
+      return ({ store }) => prompt.answer(store)
     }),
   )
 }
@@ -146,6 +145,7 @@ const ShellDef = Html.component({
   queries: {
     results: {
       query: SearchProducts,
+      dropPrevious: true,
       debounce: searchDebounce,
       args: ({ props }) => searchArgs(props.route),
     },

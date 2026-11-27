@@ -18,7 +18,7 @@ export const StoreSelectorMessage = UiSchema.TaggedEnum({
   SelectedStore: { location: SessionLocation },
   SelectedSearchAllStores: {},
   /** The store the search came back with, or none when it was closed. */
-  AnsweredStoreSearch: { store: Schema.Option(SessionLocation) },
+  CompletedSearchAllStores: { store: Schema.Option(SessionLocation) },
 })
 
 /** Shops at a store: saves it and logs the session in with it. */
@@ -26,7 +26,6 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
   "stores/ChooseStore",
   {
     args: { location: SessionLocation },
-    success: Component.Noop,
     // Prices and stock are per store
     invalidates: () => [SessionTag],
     // Shown as the store at once, until the session has it too
@@ -38,8 +37,7 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const session = yield* Session
-      return ({ location }) =>
-        Effect.as(session.setLocation(location), Component.noop)
+      return ({ location }) => session.setLocation(location)
     }),
   )
 }
@@ -50,14 +48,14 @@ export class ChooseStore extends Command.Service<ChooseStore>()(
  */
 export class SearchAllStores extends Command.Service<SearchAllStores>()(
   "stores/SearchAllStores",
-  { args: {}, success: StoreSelectorMessage },
+  { success: StoreSelectorMessage },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const prompt = yield* StoreSearchPrompt
       return () =>
         Effect.map(prompt.ask, (store) =>
-          StoreSelectorMessage.AnsweredStoreSearch({ store }),
+          StoreSelectorMessage.CompletedSearchAllStores({ store }),
         )
     }),
   )
@@ -92,6 +90,7 @@ export const StoreSelectorNoDeps = Html.component({
     // until the picker is reached for
     nearby: {
       query: NearbyStores,
+      dropPrevious: true,
       args: ({ model }) => (model.nearbyWanted ? {} : undefined),
     },
   },
@@ -104,7 +103,7 @@ export const StoreSelectorNoDeps = Html.component({
       SelectedStore: ({ location }) => $.run(ChooseStore.make({ location })),
       SelectedSearchAllStores: () => $.run(SearchAllStores.make()),
       // The host hands focus back to the select that opened the search
-      AnsweredStoreSearch: ({ store }) =>
+      CompletedSearchAllStores: ({ store }) =>
         Option.match(store, {
           onNone: () => $.model,
           onSome: (location) => $.run(ChooseStore.make({ location })),

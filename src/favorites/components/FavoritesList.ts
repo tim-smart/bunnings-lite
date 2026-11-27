@@ -15,17 +15,11 @@ export const FavoritesListMessage = UiSchema.TaggedEnum({
 /** Removes every favourite, on every device that syncs with this one. */
 export class ClearFavorites extends Command.Service<ClearFavorites>()(
   "favorites/ClearFavorites",
-  {
-    // Invalidates nothing: the favourites refetch themselves after every
-    // change.
-    args: {},
-    success: Component.Noop,
-  },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const favorites = yield* Favorites
-      return () => Effect.as(favorites.clear, Component.noop)
+      return () => favorites.clear
     }),
   )
 }

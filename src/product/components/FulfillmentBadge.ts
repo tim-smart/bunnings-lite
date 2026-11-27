@@ -25,6 +25,7 @@ export const FulfillmentBadgeNoDeps = Html.component({
   queries: {
     fulfillment: {
       query: GetFulfillment,
+      dropPrevious: true,
       args: ({ props }) => ({ id: props.id }),
     },
   },

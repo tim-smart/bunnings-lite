@@ -26,14 +26,11 @@ export const InviteDialogEvents = UiSchema.TaggedEnum({
  * Joins through the invite that was opened. The page reloads to finish it,
  * so this only resolves if there was nothing to join.
  */
-export class JoinSync extends Command.Service<JoinSync>()("sync/JoinSync", {
-  args: {},
-  success: Component.Noop,
-}) {
+export class JoinSync extends Command.Service<JoinSync>()("sync/JoinSync") {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const invites = yield* Invites
-      return () => Effect.as(invites.join, Component.noop)
+      return () => invites.join
     }),
   )
 }

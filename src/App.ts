@@ -1,4 +1,4 @@
-import { Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Schema, Stream } from "effect"
 import { Command, Component, Head, Router, UiSchema } from "@effect/ui"
 import { Html, HtmlHead } from "@effect/ui/html"
 import { Reload } from "./browser/services/Reload.ts"
@@ -6,7 +6,7 @@ import { buttonClass } from "./design/classes.ts"
 import { AppRoute } from "./routes.ts"
 import { searchCleared } from "./search/domain/Search.ts"
 import { Shell } from "./Shell.ts"
-import { JoinFailed, JoinProgress } from "./sync/domain/Invite.ts"
+import { JoinProgress } from "./sync/domain/Invite.ts"
 import { PendingJoin } from "./sync/services/PendingJoin.ts"
 
 export const AppMessage = UiSchema.TaggedEnum({
@@ -22,24 +22,27 @@ export const AppMessage = UiSchema.TaggedEnum({
  */
 export class FinishJoin extends Command.Service<FinishJoin>()(
   "App/FinishJoin",
-  { args: {}, success: JoinProgress, error: JoinFailed, stream: true },
+  { success: AppMessage, stream: true },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const join = yield* PendingJoin
-      return () => join.finish
+      return () =>
+        join.finish.pipe(
+          Stream.map((progress) => AppMessage.ProgressedJoin({ progress })),
+          Stream.catch(() => Stream.succeed(AppMessage.FailedFinishJoin())),
+        )
     }),
   )
 }
 
 export class ReloadPage extends Command.Service<ReloadPage>()(
   "App/ReloadPage",
-  { args: {}, success: Component.Noop },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const page = yield* Reload
-      return () => Effect.as(page.reload, Component.noop)
+      return () => page.reload
     }),
   )
 }
@@ -62,12 +65,7 @@ export const AppNoDeps = Html.component({
 }).make({
   init: ($) =>
     $.set({ route: $.props.route, searchesCleared: 0, join: "Checking" }).run(
-      FinishJoin.make().pipe(
-        Command.match({
-          onSuccess: (progress) => AppMessage.ProgressedJoin({ progress }),
-          onFailure: (_: JoinFailed) => AppMessage.FailedFinishJoin(),
-        }),
-      ),
+      FinishJoin.make(),
     ),
   update: ($, message) =>
     AppMessage.match(message, {

@@ -6,7 +6,6 @@ import { HtmlLocator, HtmlScene } from "@effect/ui/html/testing"
 import { AppMessage, AppNoDeps, FinishJoin, ReloadPage } from "./App.ts"
 import type { AppRoute } from "./routes.ts"
 import { Shell } from "./Shell.ts"
-import { JoinFailed } from "./sync/domain/Invite.ts"
 
 const search = (query: string): AppRoute => ({
   _tag: "Search",
@@ -26,10 +25,10 @@ describe("App", () => {
       s.expectExact(FinishJoin).expect(heading).toBeAbsent()
       assert.strictEqual(Scene.children(s.view, Shell).length, 0)
       // Another tab still has the old journal open
-      s.next(FinishJoin, "Blocked")
+      s.next(FinishJoin, AppMessage.ProgressedJoin({ progress: "Blocked" }))
         .expect(heading)
         .toHaveText(/Waiting to finish joining/)
-        .next(FinishJoin, "Finished")
+        .next(FinishJoin, AppMessage.ProgressedJoin({ progress: "Finished" }))
         .expect(heading)
         .toBeAbsent()
       assert.strictEqual(Scene.children(s.view, Shell).length, 1)
@@ -40,7 +39,8 @@ describe("App", () => {
   it.effect("offers a retry when the join can't be saved", () =>
     Effect.gen(function* () {
       const s = yield* HtmlScene.make(AppNoDeps, { route })
-      s.fail(FinishJoin, new JoinFailed())
+      s.next(FinishJoin, AppMessage.FailedFinishJoin())
+        .end(FinishJoin)
         .expect(HtmlLocator.role("alert"))
         .toExist()
         .click(HtmlLocator.role("button", { name: "ClickedRetry" }))

@@ -196,12 +196,7 @@ export const SearchPageNoDeps = Html.component({
           })
 
     const results = AsyncResult.match(h.queries.results, {
-      // The last results stay up while the next ones load
-      onInitial: () =>
-        Option.match(h.previous.results, {
-          onNone: skeletons,
-          onSome: ({ items }) => grid(items),
-        }),
+      onInitial: skeletons,
       onFailure: ({ cause }) =>
         h.div
           .class(
@@ -217,15 +212,13 @@ export const SearchPageNoDeps = Html.component({
               )
               .children(Cause.pretty(cause)),
           ),
-      onSuccess: ({ value }) => grid(value.items, JSON.stringify(args)),
+      onSuccess: ({ value, waiting }) =>
+        grid(value.items, waiting ? undefined : JSON.stringify(args)),
     })
 
     // The last search's ranges stay up while the next one's load
     const firstPage = Option.flatMap(
-      Option.orElse(
-        AsyncResult.value(h.queries.unfiltered),
-        () => h.previous.unfiltered,
-      ),
+      AsyncResult.value(h.queries.unfiltered),
       ({ pages }) => Arr.head(pages),
     )
 

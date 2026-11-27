@@ -13,12 +13,11 @@ export const InstallButtonMessage = UiSchema.TaggedEnum({
 /** Shows the browser's prompt to install the app. */
 export class PromptInstall extends Command.Service<PromptInstall>()(
   "browser/PromptInstall",
-  { args: {}, success: Component.Noop },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const install = yield* InstallPrompt
-      return () => Effect.as(install.prompt, Component.noop)
+      return () => install.prompt
     }),
   )
 }

@@ -32,7 +32,6 @@ export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
   "sync/SetRemoteUrl",
   {
     args: { url: Schema.NullOr(Schema.String) },
-    success: Component.Noop,
     invalidates: () => [GetSyncSettings],
   },
 ) {
@@ -40,9 +39,9 @@ export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
     Effect.gen(function* () {
       const remote = yield* SyncRemote
       return ({ url }) =>
-        remote
-          .setUrl(Option.map(Option.fromNullishOr(url), (url) => new URL(url)))
-          .pipe(Effect.as(Component.noop))
+        remote.setUrl(
+          Option.map(Option.fromNullishOr(url), (url) => new URL(url)),
+        )
     }),
   )
 }
@@ -54,7 +53,7 @@ export class SetRemoteUrl extends Command.Service<SetRemoteUrl>()(
  */
 export class CopyInvite extends Command.Service<CopyInvite>()(
   "sync/CopyInvite",
-  { args: {}, success: SyncSettingsPanelMessage },
+  { success: SyncSettingsPanelMessage },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {

@@ -21,14 +21,12 @@ export class ToggleFavorite extends Command.Service<ToggleFavorite>()(
     // Invalidates nothing: the favourites refetch themselves after every
     // change.
     args: { product: ProductBaseInfo },
-    success: Component.Noop,
   },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const favorites = yield* Favorites
-      return ({ product }) =>
-        Effect.as(favorites.toggle(product), Component.noop)
+      return ({ product }) => favorites.toggle(product)
     }),
   )
 }

@@ -39,12 +39,12 @@ export const ProductPageMessage = UiSchema.TaggedEnum({
 /** Offers the product's page to the device's share sheet. */
 export class ShareProduct extends Command.Service<ShareProduct>()(
   "product/ShareProduct",
-  { args: { title: Schema.String }, success: Component.Noop },
+  { args: { title: Schema.String } },
 ) {
   static readonly layer = this.toLayer(
     Effect.gen(function* () {
       const share = yield* Share
-      return ({ title }) => Effect.as(share.sharePage(title), Component.noop)
+      return ({ title }) => share.sharePage(title)
     }),
   )
 }
@@ -71,13 +71,19 @@ const ProductPageDef = Html.component({
   }),
   message: ProductPageMessage,
   queries: {
-    product: { query: GetProduct, args: ({ props }) => ({ id: props.id }) },
+    product: {
+      query: GetProduct,
+      dropPrevious: true,
+      args: ({ props }) => ({ id: props.id }),
+    },
     known: {
       query: GetKnownProduct,
+      dropPrevious: true,
       args: ({ props }) => ({ id: props.id }),
     },
     stats: {
       query: GetReviewStats,
+      dropPrevious: true,
       args: ({ props }) => ({ id: props.id }),
     },
     reviews: {
@@ -375,13 +381,10 @@ const productPageView = ProductPageDef.view((h, model) => {
     onSome: (stats) => stats.TotalReviewCount,
   })
 
-  const reviews = Option.match(
-    Option.orElse(
-      AsyncResult.value(h.queries.reviews),
-      () => h.previous.reviews,
-    ),
-    { onNone: () => [], onSome: (list) => list.items },
-  )
+  const reviews = Option.match(AsyncResult.value(h.queries.reviews), {
+    onNone: () => [],
+    onSome: (list) => list.items,
+  })
 
   return h.div(
     h.div.class("py-3 sm:py-4").children(
